@@ -3,18 +3,75 @@
     <h1 class="text-2xl font-bold text-slate-900">Catálogo de Productos</h1>
     <p class="text-sm text-slate-500">Gestión del inventario general de la librería</p>
   </div>
-  <button
-    class="bg-[#1E3A8A] hover:bg-[#162a65] text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm">
-    + Nuevo Producto
+  <button (click)="openModal()"
+    class="bg-[#1E3A8A] hover:bg-[#162a65] text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2">
+    <span>+</span> Nuevo Producto
   </button>
 </div>
 
-<div class="bg-white border border-slate-200 rounded-xl p-12 text-center shadow-sm max-w-4xl mx-auto">
-  <div class="w-16 h-16 bg-[#FFFBEB] rounded-full flex items-center justify-between mx-auto mb-4">
-    <span class="text-2xl mx-auto">📦</span>
+<div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden max-w-6xl mx-auto">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+          <th class="px-6 py-4">Código de Barras</th>
+          <th class="px-6 py-4">Nombre / Título</th>
+          <th class="px-6 py-4">Descripción</th>
+          <th class="px-6 py-4">Precio</th>
+          <th class="px-6 py-4">Estado</th>
+          <th class="px-6 py-4 text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100 text-sm text-slate-700">
+
+        @for (product of products; track product.id_producto) {
+        <tr class="hover:bg-slate-50 transition-colors">
+          <td class="px-6 py-4 font-mono text-xs text-slate-500">{{ product.codigo_barras }}</td>
+          <td class="px-6 py-4 font-semibold text-slate-900">{{ product.nombre_producto }}</td>
+          <td class="px-6 py-4 max-w-xs truncate text-slate-500" [title]="product.descripcion">
+            {{ product.descripcion || 'Sin descripción' }}
+          </td>
+          <td class="px-6 py-4 font-medium text-slate-900">
+            {{ product.precio_actual | currency:'ARS':'symbol':'1.2-2' }}
+          </td>
+          <td class="px-6 py-4">
+            @if (product.activo) {
+            <span
+              class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+              Activo
+            </span>
+            } @else {
+            <span
+              class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+              Inactivo
+            </span>
+            }
+          </td>
+          <td class="px-6 py-4 text-right text-xs">
+            <button class="text-[#1E3A8A] hover:underline font-medium mr-3">Editar</button>
+            <button class="text-rose-600 hover:underline font-medium">Eliminar</button>
+          </td>
+        </tr>
+        } @empty {
+        <tr>
+          <td colspan="6" class="px-6 py-12 text-center">
+            <div class="w-12 h-12 bg-[#FFFBEB] rounded-full flex items-center justify-between mx-auto mb-3">
+              <span class="text-xl mx-auto">📦</span>
+            </div>
+            <h3 class="text-base font-semibold text-slate-800 mb-0.5">El catálogo está vacío</h3>
+            <p class="text-xs text-slate-500 max-w-sm mx-auto">
+              No hay productos registrados actualmente en el sistema.
+            </p>
+          </td>
+        </tr>
+        }
+
+      </tbody>
+    </table>
   </div>
-  <h3 class="text-lg font-semibold text-slate-800 mb-1">El catálogo está vacío</h3>
-  <p class="text-slate-500 max-w-md mx-auto">
-    No hay productos cargados actualmente. La pantalla está lista para consumir los endpoints de la API del backend.
-  </p>
 </div>
+
+@if (isModalOpen) {
+<app-product-form (close)="closeModal()" (saved)="loadProducts()">
+</app-product-form>
+}

@@ -21,4 +21,9 @@ export class ProductService {
   getProductById(id: string): Observable<Product> {
     return this.http.get<Product>(`${this.apiUrl}/${id}`);
   }
+
+  // POST: Crear un nuevo producto en la base de datos
+  createProduct(product: Product): Observable<Product> {
+    return this.http.post<Product>(this.apiUrl, product);
+  }
 }

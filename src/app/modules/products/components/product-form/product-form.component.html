@@ -1,0 +1,114 @@
+<div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+
+  <div
+    class="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-200">
+
+    <div class="bg-[#1E3A8A] text-white px-6 py-4 flex justify-between items-center">
+      <h2 class="text-lg font-bold tracking-wide">Registrar Nuevo Producto</h2>
+      <button (click)="onCancel()" class="text-white/80 hover:text-white font-semibold text-xl">&times;</button>
+    </div>
+
+    <form [formGroup]="productForm" (ngSubmit)="onSubmit()" class="p-6 space-y-4">
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Código de Barras
+            (ISBN/UPC)</label>
+          <input type="text" formControlName="codigo_barras" placeholder="Ej: 9789507319854"
+            class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]">
+          <small *ngIf="productForm.get('codigo_barras')?.touched && productForm.get('codigo_barras')?.invalid"
+            class="text-rose-600 text-xs">
+            El código es obligatorio (mínimo 3 caracteres).
+          </small>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Título / Nombre del
+            Artículo</label>
+          <input type="text" formControlName="nombre_producto" placeholder="Ej: Rayuela"
+            class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]">
+          <small *ngIf="productForm.get('nombre_producto')?.touched && productForm.get('nombre_producto')?.invalid"
+            class="text-rose-600 text-xs">
+            El nombre es requerido.
+          </small>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Descripción
+          corta</label>
+        <textarea formControlName="descripcion" rows="2" placeholder="Detalles del artículo..."
+          class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A] resize-none"></textarea>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Precio de
+            Venta</label>
+          <div class="relative">
+            <span class="absolute left-3 top-2 text-slate-400 text-sm">$</span>
+            <input type="number" formControlName="precio_actual" step="0.01" min="0"
+              class="w-full border border-slate-200 pl-7 pr-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]">
+          </div>
+          <small *ngIf="productForm.get('precio_actual')?.touched && productForm.get('precio_actual')?.invalid"
+            class="text-rose-600 text-xs">
+            El precio debe ser mayor a 0.
+          </small>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Disponibilidad
+            Inicial</label>
+          <select formControlName="activo"
+            class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]">
+            <option [ngValue]="true">Activo (Visible inmediatamente)</option>
+            <option [ngValue]="false">Inactivo (Oculto / Sin Stock)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 p-3 rounded-lg border border-slate-100">
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Tipo
+            Producto</label>
+          <select formControlName="id_tipo_producto"
+            class="w-full border border-slate-200 bg-white px-2 py-1.5 rounded-md text-xs">
+            <option [ngValue]="1">Libro Físico</option>
+            <option [ngValue]="2">E-Book</option>
+            <option [ngValue]="3">Música / Vinilo</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Editorial /
+            Sello</label>
+          <select formControlName="id_editorial_sello"
+            class="w-full border border-slate-200 bg-white px-2 py-1.5 rounded-md text-xs">
+            <option [ngValue]="1">Editorial Planeta</option>
+            <option [ngValue]="2">Sudamericana</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Rango Etario</label>
+          <select formControlName="id_rango_etario"
+            class="w-full border border-slate-200 bg-white px-2 py-1.5 rounded-md text-xs">
+            <option [ngValue]="1">Infantil</option>
+            <option [ngValue]="2">Juvenil</option>
+            <option [ngValue]="3">Adultos</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+        <button type="button" (click)="onCancel()" [disabled]="isSubmitting"
+          class="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+          Cancelar
+        </button>
+        <button type="submit" [disabled]="isSubmitting"
+          class="px-4 py-2 bg-[#1E3A8A] hover:bg-[#162a65] text-white rounded-lg text-sm font-medium transition-colors shadow-sm disabled:opacity-50">
+          {{ isSubmitting ? 'Guardando...' : 'Guardar Artículo' }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
