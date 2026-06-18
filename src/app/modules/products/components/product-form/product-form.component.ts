@@ -11,7 +11,6 @@ import { ProductService } from '../../../../services/product.services';
   styleUrl: './product-form.component.css',
 })
 export class ProductFormComponent implements OnInit {
-  // Eventos para avisarle a la página principal (padre) qué hacer
   @Output() close = new EventEmitter<void>();
   @Output() saved = new EventEmitter<void>();
 
@@ -27,39 +26,43 @@ export class ProductFormComponent implements OnInit {
     this.initForm();
   }
 
-  // Inicializamos el formulario estructurando las validaciones según el DER
   private initForm(): void {
+    // Cambiados a camelCase para emparejar con la clase de Java
     this.productForm = this.fb.group({
-      codigo_barras: ['', [Validators.required, Validators.minLength(3)]],
-      nombre_producto: ['', [Validators.required, Validators.maxLength(100)]],
+      codigoBarras: ['', [Validators.required, Validators.minLength(3)]],
+      nombreProducto: ['', [Validators.required, Validators.maxLength(100)]],
       descripcion: [''],
-      precio_actual: [0, [Validators.required, Validators.min(0.01)]],
+      precioActual: [0, [Validators.required, Validators.min(0.01)]],
       activo: [true],
-      id_tipo_producto: [1, [Validators.required]], // Valores iniciales por defecto
-      id_editorial_sello: [1, [Validators.required]],
-      id_rango_etario: [1, [Validators.required]],
+      idTipoProducto: [1, [Validators.required]],
+      idEditorialSello: [1, [Validators.required]],
+      idRangoEtario: [1, [Validators.required]],
     });
   }
 
-  // Método para enviar los datos al hacer submit
   onSubmit(): void {
     if (this.productForm.invalid) {
-      this.productForm.markAllAsTouched(); // Marca los errores visuales si intentan mandar el formulario incompleto
+      this.productForm.markAllAsTouched();
       return;
     }
 
     this.isSubmitting = true;
     const newProduct = this.productForm.value;
 
-    // Cuando el método POST del backend esté listo, usaremos el servicio:
-    console.log('Enviando nuevo producto al backend:', newProduct);
-
-    // Simulamos una respuesta exitosa por ahora:
-    setTimeout(() => {
-      this.isSubmitting = false;
-      this.saved.emit(); // Le avisa al padre que recargue el listado
-      this.close.emit(); // Cierra el modal
-    }, 800);
+    // CONEXIÓN CON EL POST DEL BACKEND
+    this.productService.createProduct(newProduct).subscribe({
+      next: (response) => {
+        console.log('Producto creado con éxito en el backend:', response);
+        this.isSubmitting = false;
+        this.saved.emit(); // Notifica al padre que recargue la lista
+        this.close.emit(); // Cierra el modal
+      },
+      error: (err) => {
+        console.error('Error al guardar el producto:', err);
+        this.isSubmitting = false;
+        alert('Ocurrió un error al conectar con el servidor.');
+      },
+    });
   }
 
   onCancel(): void {
