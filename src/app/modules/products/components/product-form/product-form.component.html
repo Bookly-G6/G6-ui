@@ -14,20 +14,21 @@
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Código de Barras
             (ISBN/UPC)</label>
-          <input type="text" formControlName="codigo_barras" placeholder="Ej: 9789507319854"
-            class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]">
-          <small *ngIf="productForm.get('codigo_barras')?.touched && productForm.get('codigo_barras')?.invalid"
+          <input type="text" formControlName="codigoBarras" placeholder="Ej: 9789507319854"
+            class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]"
+            minlength="8" maxlength="20">
+          <small *ngIf="productForm.get('codigoBarras')?.touched && productForm.get('codigoBarras')?.invalid"
             class="text-rose-600 text-xs">
-            El código es obligatorio (mínimo 3 caracteres).
+            El código es obligatorio (mínimo 8 caracteres).
           </small>
         </div>
 
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Título / Nombre del
             Artículo</label>
-          <input type="text" formControlName="nombre_producto" placeholder="Ej: Rayuela"
+          <input type="text" formControlName="nombreProducto" placeholder="Ej: Rayuela"
             class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]">
-          <small *ngIf="productForm.get('nombre_producto')?.touched && productForm.get('nombre_producto')?.invalid"
+          <small *ngIf="productForm.get('nombreProducto')?.touched && productForm.get('nombreProducto')?.invalid"
             class="text-rose-600 text-xs">
             El nombre es requerido.
           </small>
@@ -47,10 +48,10 @@
             Venta</label>
           <div class="relative">
             <span class="absolute left-3 top-2 text-slate-400 text-sm">$</span>
-            <input type="number" formControlName="precio_actual" step="0.01" min="0"
+            <input type="number" formControlName="precioActual" step="0.01" min="0"
               class="w-full border border-slate-200 pl-7 pr-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]">
           </div>
-          <small *ngIf="productForm.get('precio_actual')?.touched && productForm.get('precio_actual')?.invalid"
+          <small *ngIf="productForm.get('precioActual')?.touched && productForm.get('precioActual')?.invalid"
             class="text-rose-600 text-xs">
             El precio debe ser mayor a 0.
           </small>
@@ -71,7 +72,7 @@
         <div>
           <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Tipo
             Producto</label>
-          <select formControlName="id_tipo_producto"
+          <select formControlName="idTipoProducto"
             class="w-full border border-slate-200 bg-white px-2 py-1.5 rounded-md text-xs">
             <option [ngValue]="1">Libro Físico</option>
             <option [ngValue]="2">E-Book</option>
@@ -81,7 +82,7 @@
         <div>
           <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Editorial /
             Sello</label>
-          <select formControlName="id_editorial_sello"
+          <select formControlName="idEditorialSello"
             class="w-full border border-slate-200 bg-white px-2 py-1.5 rounded-md text-xs">
             <option [ngValue]="1">Editorial Planeta</option>
             <option [ngValue]="2">Sudamericana</option>
@@ -89,7 +90,7 @@
         </div>
         <div>
           <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Rango Etario</label>
-          <select formControlName="id_rango_etario"
+          <select formControlName="idRangoEtario"
             class="w-full border border-slate-200 bg-white px-2 py-1.5 rounded-md text-xs">
             <option [ngValue]="1">Infantil</option>
             <option [ngValue]="2">Juvenil</option>
