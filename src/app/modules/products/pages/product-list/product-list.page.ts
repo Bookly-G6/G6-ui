@@ -13,31 +13,7 @@ import { ProductFormComponent } from '../../components/product-form/product-form
   styleUrl: './product-list.page.css',
 })
 export class ProductListPage implements OnInit {
-  // Datos de prueba temporales para diseñar la interfaz
-  products: Product[] = [
-    {
-      id_producto: '11111111-2222-3333-4444-555555555555',
-      codigo_barras: '9789507319854',
-      nombre_producto: 'El Aleph',
-      descripcion: 'Una de las obras cumbre de la literatura hispanoamericana.',
-      precio_actual: 14500.0,
-      activo: true,
-      id_tipo_producto: 1, // Libro Físico
-      id_editorial_sello: 10, // Emecé Editores
-      id_rango_etario: 3, // Adultos
-    },
-    {
-      id_producto: '66666666-7777-8888-9999-000000000000',
-      codigo_barras: '9788415618775',
-      nombre_producto: 'Cuentos Completos - Edgar Allan Poe',
-      descripcion: 'Compilación de relatos de terror y misterio.',
-      precio_actual: 18200.0,
-      activo: true,
-      id_tipo_producto: 1,
-      id_editorial_sello: 12,
-      id_rango_etario: 3,
-    },
-  ];
+  products: Product[] = []; // Lista limpia que se llenará con datos del backend
 
   // Variable para controlar la visibilidad del modal del formulario (Paso 3)
   isModalOpen = false;
@@ -45,8 +21,8 @@ export class ProductListPage implements OnInit {
   constructor(private productService: ProductService) {}
 
   ngOnInit(): void {
-    // Cuando el backend esté listo, reemplazará los datos de prueba:
-    // this.loadProducts();
+    // CONEXION CON EL GET DEL BACKEND AL INICIAR
+    this.loadProducts();
   }
 
   loadProducts(): void {
