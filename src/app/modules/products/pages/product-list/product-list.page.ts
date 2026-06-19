@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProductService } from '../../../../services/product.services';
 import { Product } from '../../../../models/product.model';
-// componente hijo que se mostrará como modal para crear/editar productos
 import { ProductFormComponent } from '../../components/product-form/product-form.component';
 
 @Component({
@@ -17,6 +16,7 @@ export class ProductListPage implements OnInit {
 
   // Variable para controlar la visibilidad del modal del formulario (Paso 3)
   isModalOpen = false;
+  selectedProduct: Product | null = null; // Guarda el producto temporal para edición
 
   constructor(private productService: ProductService) {}
 
@@ -32,11 +32,28 @@ export class ProductListPage implements OnInit {
     });
   }
 
-  openModal(): void {
+  openModal(product: Product | null = null): void {
+    this.selectedProduct = product; // Si viene un producto es Editar, si viene null es Nuevo
     this.isModalOpen = true;
   }
 
   closeModal(): void {
     this.isModalOpen = false;
+    this.selectedProduct = null;
+  }
+
+  // Borrar producto (DELETE)
+  deleteProduct(id: string | undefined): void {
+    if (!id) return;
+
+    if (confirm('¿Estás seguro de que deseas eliminar (desactivar) este producto?')) {
+      this.productService.deleteProduct(id).subscribe({
+        next: () => {
+          console.log('Producto desactivado correctamente');
+          this.loadProducts(); // Recarga la tabla de inmediato
+        },
+        error: (err) => console.error('Error al eliminar el producto:', err),
+      });
+    }
   }
 }

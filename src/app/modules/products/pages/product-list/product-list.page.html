@@ -3,7 +3,7 @@
     <h1 class="text-2xl font-bold text-slate-900">Catálogo de Productos</h1>
     <p class="text-sm text-slate-500">Gestión del inventario general de la librería</p>
   </div>
-  <button (click)="openModal()"
+  <button (click)="openModal(null)"
     class="bg-[#1E3A8A] hover:bg-[#162a65] text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2">
     <span>+</span> Nuevo Producto
   </button>
@@ -48,8 +48,9 @@
             }
           </td>
           <td class="px-6 py-4 text-right text-xs">
-            <button class="text-[#1E3A8A] hover:underline font-medium mr-3">Editar</button>
-            <button class="text-rose-600 hover:underline font-medium">Eliminar</button>
+            <button (click)="openModal(product)" class="text-[#1E3A8A] hover:underline font-medium mr-3">Editar</button>
+            <button (click)="deleteProduct(product.idProducto)"
+              class="text-rose-600 hover:underline font-medium">Eliminar</button>
           </td>
         </tr>
         } @empty {
@@ -72,6 +73,6 @@
 </div>
 
 @if (isModalOpen) {
-<app-product-form (close)="closeModal()" (saved)="loadProducts()">
+<app-product-form [productToEdit]="selectedProduct" (close)="closeModal()" (saved)="loadProducts()">
 </app-product-form>
 }
