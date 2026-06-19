@@ -16,4 +16,14 @@ export const routes: Routes = [
         (m) => m.LogisticaListPage,
       ),
   },
+  {
+    path: 'usuarios',
+    loadComponent: () =>
+      import('./modules/users/pages/user-list/user-list.page').then((m) => m.UserListPage),
+  },
+  {
+    path: 'roles',
+    loadComponent: () =>
+      import('./modules/roles/pages/role-list/role-list.page').then((m) => m.RoleListPage),
+  },
 ];

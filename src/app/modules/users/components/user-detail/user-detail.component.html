@@ -1,0 +1,63 @@
+<div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden border border-slate-200">
+    <div class="bg-[#1E3A8A] text-white px-6 py-4 flex justify-between items-center">
+      <div>
+        <p class="text-xs uppercase tracking-[0.2em] text-blue-100">Detalle del usuario</p>
+        <h2 class="text-lg font-bold">{{ user?.nombre || 'Usuario' }} {{ user?.apellido || '' }}</h2>
+      </div>
+      <button type="button" (click)="onClose()" class="text-white/80 hover:text-white font-semibold text-xl">
+        &times;
+      </button>
+    </div>
+
+    <div class="p-6">
+      @if (isLoading) {
+      <div class="flex items-center justify-center py-10">
+        <span class="text-sm text-slate-500">Cargando usuario...</span>
+      </div>
+      } @else if (user) {
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-4">
+          <div>
+            <p class="text-xs uppercase tracking-wider text-slate-500">Nombre</p>
+            <p class="text-sm font-semibold text-slate-900">{{ user.nombre }}</p>
+          </div>
+          <div>
+            <p class="text-xs uppercase tracking-wider text-slate-500">Apellido</p>
+            <p class="text-sm font-semibold text-slate-900">{{ user.apellido }}</p>
+          </div>
+          <div>
+            <p class="text-xs uppercase tracking-wider text-slate-500">Email</p>
+            <p class="text-sm font-semibold text-slate-900">{{ user.email }}</p>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <p class="text-xs uppercase tracking-wider text-slate-500">Estado</p>
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold"
+              [class]="user.activo ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700'">
+              {{ user.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </div>
+          <div>
+            <p class="text-xs uppercase tracking-wider text-slate-500">Rol</p>
+            <p class="text-sm font-semibold text-slate-900">{{ user.rol }}</p>
+          </div>
+        </div>
+      </div>
+      } @else {
+      <div class="py-8 text-center text-sm text-slate-500">
+        No se encontró información para este usuario.
+      </div>
+      }
+
+      <div class="mt-6 flex justify-end">
+        <button type="button" (click)="onClose()"
+          class="px-4 py-2 rounded-lg bg-[#1E3A8A] text-white text-sm font-medium hover:bg-[#162a65] transition-colors">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
