@@ -1,0 +1,36 @@
+<div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-200">
+    <div class="bg-[#1E3A8A] text-white px-6 py-4 flex justify-between items-center">
+      <div>
+        <p class="text-xs uppercase tracking-[0.2em] text-blue-100">Detalle del rol</p>
+        <h2 class="text-lg font-bold">{{ role?.nombreRol || 'Rol' }}</h2>
+      </div>
+      <button type="button" (click)="onClose()"
+        class="text-white/80 hover:text-white font-semibold text-xl">&times;</button>
+    </div>
+
+    <div class="p-6">
+      @if (isLoading) {
+      <div class="flex items-center justify-center py-10">
+        <span class="text-sm text-slate-500">Cargando rol...</span>
+      </div>
+      } @else if (role) {
+      <div class="space-y-4">
+        <div>
+          <p class="text-xs uppercase tracking-wider text-slate-500">Nombre</p>
+          <p class="text-sm font-semibold text-slate-900">{{ role.nombreRol }}</p>
+        </div>
+      </div>
+      } @else {
+      <div class="py-8 text-center text-sm text-slate-500">No se encontró información para este rol.</div>
+      }
+
+      <div class="mt-6 flex justify-end">
+        <button type="button" (click)="onClose()"
+          class="px-4 py-2 rounded-lg bg-[#1E3A8A] text-white text-sm font-medium hover:bg-[#162a65] transition-colors">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -67,6 +67,22 @@ export class UserListPage implements OnInit {
     this.selectedUsuarioId = null;
   }
 
+  getRolDisplayName(usuario: Usuario): string {
+    if (typeof usuario.rol === 'string') {
+      return usuario.rol;
+    }
+
+    if (usuario.rol && typeof usuario.rol === 'object' && 'nombreRol' in usuario.rol) {
+      return usuario.rol.nombreRol;
+    }
+
+    if (typeof usuario.idRol === 'number') {
+      return `Rol ${usuario.idRol}`;
+    }
+
+    return 'Sin rol';
+  }
+
   requestDeleteUsuario(id: string | undefined): void {
     if (!id) {
       this.notification.show('No se encontró el usuario para dar de baja.', 'info');

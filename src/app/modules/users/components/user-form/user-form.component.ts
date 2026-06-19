@@ -1,9 +1,11 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, inject, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Usuario } from '../../../../models/usuario.model';
 import { UsuarioService } from '../../../../services/usuario.services';
 import { NotificationService } from '../../../../services/notification';
+import { RolService } from '../../../../services/rol.services';
+import { Rol } from '../../../../models/rol.model';
 
 @Component({
   selector: 'app-user-form',
@@ -19,17 +21,30 @@ export class UserFormComponent implements OnInit {
 
   userForm!: FormGroup;
   isSubmitting = false;
+  roles: Rol[] = [];
+  private readonly rolService = inject(RolService);
 
   constructor(
-    private fb: FormBuilder,
-    private usuarioService: UsuarioService,
-    private notification: NotificationService,
+    private readonly fb: FormBuilder,
+    private readonly usuarioService: UsuarioService,
+    private readonly notification: NotificationService,
   ) {}
 
   ngOnInit(): void {
     this.initForm();
+    this.loadRoles();
+
     if (this.userToEdit) {
-      this.userForm.patchValue(this.userToEdit);
+      this.userForm.patchValue({
+        nombre: this.userToEdit.nombre,
+        apellido: this.userToEdit.apellido,
+        email: this.userToEdit.email,
+        activo: this.userToEdit.activo,
+        idRol: this.getRolIdValue(this.userToEdit),
+      });
+      this.userForm.get('password')?.clearValidators();
+      this.userForm.get('password')?.setValidators([Validators.minLength(6)]);
+      this.userForm.get('password')?.updateValueAndValidity();
     }
   }
 
@@ -41,6 +56,35 @@ export class UserFormComponent implements OnInit {
       password: ['', [Validators.required, Validators.minLength(6)]],
       activo: [true],
       idRol: [1, [Validators.required]],
+    });
+  }
+
+  private getRolIdValue(usuario: Usuario): number {
+    if (typeof usuario.idRol === 'number') {
+      return usuario.idRol;
+    }
+
+    if (usuario.rol && typeof usuario.rol === 'object' && 'idRol' in usuario.rol) {
+      return usuario.rol.idRol as number;
+    }
+
+    return 1;
+  }
+
+  private loadRoles(): void {
+    this.rolService.getRoles().subscribe({
+      next: (data) => {
+        this.roles = Array.isArray(data) ? data : [];
+
+        if (!this.userToEdit && this.roles.length > 0) {
+          this.userForm.patchValue({ idRol: this.roles[0].idRol ?? 1 });
+        } else if (this.userToEdit) {
+          this.userForm.patchValue({ idRol: this.getRolIdValue(this.userToEdit) });
+        }
+      },
+      error: () => {
+        this.notification.show('No se pudieron cargar los roles disponibles.', 'error');
+      },
     });
   }
 
@@ -60,7 +104,7 @@ export class UserFormComponent implements OnInit {
       apellido: formValue.apellido,
       email: formValue.email,
       activo: formValue.activo,
-      rol: formValue.rol,
+      idRol: Number(formValue.idRol),
       ...(formValue.password ? { password: formValue.password } : {}),
     };
 

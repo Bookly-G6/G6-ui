@@ -56,8 +56,13 @@
           <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Rol</label>
           <select formControlName="idRol"
             class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]">
-            <option [ngValue]="1">Administrador</option>
-            <option [ngValue]="2">Usuario</option>
+            @if (roles.length === 0) {
+            <option [ngValue]="1">Cargando roles...</option>
+            } @else {
+            @for (rol of roles; track rol.idRol) {
+            <option [ngValue]="rol.idRol">{{ rol.nombreRol }}</option>
+            }
+            }
           </select>
         </div>
       </div>

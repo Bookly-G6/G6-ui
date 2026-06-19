@@ -28,7 +28,7 @@
           <td class="px-6 py-4 font-semibold text-slate-900">{{ usuario.nombre }}</td>
           <td class="px-6 py-4 text-slate-700">{{ usuario.apellido }}</td>
           <td class="px-6 py-4 text-slate-500">{{ usuario.email }}</td>
-          <td class="px-6 py-4">{{ usuario.rol }}</td>
+          <td class="px-6 py-4">{{ getRolDisplayName(usuario) }}</td>
           <td class="px-6 py-4">
             @if (usuario.activo) {
             <span

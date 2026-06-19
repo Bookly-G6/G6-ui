@@ -1,0 +1,29 @@
+<div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-xl shadow-xl w-full max-w-xl overflow-hidden border border-slate-200">
+    <div class="bg-[#1E3A8A] text-white px-6 py-4 flex justify-between items-center">
+      <h2 class="text-lg font-bold tracking-wide">{{ roleToEdit ? 'Editar Rol' : 'Registrar Nuevo Rol' }}</h2>
+      <button (click)="onCancel()" class="text-white/80 hover:text-white font-semibold text-xl">&times;</button>
+    </div>
+
+    <form [formGroup]="roleForm" (ngSubmit)="onSubmit()" class="p-6 space-y-4">
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Nombre del rol</label>
+        <input type="text" formControlName="nombreRol" placeholder="Ej: Administrador"
+          class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]">
+        <small *ngIf="roleForm.get('nombreRol')?.touched && roleForm.get('nombreRol')?.invalid"
+          class="text-rose-600 text-xs">El nombre del rol es obligatorio.</small>
+      </div>
+
+      <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+        <button type="button" (click)="onCancel()" [disabled]="isSubmitting"
+          class="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+          Cancelar
+        </button>
+        <button type="submit" [disabled]="isSubmitting"
+          class="px-4 py-2 bg-[#1E3A8A] hover:bg-[#162a65] text-white rounded-lg text-sm font-medium transition-colors shadow-sm disabled:opacity-50">
+          {{ isSubmitting ? 'Guardando...' : roleToEdit ? 'Actualizar Rol' : 'Crear Rol' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

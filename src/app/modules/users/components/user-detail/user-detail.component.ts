@@ -64,6 +64,22 @@ export class UserDetailComponent implements OnInit, OnChanges {
     });
   }
 
+  getRolDisplayName(): string {
+    if (!this.user) {
+      return 'Sin rol';
+    }
+
+    if (typeof this.user.rol === 'string') {
+      return this.user.rol;
+    }
+
+    if (this.user.rol && typeof this.user.rol === 'object' && 'nombreRol' in this.user.rol) {
+      return this.user.rol.nombreRol;
+    }
+
+    return this.user.idRol ? `Rol ${this.user.idRol}` : 'Sin rol';
+  }
+
   onClose(): void {
     this.close.emit();
   }
