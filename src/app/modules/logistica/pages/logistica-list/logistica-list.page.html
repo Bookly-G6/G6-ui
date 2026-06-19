@@ -1,0 +1,88 @@
+<div class="flex flex-col gap-4 md:flex-row md:justify-between md:items-center mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-slate-900">Gestión logística</h1>
+    <p class="text-sm text-slate-500">Administración de envíos, retiros y entregas digitales</p>
+  </div>
+  <button (click)="openModal(null)"
+    class="bg-[#1E3A8A] hover:bg-[#162a65] text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2 self-start">
+    <span>+</span> Nueva orden
+  </button>
+</div>
+
+<div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden max-w-7xl mx-auto">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+          <th class="px-6 py-4">ID Venta</th>
+          <th class="px-6 py-4">Tipo</th>
+          <th class="px-6 py-4">Estado</th>
+          <th class="px-6 py-4">Correo / Tracking / Código</th>
+          <th class="px-6 py-4">Observaciones</th>
+          <th class="px-6 py-4 text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100 text-sm text-slate-700">
+        @for (item of logisticaList; track item.idEnvio) {
+        <tr class="hover:bg-slate-50 transition-colors">
+          <td class="px-6 py-4 font-mono text-xs text-slate-500">{{ item.idVenta }}</td>
+          <td class="px-6 py-4">
+            <span
+              class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
+              {{ item.tipoEnvio }}
+            </span>
+          </td>
+          <td class="px-6 py-4">
+            <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
+              [class]="getEstadoBadgeClass(item.estado)">
+              {{ item.estado || 'SIN ESTADO' }}
+            </span>
+          </td>
+          <td class="px-6 py-4">
+            @if (item.tipoEnvio === 'DOMICILIO') {
+            <div class="text-xs">
+              <p class="font-medium text-slate-800">{{ item.empresaCorreo || '-' }}</p>
+              <p class="text-slate-500">{{ item.numeroTracking || '-' }}</p>
+            </div>
+            } @else if (item.tipoEnvio === 'RETIRO_SUCURSAL') {
+            <span class="text-xs font-medium text-slate-700">{{ item.codigoRetiro || 'Código pendiente' }}</span>
+            } @else {
+            <span class="text-xs text-slate-500">Sin datos de envío</span>
+            }
+          </td>
+          <td class="px-6 py-4 max-w-xs truncate text-slate-500" [title]="item.observaciones">
+            {{ item.observaciones || 'Sin observaciones' }}
+          </td>
+          <td class="px-6 py-4 text-right text-xs">
+            <button (click)="openModal(item)" class="text-[#1E3A8A] hover:underline font-medium mr-3">Editar</button>
+            <button (click)="requestDeleteLogistica(item.idEnvio)"
+              class="text-rose-600 hover:underline font-medium">Eliminar</button>
+          </td>
+        </tr>
+        } @empty {
+        <tr>
+          <td colspan="6" class="px-6 py-12 text-center">
+            <div class="w-12 h-12 bg-[#FFFBEB] rounded-full flex items-center justify-center mx-auto mb-3">
+              <span class="text-xl">📦</span>
+            </div>
+            <h3 class="text-base font-semibold text-slate-800 mb-0.5">No hay órdenes logísticas</h3>
+            <p class="text-xs text-slate-500 max-w-sm mx-auto">Aún no se registraron envíos o retiros.</p>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+@if (isModalOpen) {
+<app-logistica-form [logisticaToEdit]="selectedLogistica" (close)="closeModal()" (saved)="loadLogistica()">
+</app-logistica-form>
+}
+
+@if (isDeleteConfirmOpen) {
+<app-confirm-dialog [isOpen]="isDeleteConfirmOpen" title="Eliminar orden logística"
+  message="¿Seguro que deseas eliminar esta orden? Esta acción marcará el envío como borrado lógico."
+  confirmText="Eliminar" cancelText="Cancelar" confirmButtonClass="bg-rose-600 hover:bg-rose-700"
+  (confirmed)="confirmDelete()" (cancelled)="cancelDelete()"></app-confirm-dialog>
+}

@@ -9,5 +9,11 @@ export const routes: Routes = [
         (m) => m.ProductListPage,
       ),
   },
-  // Más adelante las otras rutas
+  {
+    path: 'logistica',
+    loadComponent: () =>
+      import('./modules/logistica/pages/logistica-list/logistica-list.page').then(
+        (m) => m.LogisticaListPage,
+      ),
+  },
 ];
