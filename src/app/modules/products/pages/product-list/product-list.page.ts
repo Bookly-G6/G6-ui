@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProductService } from '../../../../services/product.services';
 import { Product } from '../../../../models/product.model';
@@ -23,6 +23,7 @@ export class ProductListPage implements OnInit {
   constructor(
     private productService: ProductService,
     private notification: NotificationService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -31,7 +32,10 @@ export class ProductListPage implements OnInit {
 
   loadProducts(): void {
     this.productService.getProducts().subscribe({
-      next: (data) => (this.products = data),
+      next: (data) => {
+        this.products = Array.isArray(data) ? data : [];
+        this.cdr.detectChanges();
+      },
       error: () => {
         this.notification.show('No se pudieron cargar los productos.', 'error');
       },
@@ -46,6 +50,7 @@ export class ProductListPage implements OnInit {
   closeModal(): void {
     this.isModalOpen = false;
     this.selectedProduct = null;
+    this.cdr.detectChanges();
   }
 
   requestDeleteProduct(id: string | undefined): void {
@@ -61,11 +66,17 @@ export class ProductListPage implements OnInit {
   confirmDelete(): void {
     if (!this.productToDeleteId) return;
 
-    this.productService.deleteProduct(this.productToDeleteId).subscribe({
+    const idToDelete = this.productToDeleteId;
+
+    this.productService.deleteProduct(idToDelete).subscribe({
       next: () => {
         this.notification.show('Producto eliminado correctamente.', 'success');
         this.isDeleteConfirmOpen = false;
         this.productToDeleteId = null;
+        this.products = this.products.filter(
+          (product) => product.idProducto !== idToDelete,
+        );
+        this.cdr.detectChanges();
         this.loadProducts();
       },
       error: () => {

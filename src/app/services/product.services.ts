@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Product } from '../models/product.model';
 import { environment } from '../../environments/environment';
 
@@ -8,22 +9,39 @@ import { environment } from '../../environments/environment';
   providedIn: 'root',
 })
 export class ProductService {
-  //
   private apiUrl = environment.apiUrl + '/productos';
 
   constructor(private http: HttpClient) {}
 
-  // Listar todos los productos (GET)
-  getProducts(): Observable<Product[]> {
-    return this.http.get<Product[]>(this.apiUrl);
+  private normalizeListResponse<T>(response: unknown): T[] {
+    if (Array.isArray(response)) {
+      return response;
+    }
+
+    const payload = response as Record<string, unknown>;
+
+    const possibleKeys = ['data', 'productos', 'items', 'results'];
+
+    for (const key of possibleKeys) {
+      const value = payload?.[key];
+      if (Array.isArray(value)) {
+        return value as T[];
+      }
+    }
+
+    return [];
   }
 
-  // Obtener uno por ID (GET)
+  getProducts(): Observable<Product[]> {
+    return this.http
+      .get<unknown>(this.apiUrl)
+      .pipe(map((response) => this.normalizeListResponse<Product>(response)));
+  }
+
   getProductById(id: string): Observable<Product> {
     return this.http.get<Product>(`${this.apiUrl}/${id}`);
   }
 
-  // POST: Crear un nuevo producto en la base de datos
   createProduct(product: Product): Observable<Product> {
     return this.http.post<Product>(this.apiUrl, product);
   }

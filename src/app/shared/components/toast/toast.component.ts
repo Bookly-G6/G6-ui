@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NotificationService, AlertMessage } from '../../../services/notification';
 
@@ -10,7 +10,7 @@ import { NotificationService, AlertMessage } from '../../../services/notificatio
     @if (alert) {
       <div
         [class]="getBadgeClass()"
-        class="fixed top-4 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl border animate-in fade-in slide-in-from-top-4 duration-300"
+        class="fixed top-4 right-4 z-[100] flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl border animate-in fade-in slide-in-from-top-4 duration-300"
       >
         <span class="text-base">{{ getIcon() }}</span>
         <p class="text-sm font-medium">{{ alert.text }}</p>
@@ -21,10 +21,16 @@ import { NotificationService, AlertMessage } from '../../../services/notificatio
 export class ToastComponent implements OnInit {
   alert: AlertMessage | null = null;
 
-  constructor(private notify: NotificationService) {}
+  constructor(
+    private notify: NotificationService,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
-    this.notify.currentAlert.subscribe((msg) => (this.alert = msg));
+    this.notify.currentAlert.subscribe((msg) => {
+      this.alert = msg;
+      this.cdr.markForCheck();
+    });
   }
 
   getBadgeClass(): string {
