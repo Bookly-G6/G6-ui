@@ -25,7 +25,7 @@
       <tbody class="divide-y divide-slate-100 text-sm text-slate-700">
 
         @for (product of products; track product.idProducto) {
-        <tr class="hover:bg-slate-50 transition-colors">
+        <tr class="hover:bg-slate-50 transition-colors cursor-pointer" (click)="openDetail(product)">
           <td class="px-6 py-4 font-mono text-xs text-slate-500">{{ product.codigoBarras }}</td>
           <td class="px-6 py-4 font-semibold text-slate-900">{{ product.nombreProducto }}</td>
           <td class="px-6 py-4 max-w-xs truncate text-slate-500" [title]="product.descripcion">
@@ -47,7 +47,7 @@
             </span>
             }
           </td>
-          <td class="px-6 py-4 text-right text-xs">
+          <td class="px-6 py-4 text-right text-xs" (click)="$event.stopPropagation()">
             <button (click)="openModal(product)" class="text-[#1E3A8A] hover:underline font-medium mr-3">Editar</button>
             <button (click)="requestDeleteProduct(product.idProducto)"
               class="text-rose-600 hover:underline font-medium">Dar de baja</button>
@@ -75,6 +75,10 @@
 @if (isModalOpen) {
 <app-product-form [productToEdit]="selectedProduct" (close)="closeModal()" (saved)="loadProducts()">
 </app-product-form>
+}
+
+@if (isDetailOpen && selectedProductId) {
+<app-product-detail [productId]="selectedProductId" (close)="closeDetail()"></app-product-detail>
 }
 
 @if (isDeleteConfirmOpen) {

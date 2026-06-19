@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { ProductService } from '../../../../services/product.services';
 import { Product } from '../../../../models/product.model';
 import { ProductFormComponent } from '../../components/product-form/product-form.component';
+import { ProductDetailComponent } from '../../components/product-detail/product-detail.component';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { NotificationService } from '../../../../services/notification';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule, ProductFormComponent, ConfirmDialogComponent],
+  imports: [CommonModule, ProductFormComponent, ProductDetailComponent, ConfirmDialogComponent],
   templateUrl: './product-list.page.html',
   styleUrl: './product-list.page.css',
 })
@@ -17,6 +18,8 @@ export class ProductListPage implements OnInit {
   products: Product[] = [];
   isModalOpen = false;
   selectedProduct: Product | null = null;
+  isDetailOpen = false;
+  selectedProductId: string | null = null;
   isDeleteConfirmOpen = false;
   productToDeleteId: string | null = null;
 
@@ -51,6 +54,17 @@ export class ProductListPage implements OnInit {
     this.isModalOpen = false;
     this.selectedProduct = null;
     this.cdr.detectChanges();
+  }
+
+  openDetail(product: Product): void {
+    this.selectedProductId = product.idProducto ?? null;
+    this.isDetailOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  closeDetail(): void {
+    this.isDetailOpen = false;
+    this.selectedProductId = null;
   }
 
   requestDeleteProduct(id: string | undefined): void {
