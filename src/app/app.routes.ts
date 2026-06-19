@@ -26,4 +26,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./modules/roles/pages/role-list/role-list.page').then((m) => m.RoleListPage),
   },
+  {
+    path: 'articulos',
+    loadComponent: () =>
+      import('./modules/articulos/pages/articulo-list/articulo-list.page').then(
+        (m) => m.ArticuloListPage,
+      ),
+  },
 ];
