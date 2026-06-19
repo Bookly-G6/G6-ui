@@ -1,0 +1,82 @@
+<div class="flex flex-col gap-2 md:flex-row md:justify-between md:items-center mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-slate-900">Gestión de Usuarios</h1>
+    <p class="text-sm text-slate-500">Administración de usuarios del sistema</p>
+  </div>
+  <button (click)="openModal(null)"
+    class="bg-[#1E3A8A] hover:bg-[#162a65] text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center justify-center gap-2">
+    <span>+</span> Nuevo Usuario
+  </button>
+</div>
+
+<div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden max-w-6xl mx-auto">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+          <th class="px-6 py-4">Nombre</th>
+          <th class="px-6 py-4">Apellido</th>
+          <th class="px-6 py-4">Email</th>
+          <th class="px-6 py-4">Rol</th>
+          <th class="px-6 py-4">Estado</th>
+          <th class="px-6 py-4 text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100 text-sm text-slate-700">
+        @for (usuario of usuarios; track usuario.idUsuario) {
+        <tr class="hover:bg-slate-50 transition-colors cursor-pointer" (click)="openDetail(usuario)">
+          <td class="px-6 py-4 font-semibold text-slate-900">{{ usuario.nombre }}</td>
+          <td class="px-6 py-4 text-slate-700">{{ usuario.apellido }}</td>
+          <td class="px-6 py-4 text-slate-500">{{ usuario.email }}</td>
+          <td class="px-6 py-4">{{ getRolDisplayName(usuario) }}</td>
+          <td class="px-6 py-4">
+            @if (usuario.activo) {
+            <span
+              class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+              Activo
+            </span>
+            } @else {
+            <span
+              class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+              Inactivo
+            </span>
+            }
+          </td>
+          <td class="px-6 py-4 text-right text-xs" (click)="$event.stopPropagation()">
+            <button (click)="openModal(usuario)" class="text-[#1E3A8A] hover:underline font-medium mr-3">Editar</button>
+            <button (click)="requestDeleteUsuario(usuario.idUsuario)"
+              class="text-rose-600 hover:underline font-medium">Dar de baja</button>
+          </td>
+        </tr>
+        } @empty {
+        <tr>
+          <td colspan="6" class="px-6 py-12 text-center">
+            <div class="w-12 h-12 bg-[#FFFBEB] rounded-full flex items-center justify-center mx-auto mb-3">
+              <span class="text-xl">👤</span>
+            </div>
+            <h3 class="text-base font-semibold text-slate-800 mb-0.5">No hay usuarios registrados</h3>
+            <p class="text-xs text-slate-500 max-w-sm mx-auto">
+              Aún no existen usuarios cargados en el sistema.
+            </p>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+@if (isModalOpen) {
+<app-user-form [userToEdit]="selectedUsuario" (close)="closeModal()" (saved)="loadUsuarios()"></app-user-form>
+}
+
+@if (isDetailOpen && selectedUsuarioId) {
+<app-user-detail [userId]="selectedUsuarioId" (close)="closeDetail()"></app-user-detail>
+}
+
+@if (isDeleteConfirmOpen) {
+<app-confirm-dialog [isOpen]="isDeleteConfirmOpen" title="Dar de baja al usuario"
+  message="¿Seguro que deseas dar de baja este usuario?" confirmText="Dar de baja" cancelText="Cancelar"
+  confirmButtonClass="bg-rose-600 hover:bg-rose-700" (confirmed)="confirmDelete()"
+  (cancelled)="cancelDelete()"></app-confirm-dialog>
+}
