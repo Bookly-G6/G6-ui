@@ -55,7 +55,7 @@ export class ProductListPage implements OnInit {
 
   requestDeleteProduct(id: string | undefined): void {
     if (!id) {
-      this.notification.show('No se encontró el producto para eliminar.', 'info');
+      this.notification.show('No se encontró el producto para dar de baja.', 'info');
       return;
     }
 
@@ -73,14 +73,12 @@ export class ProductListPage implements OnInit {
         this.notification.show('Producto eliminado correctamente.', 'success');
         this.isDeleteConfirmOpen = false;
         this.productToDeleteId = null;
-        this.products = this.products.filter(
-          (product) => product.idProducto !== idToDelete,
-        );
+        this.products = this.products.filter((product) => product.idProducto !== idToDelete);
         this.cdr.detectChanges();
         this.loadProducts();
       },
       error: () => {
-        this.notification.show('No se pudo eliminar el producto.', 'error');
+        this.notification.show('No se pudo dar de baja el producto.', 'error');
         this.isDeleteConfirmOpen = false;
         this.productToDeleteId = null;
       },
