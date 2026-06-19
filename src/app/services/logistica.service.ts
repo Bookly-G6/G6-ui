@@ -2,14 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Product } from '../models/product.model';
+import { Logistica } from '../models/logistica.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
-export class ProductService {
-  private apiUrl = environment.apiUrl + '/productos';
+export class LogisticaService {
+  private apiUrl = environment.apiUrl + '/logistica';
 
   constructor(private http: HttpClient) {}
 
@@ -19,8 +19,7 @@ export class ProductService {
     }
 
     const payload = response as Record<string, unknown>;
-
-    const possibleKeys = ['data', 'productos', 'items', 'results'];
+    const possibleKeys = ['data', 'logistica', 'items', 'results'];
 
     for (const key of possibleKeys) {
       const value = payload?.[key];
@@ -32,25 +31,25 @@ export class ProductService {
     return [];
   }
 
-  getProducts(): Observable<Product[]> {
+  getLogistica(): Observable<Logistica[]> {
     return this.http
       .get<unknown>(this.apiUrl)
-      .pipe(map((response) => this.normalizeListResponse<Product>(response)));
+      .pipe(map((response) => this.normalizeListResponse<Logistica>(response)));
   }
 
-  getProductById(id: string): Observable<Product> {
-    return this.http.get<Product>(`${this.apiUrl}/${id}`);
+  getLogisticaById(id: string): Observable<Logistica> {
+    return this.http.get<Logistica>(`${this.apiUrl}/${id}`);
   }
 
-  createProduct(product: Product): Observable<Product> {
-    return this.http.post<Product>(this.apiUrl, product);
+  createLogistica(logistica: Logistica): Observable<Logistica> {
+    return this.http.post<Logistica>(this.apiUrl, logistica);
   }
 
-  updateProduct(id: string, product: Product): Observable<Product> {
-    return this.http.put<Product>(`${this.apiUrl}/${id}`, product);
+  updateLogistica(id: string, logistica: Logistica): Observable<Logistica> {
+    return this.http.put<Logistica>(`${this.apiUrl}/${id}`, logistica);
   }
 
-  deleteProduct(id: string): Observable<void> {
+  deleteLogistica(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

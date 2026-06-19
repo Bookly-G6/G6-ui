@@ -1,7 +1,9 @@
-import { Component, EventEmitter, Output, OnInit } from '@angular/core';
+import { Component, EventEmitter, Output, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ProductService } from '../../../../services/product.services';
+import { Product } from '../../../../models/product.model';
+import { NotificationService } from '../../../../services/notification';
 
 @Component({
   selector: 'app-product-form',
@@ -11,6 +13,7 @@ import { ProductService } from '../../../../services/product.services';
   styleUrl: './product-form.component.css',
 })
 export class ProductFormComponent implements OnInit {
+  @Input() productToEdit: Product | null = null;
   @Output() close = new EventEmitter<void>();
   @Output() saved = new EventEmitter<void>();
 
@@ -20,19 +23,23 @@ export class ProductFormComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private productService: ProductService,
+    private notification: NotificationService,
   ) {}
 
   ngOnInit(): void {
     this.initForm();
+    // Si viene un producto para editar, se cargan los datos en el formulario
+    if (this.productToEdit) {
+      this.productForm.patchValue(this.productToEdit);
+    }
   }
 
   private initForm(): void {
-    // Cambiados a camelCase para emparejar con la clase de Java
     this.productForm = this.fb.group({
-      codigoBarras: ['', [Validators.required, Validators.minLength(3)]],
+      codigoBarras: ['', [Validators.required, Validators.minLength(8)]],
       nombreProducto: ['', [Validators.required, Validators.maxLength(100)]],
       descripcion: [''],
-      precioActual: [0, [Validators.required, Validators.min(0.01)]],
+      precioActual: [1, [Validators.required, Validators.min(0.01)]],
       activo: [true],
       idTipoProducto: [1, [Validators.required]],
       idEditorialSello: [1, [Validators.required]],
@@ -43,26 +50,49 @@ export class ProductFormComponent implements OnInit {
   onSubmit(): void {
     if (this.productForm.invalid) {
       this.productForm.markAllAsTouched();
+      this.notification.show('Completa los campos obligatorios.', 'info');
       return;
     }
 
     this.isSubmitting = true;
-    const newProduct = this.productForm.value;
+    const productData = this.productForm.value;
+    const isEditing = Boolean(this.productToEdit && this.productToEdit.idProducto);
 
-    // CONEXIÓN CON EL POST DEL BACKEND
-    this.productService.createProduct(newProduct).subscribe({
-      next: (response) => {
-        console.log('Producto creado con éxito en el backend:', response);
-        this.isSubmitting = false;
-        this.saved.emit(); // Notifica al padre que recargue la lista
-        this.close.emit(); // Cierra el modal
-      },
-      error: (err) => {
-        console.error('Error al guardar el producto:', err);
-        this.isSubmitting = false;
-        alert('Ocurrió un error al conectar con el servidor.');
-      },
-    });
+    const successMessage = isEditing
+      ? '¡Producto actualizado con éxito!'
+      : '¡Producto registrado con éxito!';
+
+    const errorMessage = isEditing
+      ? 'No se pudo actualizar el producto. Intenta nuevamente.'
+      : 'No se pudo crear el producto. Intenta nuevamente.';
+
+    if (isEditing) {
+      this.productService.updateProduct(this.productToEdit!.idProducto!, productData).subscribe({
+        next: () => {
+          this.isSubmitting = false;
+          this.notification.show(successMessage, 'success');
+          this.saved.emit();
+          this.close.emit();
+        },
+        error: () => {
+          this.isSubmitting = false;
+          this.notification.show(errorMessage, 'error');
+        },
+      });
+    } else {
+      this.productService.createProduct(productData).subscribe({
+        next: () => {
+          this.isSubmitting = false;
+          this.notification.show(successMessage, 'success');
+          this.saved.emit();
+          this.close.emit();
+        },
+        error: () => {
+          this.isSubmitting = false;
+          this.notification.show(errorMessage, 'error');
+        },
+      });
+    }
   }
 
   onCancel(): void {

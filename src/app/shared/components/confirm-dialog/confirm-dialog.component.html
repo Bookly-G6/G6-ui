@@ -1,0 +1,22 @@
+@if (isOpen) {
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4">
+  <div class="w-full max-w-md rounded-2xl bg-white shadow-2xl border border-slate-200">
+    <div class="px-6 py-5 border-b border-slate-200">
+      <h3 class="text-lg font-semibold text-slate-900">{{ title }}</h3>
+    </div>
+    <div class="px-6 py-5">
+      <p class="text-sm text-slate-600">{{ message }}</p>
+    </div>
+    <div class="px-6 py-4 bg-slate-50 flex justify-end gap-3 rounded-b-2xl">
+      <button type="button" (click)="onCancel()"
+        class="px-4 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors">
+        {{ cancelText }}
+      </button>
+      <button type="button" (click)="onConfirm()"
+        class="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors {{ confirmButtonClass }}">
+        {{ confirmText }}
+      </button>
+    </div>
+  </div>
+</div>
+}
