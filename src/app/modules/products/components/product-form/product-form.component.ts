@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ProductService } from '../../../../services/product.services';
 import { Product } from '../../../../models/product.model';
+import { NotificationService } from '../../../../services/notification';
 
 @Component({
   selector: 'app-product-form',
@@ -22,6 +23,7 @@ export class ProductFormComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private productService: ProductService,
+    private notification: NotificationService,
   ) {}
 
   ngOnInit(): void {
@@ -48,37 +50,49 @@ export class ProductFormComponent implements OnInit {
   onSubmit(): void {
     if (this.productForm.invalid) {
       this.productForm.markAllAsTouched();
+      this.notification.show('Completa los campos obligatorios.', 'info');
       return;
     }
 
     this.isSubmitting = true;
     const productData = this.productForm.value;
+    const isEditing = Boolean(this.productToEdit && this.productToEdit.idProducto);
 
-    if (this.productToEdit && this.productToEdit.idProducto) {
-      // MODO EDICIÓN: Ejecuta el PUT
-      this.productService.updateProduct(this.productToEdit.idProducto, productData).subscribe({
-        next: () => this.handleSuccess(),
-        error: (err) => this.handleError(err),
+    const successMessage = isEditing
+      ? '¡Producto actualizado con éxito!'
+      : '¡Producto registrado con éxito!';
+
+    const errorMessage = isEditing
+      ? 'No se pudo actualizar el producto. Intenta nuevamente.'
+      : 'No se pudo crear el producto. Intenta nuevamente.';
+
+    if (isEditing) {
+      this.productService.updateProduct(this.productToEdit!.idProducto!, productData).subscribe({
+        next: () => {
+          this.isSubmitting = false;
+          this.notification.show(successMessage, 'success');
+          this.saved.emit();
+          this.close.emit();
+        },
+        error: () => {
+          this.isSubmitting = false;
+          this.notification.show(errorMessage, 'error');
+        },
       });
     } else {
-      // MODO CREACIÓN: Ejecuta el POST
       this.productService.createProduct(productData).subscribe({
-        next: () => this.handleSuccess(),
-        error: (err) => this.handleError(err),
+        next: () => {
+          this.isSubmitting = false;
+          this.notification.show(successMessage, 'success');
+          this.saved.emit();
+          this.close.emit();
+        },
+        error: () => {
+          this.isSubmitting = false;
+          this.notification.show(errorMessage, 'error');
+        },
       });
     }
-  }
-
-  private handleSuccess(): void {
-    this.isSubmitting = false;
-    this.saved.emit();
-    this.close.emit();
-  }
-
-  private handleError(err: any): void {
-    console.error('Error en la operación:', err);
-    this.isSubmitting = false;
-    alert('Error en la API. Verifica que las claves foráneas existan en el backend.');
   }
 
   onCancel(): void {

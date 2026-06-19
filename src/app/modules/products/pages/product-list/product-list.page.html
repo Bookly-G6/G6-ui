@@ -49,7 +49,7 @@
           </td>
           <td class="px-6 py-4 text-right text-xs">
             <button (click)="openModal(product)" class="text-[#1E3A8A] hover:underline font-medium mr-3">Editar</button>
-            <button (click)="deleteProduct(product.idProducto)"
+            <button (click)="requestDeleteProduct(product.idProducto)"
               class="text-rose-600 hover:underline font-medium">Eliminar</button>
           </td>
         </tr>
@@ -75,4 +75,11 @@
 @if (isModalOpen) {
 <app-product-form [productToEdit]="selectedProduct" (close)="closeModal()" (saved)="loadProducts()">
 </app-product-form>
+}
+
+@if (isDeleteConfirmOpen) {
+<app-confirm-dialog [isOpen]="isDeleteConfirmOpen" title="Eliminar producto"
+  message="¿Seguro que deseas eliminar este producto? Esta acción no se puede deshacer." confirmText="Eliminar"
+  cancelText="Cancelar" confirmButtonClass="bg-rose-600 hover:bg-rose-700" (confirmed)="confirmDelete()"
+  (cancelled)="cancelDelete()"></app-confirm-dialog>
 }
