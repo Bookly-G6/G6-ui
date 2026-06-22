@@ -1,0 +1,115 @@
+.detail-wrap {
+  display: grid;
+  gap: 1rem;
+}
+
+.back-link {
+  display: inline-flex;
+  width: fit-content;
+  text-decoration: none;
+  color: var(--bookly-blue);
+  font-weight: 600;
+}
+
+.detail-loading {
+  padding: 2rem;
+  text-align: center;
+}
+
+.detail-card {
+  display: grid;
+  grid-template-columns: minmax(260px, 360px) 1fr;
+  overflow: hidden;
+}
+
+.detail-cover {
+  min-height: 320px;
+  padding: 1.4rem;
+  color: #fff;
+  display: grid;
+  align-content: space-between;
+  gap: 1rem;
+}
+
+.detail-cover h1 {
+  color: #fff;
+  margin: 0;
+  font-size: clamp(1.7rem, 2.8vw, 2.4rem);
+}
+
+.detail-cover p {
+  margin: 0;
+  opacity: 0.9;
+}
+
+.label {
+  display: inline-flex;
+  width: fit-content;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  background: rgba(245, 158, 11, 0.95);
+  border-radius: 999px;
+  padding: 0.24rem 0.58rem;
+}
+
+.detail-body {
+  padding: 1.3rem;
+  display: grid;
+  gap: 1.2rem;
+}
+
+.detail-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.meta-label {
+  margin: 0;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--bookly-muted);
+}
+
+.detail-meta p,
+.detail-meta strong {
+  margin: 0.3rem 0 0;
+}
+
+.detail-description h2 {
+  font-size: 1.2rem;
+}
+
+.detail-description p {
+  color: #5f709a;
+  line-height: 1.55;
+}
+
+.detail-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 980px) {
+  .detail-card {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-cover {
+    min-height: 220px;
+  }
+
+  .detail-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-actions {
+    justify-content: stretch;
+  }
+
+  .detail-actions .bookly-btn {
+    width: 100%;
+  }
+}

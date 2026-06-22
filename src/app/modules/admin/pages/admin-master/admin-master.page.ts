@@ -4,12 +4,21 @@ import { trigger, transition, style, animate } from '@angular/animations';
 import { ProductListPage } from '../../../products/pages/product-list/product-list.page';
 import { UserListPage } from '../../../users/pages/user-list/user-list.page';
 import { CatalogSettingsPanelComponent } from '../../components/catalog-settings-panel/catalog-settings-panel.component';
+import { TipoProductoSettingsComponent } from '../../components/tipo-producto-settings/tipo-producto-settings.component';
+import { AutoresSettingsComponent } from '../../components/autores-settings/autores-settings.component';
 
-type MasterTab = 'productos' | 'categorias' | 'usuarios';
+type MasterTab = 'productos' | 'tipos-producto' | 'categorias' | 'autores' | 'usuarios';
 
 @Component({
   selector: 'app-admin-master-page',
-  imports: [CommonModule, ProductListPage, UserListPage, CatalogSettingsPanelComponent],
+  imports: [
+    CommonModule,
+    ProductListPage,
+    UserListPage,
+    CatalogSettingsPanelComponent,
+    TipoProductoSettingsComponent,
+    AutoresSettingsComponent,
+  ],
   templateUrl: './admin-master.page.html',
   styleUrl: './admin-master.page.css',
   animations: [

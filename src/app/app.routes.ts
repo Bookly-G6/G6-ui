@@ -26,6 +26,13 @@ export const routes: Routes = [
           import('./modules/storefront/pages/checkout/checkout.page').then((m) => m.CheckoutPage),
       },
       {
+        path: 'producto/:id',
+        loadComponent: () =>
+          import('./modules/storefront/pages/product-detail/product-detail.page').then(
+            (m) => m.ProductDetailPage,
+          ),
+      },
+      {
         path: 'admin',
         canActivate: [adminGuard],
         loadComponent: () =>

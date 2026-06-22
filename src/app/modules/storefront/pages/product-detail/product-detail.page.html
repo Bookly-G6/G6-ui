@@ -1,0 +1,45 @@
+<section class="detail-wrap section-enter">
+  <a class="back-link" routerLink="/">← Volver al catálogo</a>
+
+  @if (loading()) {
+  <article class="bookly-panel detail-loading">Cargando detalle del producto...</article>
+  } @else if (product()) {
+  <article class="bookly-panel detail-card">
+    <div class="detail-cover" [style.background]="'linear-gradient(155deg, #1E3A8A 0%, #365ecf 85%)'">
+      <span class="label">{{ (product()?.tipoProducto ?? 'Libro').toUpperCase() }}</span>
+      <h1>{{ product()?.nombreProducto }}</h1>
+      <p>{{ product()?.codigoBarras }}</p>
+    </div>
+
+    <div class="detail-body">
+      <div class="detail-meta">
+        <div>
+          <p class="meta-label">Precio</p>
+          <strong>{{ product()?.precioActual | currency: 'USD':'symbol':'1.2-2' }}</strong>
+        </div>
+
+        <div>
+          <p class="meta-label">Categorías</p>
+          <p>{{ productCategories().join(', ') }}</p>
+        </div>
+
+        <div>
+          <p class="meta-label">Editorial</p>
+          <p>{{ product()?.editorialSello || 'Sin editorial' }}</p>
+        </div>
+      </div>
+
+      <div class="detail-description">
+        <h2>Descripción</h2>
+        <p>{{ product()?.descripcion || 'Sin descripción disponible para este producto.' }}</p>
+      </div>
+
+      <div class="detail-actions">
+        <button class="bookly-btn bookly-btn-gold" type="button" (click)="addToCart()">Agregar al carrito</button>
+      </div>
+    </div>
+  </article>
+  } @else {
+  <article class="bookly-panel detail-loading">No se encontró el producto solicitado.</article>
+  }
+</section>

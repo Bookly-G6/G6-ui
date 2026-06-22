@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { ProductService } from '../../../../services/product.services';
 import { Product } from '../../../../models/product.model';
@@ -25,6 +26,7 @@ import { NotificationService } from '../../../../services/notification';
 export class CatalogPage {
   private readonly productService = inject(ProductService);
   private readonly catalogSettings = inject(CatalogSettingsService);
+  private readonly router = inject(Router);
   readonly catalogState = inject(CatalogStateService);
   private readonly cartService = inject(CartService);
   private readonly notification = inject(NotificationService);
@@ -70,6 +72,15 @@ export class CatalogPage {
     this.cartService.add(product);
     this.cartService.open();
     this.notification.show(`Se agregó ${product.nombreProducto} al carrito.`, 'success');
+  }
+
+  goToProductDetail(product: Product): void {
+    if (!product.idProducto) {
+      this.notification.show('No se pudo abrir el detalle del producto.', 'error');
+      return;
+    }
+
+    this.router.navigate(['/producto', product.idProducto]);
   }
 
   private loadCatalog(): void {

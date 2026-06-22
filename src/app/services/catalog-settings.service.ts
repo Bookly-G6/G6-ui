@@ -2,7 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Categoria, EditorialSello, RangoEtario, TipoProducto } from '../models/catalog.model';
+import {
+  AutorArtista,
+  Categoria,
+  EditorialSello,
+  RangoEtario,
+  TipoProducto,
+} from '../models/catalog.model';
 
 @Injectable({ providedIn: 'root' })
 export class CatalogSettingsService {
@@ -66,6 +72,35 @@ export class CatalogSettingsService {
     return this.http
       .get<unknown>(`${this.apiV1}/tipos-producto`)
       .pipe(map((response) => this.normalizeList<TipoProducto>(response, ['tiposProducto'])));
+  }
+
+  createTipoProducto(nombreTipoProducto: string): Observable<TipoProducto> {
+    return this.http.post<TipoProducto>(`${this.apiV1}/tipos-producto`, {
+      nombreTipoProducto,
+      activa: true,
+    });
+  }
+
+  deleteTipoProducto(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiV1}/tipos-producto/${id}`);
+  }
+
+  getAutores(): Observable<AutorArtista[]> {
+    return this.http
+      .get<unknown>(`${this.apiV1}/autores`)
+      .pipe(map((response) => this.normalizeList<AutorArtista>(response, ['autores'])));
+  }
+
+  createAutor(nombre: string, biografia?: string): Observable<AutorArtista> {
+    return this.http.post<AutorArtista>(`${this.apiV1}/autores`, {
+      nombre,
+      biografia,
+      activa: true,
+    });
+  }
+
+  deleteAutor(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiV1}/autores/${id}`);
   }
 
   private normalizeList<T>(response: unknown, aliases: string[] = []): T[] {

@@ -9,6 +9,8 @@ export interface Product {
   idTipoProducto: number;
   idEditorialSello: number;
   idRangoEtario: number;
+  idsCategorias?: number[];
+  idsAutores?: number[];
   tipoProducto?: string;
   editorialSello?: string;
   rangoEtario?: string;

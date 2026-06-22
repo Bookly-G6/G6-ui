@@ -1,7 +1,7 @@
 <section class="catalog-layout">
   <aside class="catalog-sidebar bookly-panel">
-    <h2>Índice</h2>
-    <p>Explorar por categoría</p>
+    <h2>Explorar por categoría</h2>
+    <p></p>
 
     <nav>
       @for (category of categories(); track category) {
@@ -26,7 +26,9 @@
     } @else {
     <div class="catalog-grid">
       @for (product of filteredProducts(); track product.idProducto ?? product.codigoBarras) {
-      <article class="book-card" @cardIn>
+      <article class="book-card" @cardIn role="button" tabindex="0" (click)="goToProductDetail(product)"
+        (keydown.enter)="goToProductDetail(product)"
+        (keydown.space)="$event.preventDefault(); goToProductDetail(product)">
         <div class="cover" [style.background]="'linear-gradient(155deg, #1E3A8A 0%, #365ecf 85%)'">
           <span class="label">{{ (product.tipoProducto ?? 'Libro').toUpperCase() }}</span>
           <strong>{{ product.nombreProducto }}</strong>
@@ -39,7 +41,9 @@
 
           <div class="book-card-footer">
             <strong>{{ product.precioActual | currency: 'USD':'symbol':'1.2-2' }}</strong>
-            <button class="bookly-btn bookly-btn-gold" (click)="addToCart(product)">Agregar</button>
+            <button class="bookly-btn bookly-btn-gold" (click)="$event.stopPropagation(); addToCart(product)">
+              Agregar
+            </button>
           </div>
         </div>
       </article>

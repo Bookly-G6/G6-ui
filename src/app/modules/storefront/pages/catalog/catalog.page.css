@@ -66,6 +66,7 @@
   border: 1px solid var(--bookly-border);
   background: #fff;
   box-shadow: var(--bookly-shadow);
+  cursor: pointer;
   transition:
     transform 220ms ease,
     box-shadow 220ms ease;
@@ -118,6 +119,11 @@
   font-size: 1.35rem;
 }
 
+.book-card:focus-visible {
+  outline: 2px solid var(--bookly-blue);
+  outline-offset: 2px;
+}
+
 .description {
   color: #6576a1;
   font-size: 0.9rem;
@@ -134,6 +140,11 @@
 .empty-state {
   padding: 2.5rem;
   text-align: center;
+}
+
+.catalog-grid > .empty-state {
+  grid-column: 1 / -1;
+  width: 100%;
 }
 
 @media (max-width: 1240px) {

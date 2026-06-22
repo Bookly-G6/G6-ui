@@ -20,3 +20,10 @@ export interface TipoProducto {
   nombreTipoProducto: string;
   activa?: boolean;
 }
+
+export interface AutorArtista {
+  idAutorArtista: number;
+  nombre: string;
+  biografia?: string;
+  activa?: boolean;
+}
