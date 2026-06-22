@@ -31,14 +31,29 @@ export class UsuarioService {
     return [];
   }
 
+  private normalizeUsuario(usuario: Usuario): Usuario {
+    const estado = typeof usuario.estado === 'string' ? usuario.estado.trim().toLowerCase() : '';
+    const activo =
+      typeof usuario.activo === 'boolean'
+        ? usuario.activo
+        : ['activo', 'active', 'true', '1'].includes(estado);
+
+    return {
+      ...usuario,
+      activo,
+    };
+  }
+
   getUsuarios(): Observable<Usuario[]> {
     return this.http
       .get<unknown>(this.apiUrl)
-      .pipe(map((response) => this.normalizeListResponse<Usuario>(response)));
+      .pipe(
+        map((response) => this.normalizeListResponse<Usuario>(response).map((usuario) => this.normalizeUsuario(usuario))),
+      );
   }
 
   getUsuarioById(id: string): Observable<Usuario> {
-    return this.http.get<Usuario>(`${this.apiUrl}/${id}`);
+    return this.http.get<Usuario>(`${this.apiUrl}/${id}`).pipe(map((response) => this.normalizeUsuario(response)));
   }
 
   createUsuario(usuario: Usuario): Observable<UsuarioResponse> {

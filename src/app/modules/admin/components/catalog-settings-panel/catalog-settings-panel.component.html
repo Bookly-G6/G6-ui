@@ -1,0 +1,52 @@
+<section class="settings-grid section-enter">
+  <article class="bookly-panel setting-col">
+    <h3>Categorías</h3>
+    <ul>
+      @for (categoria of categorias(); track categoria.idCategoria) {
+      <li>
+        <span>{{ categoria.nombreCategoria }}</span>
+        <button type="button" (click)="deleteCategoria(categoria.idCategoria)">🗑</button>
+      </li>
+      }
+    </ul>
+
+    <div class="add-row">
+      <input class="bookly-input" [(ngModel)]="nuevaCategoria" placeholder="Nueva categoría" />
+      <button class="bookly-btn bookly-btn-secondary" (click)="addCategoria()">+</button>
+    </div>
+  </article>
+
+  <article class="bookly-panel setting-col">
+    <h3>Editoriales</h3>
+    <ul>
+      @for (editorial of editoriales(); track editorial.idEditorialSello) {
+      <li>
+        <span>{{ editorial.nombreEditorial }}</span>
+        <button type="button" (click)="deleteEditorial(editorial.idEditorialSello)">🗑</button>
+      </li>
+      }
+    </ul>
+
+    <div class="add-row">
+      <input class="bookly-input" [(ngModel)]="nuevaEditorial" placeholder="Nueva editorial" />
+      <button class="bookly-btn bookly-btn-secondary" (click)="addEditorial()">+</button>
+    </div>
+  </article>
+
+  <article class="bookly-panel setting-col">
+    <h3>Rangos etarios</h3>
+    <ul>
+      @for (rango of rangosEtarios(); track rango.idRangoEtario) {
+      <li>
+        <span>{{ rango.descripcion }}</span>
+        <button type="button" (click)="deleteRangoEtario(rango.idRangoEtario)">🗑</button>
+      </li>
+      }
+    </ul>
+
+    <div class="add-row">
+      <input class="bookly-input" [(ngModel)]="nuevoRango" placeholder="Nuevo rango" />
+      <button class="bookly-btn bookly-btn-secondary" (click)="addRangoEtario()">+</button>
+    </div>
+  </article>
+</section>

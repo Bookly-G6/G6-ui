@@ -1,0 +1,113 @@
+<div class="bookly-shell">
+  <header class="topbar" [class.admin-topbar]="isAdmin()">
+    <a class="brand" routerLink="/">Bookly<span>.</span></a>
+
+    @if (!isAdmin()) {
+    <div class="search-wrap">
+      <input class="bookly-input" type="search" [value]="catalogState.searchTerm()"
+        (input)="onSearchInput($any($event.target).value)" placeholder="Buscar por título"
+        aria-label="Buscar en catálogo" />
+    </div>
+
+    <div class="topbar-actions">
+      @if (isCliente()) {
+      <a class="bookly-btn bookly-btn-ghost btn-with-icon" routerLink="/mis-ordenes" routerLinkActive="active-link">
+        <span class="btn-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path
+              d="M7 4h10l1 2h3v2H3V6h3l1-2zm-1 6h12l-1 9a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2l-1-9zm3 2v7h2v-7H9zm4 0v7h2v-7h-2z" />
+          </svg>
+        </span>
+        Mis órdenes
+      </a>
+      <button class="bookly-btn bookly-btn-primary btn-with-icon" (click)="cart.toggle()">
+        <span class="btn-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M3 4h2l2.4 10.2A2 2 0 0 0 9.36 16H18a2 2 0 0 0 1.92-1.45L22 7H7" />
+            <circle cx="10" cy="20" r="1.6" />
+            <circle cx="17" cy="20" r="1.6" />
+          </svg>
+        </span>
+        ({{ cart.totalItems() }})
+      </button>
+      <button class="bookly-btn bookly-btn-ghost btn-with-icon" (click)="logout()">
+        <span class="btn-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4" />
+            <path d="M14 16l4-4-4-4" />
+            <path d="M18 12H9" />
+          </svg>
+        </span>
+
+      </button>
+      } @else {
+      <a class="bookly-btn bookly-btn-primary" routerLink="/ingresar">Ingresar</a>
+      }
+    </div>
+    } @else {
+    <nav class="admin-nav">
+      <button class="bookly-btn nav-pill" routerLink="/admin" routerLinkActive="active-pill"
+        [routerLinkActiveOptions]="{ exact: true }">
+        Productos
+      </button>
+      <button class="bookly-btn nav-pill" routerLink="/admin/ordenes" routerLinkActive="active-pill">Ordenes</button>
+      <button class="bookly-btn nav-pill" routerLink="/admin/venta" routerLinkActive="active-pill">Venta</button>
+    </nav>
+    <div class="admin-badge" aria-label="Modo administrador">
+      <span>⚙</span>
+      <strong>Admin</strong>
+    </div>
+    <button class="bookly-btn bookly-btn-ghost btn-with-icon" (click)="logout()">
+      <span class="btn-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false">
+          <path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4" />
+          <path d="M14 16l4-4-4-4" />
+          <path d="M18 12H9" />
+        </svg>
+      </span>
+
+    </button>
+    }
+  </header>
+
+  <main class="content-wrap section-enter">
+    <router-outlet></router-outlet>
+  </main>
+
+  @if (isCliente() && cart.isOpen()) {
+  <button class="drawer-backdrop" aria-label="Cerrar carrito" (click)="cart.close()"></button>
+  <aside class="cart-drawer" @drawer>
+    <header class="cart-header">
+      <h3>Carrito de Compras</h3>
+      <button class="bookly-btn bookly-btn-ghost" (click)="cart.close()">✕</button>
+    </header>
+
+    @if (cart.items().length > 0) {
+    <ul class="cart-list">
+      @for (item of cart.items(); track item.idItem) {
+      <li class="cart-item">
+        <div>
+          <p>{{ item.nombreProducto }}</p>
+          <small>x{{ item.cantidad }}</small>
+        </div>
+        <div>
+          {{ item.precioUnitario * item.cantidad | currency: 'USD':'symbol':'1.2-2' }}
+        </div>
+        <button (click)="cart.removeItem(item.idItem)">Eliminar</button>
+      </li>
+      }
+    </ul>
+
+    <footer class="cart-footer">
+      <p>Total</p>
+      <h3>{{ cart.totalAmount() | currency: 'USD':'symbol':'1.2-2' }}</h3>
+      <button class="bookly-btn bookly-btn-primary" (click)="goToCheckout()">Finalizar compra</button>
+    </footer>
+    } @else {
+    <div class="cart-empty">
+      <p>Tu carrito está vacío.</p>
+    </div>
+    }
+  </aside>
+  }
+</div>

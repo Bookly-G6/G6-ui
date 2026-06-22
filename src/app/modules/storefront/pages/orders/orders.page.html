@@ -1,0 +1,50 @@
+<section class="orders-wrap">
+  <h1>Mis Órdenes</h1>
+
+  @if (loading()) {
+  <p class="loading">Cargando tus órdenes...</p>
+  } @else if (normalizedOrders().length > 0) {
+  @for (order of normalizedOrders(); track order.idVenta) {
+  <article class="bookly-panel order-card section-enter">
+    <header>
+      <div>
+        <h2>ORD-{{ (order.idVenta || '').slice(0, 8) }}</h2>
+        <p>{{ order.fecha | date: 'short' }}</p>
+      </div>
+      <strong>{{ order.montoTotal | currency: 'ARS':'symbol':'1.2-2' }}</strong>
+    </header>
+
+    <div class="order-status">
+      <p>Estado: <span class="status-badge" [class]="'status-' + order.estado?.toLowerCase()">{{ order.estado }}</span>
+      </p>
+    </div>
+
+    <div class="order-items">
+      <h3>Productos</h3>
+      @for (item of order.items; track item.idProducto) {
+      <div class="item-row">
+        <span>{{ item.nombreProducto }} x{{ item.cantidad }}</span>
+        <span>{{ item.subtotal | currency: 'ARS':'symbol':'1.2-2' }}</span>
+      </div>
+      }
+    </div>
+
+    @if (order.envio) {
+    <div class="shipping-info">
+      <h3>Envío</h3>
+      <p>Tipo: {{ order.envio.tipoEnvio }}</p>
+      <p>Estado: <span class="status-badge" [class]="'status-' + order.envio.estadoLogistica?.toLowerCase()">{{
+          order.envio.estadoLogistica }}</span></p>
+      @if (order.envio.numeroTracking) {
+      <p>Tracking: {{ order.envio.numeroTracking }}</p>
+      }
+    </div>
+    }
+  </article>
+  }
+  } @else {
+  <article class="bookly-panel empty-order">
+    <p>Aún no tienes órdenes activas.</p>
+  </article>
+  }
+</section>

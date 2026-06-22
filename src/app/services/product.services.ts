@@ -1,15 +1,35 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { map } from 'rxjs/operators';
 import { Product } from '../models/product.model';
 import { environment } from '../../environments/environment';
+import { AuthSessionService } from '../core/services/auth-session.service';
+
+export interface ProductUpsertPayload {
+  codigoBarras: string;
+  nombreProducto: string;
+  descripcion?: string;
+  precioCosto?: number;
+  precioActual: number;
+  activo: boolean;
+  idTipoProducto: number;
+  idEditorialSello: number;
+  idRangoEtario: number;
+  idsCategorias?: number[];
+  idsAutores?: number[];
+  atributosEspecificos?: Record<string, unknown>;
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class ProductService {
   private apiUrl = environment.apiUrl + '/productos';
+  private apiDetailUrl = environment.apiUrl + '/producto';
+  private readonly authSession = inject(AuthSessionService);
 
   constructor(private http: HttpClient) {}
 
@@ -42,15 +62,42 @@ export class ProductService {
     return this.http.get<Product>(`${this.apiUrl}/${id}`);
   }
 
-  createProduct(product: Product): Observable<Product> {
+  getStorefrontProductById(id: string): Observable<Product> {
+    const hasToken = this.authSession.hasToken();
+    const primaryUrl = hasToken ? `${this.apiDetailUrl}/${id}` : `${this.apiUrl}/${id}`;
+    const fallbackUrl = hasToken ? `${this.apiUrl}/${id}` : `${this.apiDetailUrl}/${id}`;
+
+    return this.http.get<unknown>(primaryUrl).pipe(
+      map((response) => this.normalizeSingleResponse<Product>(response)),
+      catchError(() =>
+        this.http
+          .get<unknown>(fallbackUrl)
+          .pipe(map((response) => this.normalizeSingleResponse<Product>(response))),
+      ),
+    );
+  }
+
+  createProduct(product: Product | ProductUpsertPayload): Observable<Product> {
     return this.http.post<Product>(this.apiUrl, product);
   }
 
-  updateProduct(id: string, product: Product): Observable<Product> {
+  updateProduct(id: string, product: Product | ProductUpsertPayload): Observable<Product> {
     return this.http.put<Product>(`${this.apiUrl}/${id}`, product);
   }
 
   deleteProduct(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  private normalizeSingleResponse<T>(response: unknown): T {
+    if (response && typeof response === 'object') {
+      const payload = response as Record<string, unknown>;
+      const data = payload['data'];
+      if (data && typeof data === 'object') {
+        return data as T;
+      }
+    }
+
+    return response as T;
   }
 }

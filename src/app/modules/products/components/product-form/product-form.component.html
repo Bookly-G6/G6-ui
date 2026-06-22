@@ -1,7 +1,6 @@
-<div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+<div class="product-form-overlay">
 
-  <div
-    class="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-200">
+  <div class="product-form-dialog animate-in fade-in zoom-in-95 duration-200">
 
     <div class="bg-[#1E3A8A] text-white px-6 py-4 flex justify-between items-center">
       <h2 class="text-lg font-bold tracking-wide">{{ productToEdit ? 'Editar Producto' : 'Registrar Nuevo Producto' }}
@@ -10,6 +9,11 @@
     </div>
 
     <form [formGroup]="productForm" (ngSubmit)="onSubmit()" class="p-6 space-y-4">
+      @if (loadingCatalogs) {
+      <div class="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-blue-900">
+        Cargando catálogos maestros...
+      </div>
+      }
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
@@ -46,6 +50,17 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Precio de
+            Costo</label>
+          <div class="relative">
+            <span class="absolute left-3 top-2 text-slate-400 text-sm">$</span>
+            <input type="number" formControlName="precioCosto" step="0.01" min="0"
+              class="w-full border border-slate-200 pl-7 pr-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]"
+              placeholder="Ej: 8500.00">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Precio de
             Venta</label>
           <div class="relative">
             <span class="absolute left-3 top-2 text-slate-400 text-sm">$</span>
@@ -75,9 +90,11 @@
             Producto</label>
           <select formControlName="idTipoProducto"
             class="w-full border border-slate-200 bg-white px-2 py-1.5 rounded-md text-xs">
-            <option [ngValue]="1">Libro Físico</option>
-            <option [ngValue]="2">E-Book</option>
-            <option [ngValue]="3">Música / Vinilo</option>
+            @for (tipo of tiposProducto; track tipo.idTipoProducto) {
+            <option [ngValue]="tipo.idTipoProducto">{{ tipo.nombreTipoProducto }}</option>
+            } @empty {
+            <option [ngValue]="1">Sin datos</option>
+            }
           </select>
         </div>
         <div>
@@ -85,19 +102,93 @@
             Sello</label>
           <select formControlName="idEditorialSello"
             class="w-full border border-slate-200 bg-white px-2 py-1.5 rounded-md text-xs">
-            <option [ngValue]="1">Editorial Planeta</option>
-            <option [ngValue]="2">Sudamericana</option>
+            @for (editorial of editoriales; track editorial.idEditorialSello) {
+            <option [ngValue]="editorial.idEditorialSello">{{ editorial.nombreEditorial }}</option>
+            } @empty {
+            <option [ngValue]="1">Sin datos</option>
+            }
           </select>
         </div>
         <div>
           <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Rango Etario</label>
           <select formControlName="idRangoEtario"
             class="w-full border border-slate-200 bg-white px-2 py-1.5 rounded-md text-xs">
-            <option [ngValue]="1">Infantil</option>
-            <option [ngValue]="2">Juvenil</option>
-            <option [ngValue]="3">Adultos</option>
+            @for (rango of rangosEtarios; track rango.idRangoEtario) {
+            <option [ngValue]="rango.idRangoEtario">{{ rango.descripcion }}</option>
+            } @empty {
+            <option [ngValue]="1">Sin datos</option>
+            }
           </select>
         </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="rounded-lg border border-slate-200 p-3">
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+            Categorías
+          </label>
+          <div class="max-h-32 overflow-auto space-y-1">
+            @for (categoria of categorias; track categoria.idCategoria) {
+            <label class="flex items-center gap-2 text-xs text-slate-700">
+              <input type="checkbox" [checked]="isSelected('idsCategorias', categoria.idCategoria)"
+                (change)="toggleMultiSelection('idsCategorias', categoria.idCategoria)" />
+              <span>{{ categoria.nombreCategoria }}</span>
+            </label>
+            } @empty {
+            <p class="text-xs text-slate-500">Sin categorías disponibles.</p>
+            }
+          </div>
+        </div>
+
+        <div class="rounded-lg border border-slate-200 p-3">
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+            Autores / Artistas
+          </label>
+          <div class="max-h-32 overflow-auto space-y-1">
+            @for (autor of autores; track autor.idAutorArtista) {
+            <label class="flex items-center gap-2 text-xs text-slate-700">
+              <input type="checkbox" [checked]="isSelected('idsAutores', autor.idAutorArtista)"
+                (change)="toggleMultiSelection('idsAutores', autor.idAutorArtista)" />
+              <span>{{ autor.nombre }}</span>
+            </label>
+            } @empty {
+            <p class="text-xs text-slate-500">Sin autores disponibles.</p>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+          Atributos específicos
+        </label>
+        <div class="space-y-2 rounded-lg border border-slate-200 p-3">
+          @for (row of attributeRows; track $index) {
+          <div class="grid grid-cols-12 gap-2 items-center">
+            <input type="text" [value]="row.key" (input)="setAttributeKey($index, $any($event.target).value)"
+              class="col-span-4 border border-slate-200 px-2 py-1.5 rounded-md text-xs focus:outline-none focus:border-[#1E3A8A]"
+              placeholder="Clave (ej: formato)" />
+            <input type="text" [value]="row.value" (input)="setAttributeValue($index, $any($event.target).value)"
+              class="col-span-7 border border-slate-200 px-2 py-1.5 rounded-md text-xs font-mono focus:outline-none focus:border-[#1E3A8A]"
+              placeholder="Valor (ej: Tapa dura, 96, true)" />
+            <button type="button" (click)="removeAttributeRow($index)"
+              class="col-span-1 inline-flex items-center justify-center rounded-md border border-slate-200 text-slate-500 hover:bg-slate-100">
+              −
+            </button>
+          </div>
+          }
+
+          <div class="flex justify-end">
+            <button type="button" (click)="addAttributeRow()"
+              class="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2 py-1 text-xs text-slate-700 hover:bg-slate-100">
+              <span class="text-sm">+</span>
+              Agregar atributo
+            </button>
+          </div>
+        </div>
+        <p class="mt-1 text-[11px] text-slate-500">
+          Tip: los valores numéricos (ej: 96), booleanos (true/false) u objetos JSON se convierten automáticamente.
+        </p>
       </div>
 
       <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
@@ -107,7 +198,7 @@
         </button>
         <button type="submit" [disabled]="isSubmitting"
           class="px-4 py-2 bg-[#1E3A8A] hover:bg-[#162a65] text-white rounded-lg text-sm font-medium transition-colors shadow-sm disabled:opacity-50">
-          {{ isSubmitting ? 'Guardando...' : 'Guardar Artículo' }}
+          {{ isSubmitting ? 'Guardando...' : 'Guardar Producto' }}
         </button>
       </div>
 

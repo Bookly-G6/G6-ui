@@ -1,0 +1,44 @@
+<section class="fulfillment-board">
+  <header>
+    <h1>Tubería de cumplimiento</h1>
+    <p>Gestionar operaciones diarias y estados de envío.</p>
+  </header>
+
+  <div class="columns">
+    <article class="bookly-panel column">
+      <h2>Ordenes pendientes</h2>
+      @for (order of pendientes(); track order.idEnvio ?? order.idVenta) {
+      <div class="ticket">
+        <strong>ORD-{{ (order.idVenta || '').slice(0, 8) }}</strong>
+        <p>{{ order.observaciones || 'Sin observaciones.' }}</p>
+      </div>
+      } @empty {
+      <div class="ticket empty">Sin pendientes</div>
+      }
+    </article>
+
+    <article class="bookly-panel column">
+      <h2>Embalaje y etiquetas</h2>
+      @for (order of embalaje(); track order.idEnvio ?? order.idVenta) {
+      <div class="ticket">
+        <strong>ORD-{{ (order.idVenta || '').slice(0, 8) }}</strong>
+        <p>{{ order.numeroTracking || 'Tracking pendiente' }}</p>
+      </div>
+      } @empty {
+      <div class="ticket empty">Sin ordenes en proceso</div>
+      }
+    </article>
+
+    <article class="bookly-panel column">
+      <h2>Shipped</h2>
+      @for (order of shipped(); track order.idEnvio ?? order.idVenta) {
+      <div class="ticket">
+        <strong>ORD-{{ (order.idVenta || '').slice(0, 8) }}</strong>
+        <p>{{ order.empresaCorreo || 'Entrega finalizada' }}</p>
+      </div>
+      } @empty {
+      <div class="ticket empty">Sin entregadas</div>
+      }
+    </article>
+  </div>
+</section>

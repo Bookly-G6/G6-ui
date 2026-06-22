@@ -5,6 +5,7 @@ export interface Logistica {
   idVenta: string;
   tipoEnvio: TipoEnvio;
   estado?: string;
+  estadoLogistica?: string;
   empresaCorreo?: string;
   numeroTracking?: string;
   codigoRetiro?: string;

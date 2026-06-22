@@ -9,7 +9,7 @@ import { environment } from '../../environments/environment';
   providedIn: 'root',
 })
 export class LogisticaService {
-  private apiUrl = environment.apiUrl + '/logistica';
+  private apiUrl = environment.apiUrl + '/envios';
 
   constructor(private http: HttpClient) {}
 
@@ -32,9 +32,14 @@ export class LogisticaService {
   }
 
   getLogistica(): Observable<Logistica[]> {
-    return this.http
-      .get<unknown>(this.apiUrl)
-      .pipe(map((response) => this.normalizeListResponse<Logistica>(response)));
+    return this.http.get<unknown>(this.apiUrl).pipe(
+      map((response) =>
+        this.normalizeListResponse<Logistica>(response).map((item) => ({
+          ...item,
+          estado: item.estado ?? item.estadoLogistica,
+        })),
+      ),
+    );
   }
 
   getLogisticaById(id: string): Observable<Logistica> {

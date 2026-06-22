@@ -6,7 +6,8 @@ export interface Usuario {
   apellido: string;
   email: string;
   password?: string;
-  activo: boolean;
+  activo?: boolean;
+  estado?: string;
   idRol?: number;
   rol?: string | Rol;
 }

@@ -1,0 +1,25 @@
+<section class="settings-grid section-enter">
+  <article class="bookly-panel setting-col">
+    <h3>Autores</h3>
+    <ul>
+      @for (autor of autores(); track autor.idAutorArtista) {
+      <li>
+        <div>
+          <strong>{{ autor.nombre }}</strong>
+          @if (autor.biografia) {
+          <p>{{ autor.biografia }}</p>
+          }
+        </div>
+        <button type="button" (click)="deleteAutor(autor.idAutorArtista)">🗑</button>
+      </li>
+      }
+    </ul>
+
+    <div class="add-grid">
+      <input class="bookly-input" [(ngModel)]="nuevoAutor" placeholder="Nombre del autor" />
+      <textarea class="bookly-input" [(ngModel)]="nuevaBiografia" rows="2"
+        placeholder="Biografía (opcional)"></textarea>
+      <button class="bookly-btn bookly-btn-secondary" (click)="addAutor()">Crear autor</button>
+    </div>
+  </article>
+</section>
