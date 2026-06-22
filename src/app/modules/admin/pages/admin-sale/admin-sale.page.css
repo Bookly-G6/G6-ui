@@ -1,0 +1,40 @@
+.pos-wrap {
+  display: grid;
+  gap: 1rem;
+}
+
+.pos-wrap p {
+  margin-top: 0.4rem;
+  color: var(--bookly-muted);
+}
+
+.pos-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem;
+}
+
+.block {
+  padding: 1rem;
+}
+
+.inputs {
+  margin-top: 0.8rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.summary strong {
+  display: block;
+  margin: 0.8rem 0;
+  font-size: 1.5rem;
+  color: var(--bookly-gold);
+}
+
+@media (max-width: 1000px) {
+  .pos-grid,
+  .inputs {
+    grid-template-columns: 1fr;
+  }
+}

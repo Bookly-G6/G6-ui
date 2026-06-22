@@ -1,0 +1,52 @@
+<section class="catalog-layout">
+  <aside class="catalog-sidebar bookly-panel">
+    <h2>Índice</h2>
+    <p>Explorar por categoría</p>
+
+    <nav>
+      @for (category of categories(); track category) {
+      <button type="button" class="category-item" [class.active]="catalogState.selectedCategory() === category"
+        (click)="setCategory(category)">
+        {{ category }}
+      </button>
+      }
+    </nav>
+  </aside>
+
+  <div class="catalog-content">
+    <header class="catalog-heading">
+      <div>
+        <h1>La colección</h1>
+        <p>Mostrando {{ filteredProducts().length }} títulos</p>
+      </div>
+    </header>
+
+    @if (loading()) {
+    <div class="bookly-panel empty-state">Cargando catálogo...</div>
+    } @else {
+    <div class="catalog-grid">
+      @for (product of filteredProducts(); track product.idProducto ?? product.codigoBarras) {
+      <article class="book-card" @cardIn>
+        <div class="cover" [style.background]="'linear-gradient(155deg, #1E3A8A 0%, #365ecf 85%)'">
+          <span class="label">{{ (product.tipoProducto ?? 'Libro').toUpperCase() }}</span>
+          <strong>{{ product.nombreProducto }}</strong>
+        </div>
+
+        <div class="book-card-body">
+          <p class="category">{{ product.categorias?.[0] ?? product.tipoProducto ?? 'General' }}</p>
+          <h3>{{ product.nombreProducto }}</h3>
+          <p class="description">{{ product.descripcion || 'Sin descripción disponible.' }}</p>
+
+          <div class="book-card-footer">
+            <strong>{{ product.precioActual | currency: 'USD':'symbol':'1.2-2' }}</strong>
+            <button class="bookly-btn bookly-btn-gold" (click)="addToCart(product)">Agregar</button>
+          </div>
+        </div>
+      </article>
+      } @empty {
+      <div class="bookly-panel empty-state">No hay resultados para la búsqueda actual.</div>
+      }
+    </div>
+    }
+  </div>
+</section>

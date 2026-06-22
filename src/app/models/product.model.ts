@@ -1,11 +1,18 @@
 export interface Product {
-  idProducto?: string; // Opcional (?) porque al hacer el POST el backend lo genera automáticamente como UUID
+  idProducto?: string;
   codigoBarras: string;
   nombreProducto: string;
   descripcion?: string;
+  precioCosto?: number;
   precioActual: number;
   activo: boolean;
   idTipoProducto: number;
   idEditorialSello: number;
   idRangoEtario: number;
+  tipoProducto?: string;
+  editorialSello?: string;
+  rangoEtario?: string;
+  categorias?: string[];
+  autores?: string[];
+  atributosEspecificos?: Record<string, unknown>;
 }

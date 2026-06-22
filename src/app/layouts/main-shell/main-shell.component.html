@@ -1,0 +1,81 @@
+<div class="bookly-shell">
+  <header class="topbar">
+    <a class="brand" routerLink="/">Bookly<span>.</span></a>
+
+    @if (!isAdmin()) {
+    <div class="search-wrap">
+      <input class="bookly-input" type="search" [value]="catalogState.searchTerm()"
+        (input)="onSearchInput($any($event.target).value)" placeholder="Buscar por título, autor o ISBN..."
+        aria-label="Buscar en catálogo" />
+    </div>
+
+    <div class="topbar-actions">
+      @if (isCliente()) {
+      <a class="bookly-btn bookly-btn-ghost" routerLink="/mis-ordenes" routerLinkActive="active-link">
+        Mis ordenes
+      </a>
+      <button class="bookly-btn bookly-btn-primary" (click)="cart.toggle()">
+        Carrito ({{ cart.totalItems() }})
+      </button>
+      <button class="bookly-btn bookly-btn-ghost" (click)="logout()">Salir</button>
+      } @else {
+      <a class="bookly-btn bookly-btn-primary" routerLink="/ingresar">Ingresar</a>
+      }
+    </div>
+    } @else {
+    <nav class="admin-nav">
+      <button class="bookly-btn nav-pill" routerLink="/admin" routerLinkActive="active-pill"
+        [routerLinkActiveOptions]="{ exact: true }">
+        Productos o Admin
+      </button>
+      <button class="bookly-btn nav-pill" routerLink="/admin/ordenes" routerLinkActive="active-pill">Ordenes</button>
+      <button class="bookly-btn nav-pill" routerLink="/admin/venta" routerLinkActive="active-pill">Venta</button>
+    </nav>
+    <div class="admin-badge" aria-label="Modo administrador">
+      <span>⚙</span>
+      <strong>Admin</strong>
+    </div>
+    }
+  </header>
+
+  <main class="content-wrap section-enter">
+    <router-outlet></router-outlet>
+  </main>
+
+  @if (isCliente() && cart.isOpen()) {
+  <button class="drawer-backdrop" aria-label="Cerrar carrito" (click)="cart.close()"></button>
+  <aside class="cart-drawer" @drawer>
+    <header class="cart-header">
+      <h3>Carrito de Compras</h3>
+      <button class="bookly-btn bookly-btn-ghost" (click)="cart.close()">✕</button>
+    </header>
+
+    @if (cart.items().length > 0) {
+    <ul class="cart-list">
+      @for (item of cart.items(); track item.idItem) {
+      <li class="cart-item">
+        <div>
+          <p>{{ item.nombreProducto }}</p>
+          <small>x{{ item.cantidad }}</small>
+        </div>
+        <div>
+          {{ item.precioUnitario * item.cantidad | currency: 'USD':'symbol':'1.2-2' }}
+        </div>
+        <button (click)="cart.removeItem(item.idItem)">Eliminar</button>
+      </li>
+      }
+    </ul>
+
+    <footer class="cart-footer">
+      <p>Total</p>
+      <h3>{{ cart.totalAmount() | currency: 'USD':'symbol':'1.2-2' }}</h3>
+      <button class="bookly-btn bookly-btn-primary" (click)="goToCheckout()">Finalizar compra</button>
+    </footer>
+    } @else {
+    <div class="cart-empty">
+      <p>Tu carrito está vacío.</p>
+    </div>
+    }
+  </aside>
+  }
+</div>

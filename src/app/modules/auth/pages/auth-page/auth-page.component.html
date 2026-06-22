@@ -1,0 +1,91 @@
+<section class="auth-shell" [class.register-mode]="isRegister()">
+  <div class="auth-stage" [class.register-mode]="isRegister()">
+    <aside class="media-panel" [@imageSwap]="isRegister() ? 'register' : 'login'">
+      <div class="media-overlay">
+        <div class="media-brand">Bookly</div>
+        <h1>Discover your next great read.</h1>
+        <p>Curated collections, rare finds, and literary classics delivered to your door.</p>
+      </div>
+    </aside>
+
+    <article class="form-panel" [@formSwapPanel]="isRegister() ? 'register' : 'login'">
+      <div class="form-card">
+        <header>
+          <h2>{{ isRegister() ? 'Create your account' : 'Welcome back' }}</h2>
+          <p>
+            {{
+            isRegister()
+            ? 'Please complete your details to create your account.'
+            : 'Please enter your details to sign in.'
+            }}
+          </p>
+        </header>
+
+        @if (!isRegister()) {
+        <form [formGroup]="loginForm" (ngSubmit)="submitLogin()" @formSwap>
+          <label>
+            Email address
+            <input class="bookly-input" type="email" formControlName="email" placeholder="Enter your email" />
+          </label>
+
+          <label>
+            Password
+            <input class="bookly-input" type="password" formControlName="password" placeholder="••••••••" />
+          </label>
+
+          <button class="link-btn" type="button">Forgot password?</button>
+
+          <button class="bookly-btn bookly-btn-gold submit-btn" type="submit" [disabled]="loading()">
+            {{ loading() ? 'Signing in...' : 'Sign In' }}
+          </button>
+        </form>
+        } @else {
+        <form [formGroup]="registerForm" (ngSubmit)="submitRegister()" @formSwap>
+          <label>
+            Name
+            <input class="bookly-input" type="text" formControlName="nombre" placeholder="Ana" />
+          </label>
+
+          <label>
+            Last name
+            <input class="bookly-input" type="text" formControlName="apellido" placeholder="Perez" />
+          </label>
+
+          <label>
+            Email address
+            <input class="bookly-input" type="email" formControlName="email" placeholder="ana@mail.com" />
+          </label>
+
+          <label>
+            Password
+            <input class="bookly-input" type="password" formControlName="password" placeholder="Minimum 6 characters" />
+          </label>
+
+          <label>
+            DNI (optional)
+            <input class="bookly-input" type="text" formControlName="dni" placeholder="30111222" />
+          </label>
+
+          <label>
+            Phone (optional)
+            <input class="bookly-input" type="text" formControlName="telefono" placeholder="11223344" />
+          </label>
+
+          <button class="bookly-btn bookly-btn-gold submit-btn" type="submit" [disabled]="loading()">
+            {{ loading() ? 'Creating account...' : 'Sign up' }}
+          </button>
+        </form>
+        }
+
+        <footer>
+          <span>
+            {{ isRegister() ? 'Already have an account?' : "Don't have an account?" }}
+          </span>
+          <button class="switch-btn" type="button" (click)="toggleMode()">
+            {{ isRegister() ? 'Sign in' : 'Sign up' }}
+          </button>
+        </footer>
+      </div>
+    </article>
+  </div>
+</section>
