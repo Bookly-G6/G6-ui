@@ -201,16 +201,42 @@ export class ProductFormComponent implements OnInit {
     return trimmed;
   }
 
+  private normalizeAttributeKey(rawKey: string): string {
+    const normalized = rawKey
+      .trim()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9_\-\s]/g, '')
+      .replace(/[\s\-]+/g, '_')
+      .replace(/^_+|_+$/g, '');
+
+    return normalized;
+  }
+
   private buildAtributosEspecificosFromRows(): Record<string, unknown> {
     const attributes: Record<string, unknown> = {};
+    let normalizedKeyCount = 0;
 
     this.attributeRows.forEach((row) => {
-      const key = row.key.trim();
+      const originalKey = row.key.trim();
+      const key = this.normalizeAttributeKey(originalKey);
       if (!key) {
         return;
       }
+
+      if (key !== originalKey) {
+        normalizedKeyCount += 1;
+      }
+
       attributes[key] = this.parseAttributeValue(row.value ?? '');
     });
+
+    if (normalizedKeyCount > 0) {
+      this.notification.show(
+        'Se ajustaron algunas claves de atributos para evitar caracteres incompatibles.',
+        'info',
+      );
+    }
 
     return attributes;
   }

@@ -31,6 +31,14 @@ export class ProductDetailPage {
     return product.categorias?.length ? product.categorias : [product.tipoProducto ?? 'General'];
   });
 
+  readonly detailAttributes = computed(() => {
+    const attributes = this.product()?.atributosEspecificos ?? {};
+    return Object.entries(attributes).map(([key, value]) => ({
+      key: this.humanizeKey(key),
+      value: this.formatAttributeValue(value),
+    }));
+  });
+
   constructor() {
     this.route.paramMap
       .pipe(
@@ -65,5 +73,30 @@ export class ProductDetailPage {
     this.cart.add(product);
     this.cart.open();
     this.notification.show(`Se agregó ${product.nombreProducto} al carrito.`, 'success');
+  }
+
+  private humanizeKey(key: string): string {
+    return key
+      .replace(/_/g, ' ')
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .replace(/^./, (first) => first.toUpperCase());
+  }
+
+  private formatAttributeValue(value: unknown): string {
+    if (Array.isArray(value)) {
+      return value.join(', ');
+    }
+
+    if (value && typeof value === 'object') {
+      return JSON.stringify(value);
+    }
+
+    if (typeof value === 'boolean') {
+      return value ? 'Sí' : 'No';
+    }
+
+    return String(value);
   }
 }

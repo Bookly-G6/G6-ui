@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { map } from 'rxjs/operators';
 import { Product } from '../models/product.model';
 import { environment } from '../../environments/environment';
+import { AuthSessionService } from '../core/services/auth-session.service';
 
 export interface ProductUpsertPayload {
   codigoBarras: string;
@@ -27,6 +29,7 @@ export interface ProductUpsertPayload {
 export class ProductService {
   private apiUrl = environment.apiUrl + '/productos';
   private apiDetailUrl = environment.apiUrl + '/producto';
+  private readonly authSession = inject(AuthSessionService);
 
   constructor(private http: HttpClient) {}
 
@@ -60,11 +63,15 @@ export class ProductService {
   }
 
   getStorefrontProductById(id: string): Observable<Product> {
-    return this.http.get<unknown>(`${this.apiDetailUrl}/${id}`).pipe(
+    const hasToken = this.authSession.hasToken();
+    const primaryUrl = hasToken ? `${this.apiDetailUrl}/${id}` : `${this.apiUrl}/${id}`;
+    const fallbackUrl = hasToken ? `${this.apiUrl}/${id}` : `${this.apiDetailUrl}/${id}`;
+
+    return this.http.get<unknown>(primaryUrl).pipe(
       map((response) => this.normalizeSingleResponse<Product>(response)),
       catchError(() =>
         this.http
-          .get<unknown>(`${this.apiUrl}/${id}`)
+          .get<unknown>(fallbackUrl)
           .pipe(map((response) => this.normalizeSingleResponse<Product>(response))),
       ),
     );
