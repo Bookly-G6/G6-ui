@@ -72,6 +72,28 @@
   font-size: 0.875rem;
 }
 
+.item-qty-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+}
+
+.item-qty-controls button {
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: var(--bookly-blue, #1e3a8a);
+  border-radius: 0.4rem;
+  padding: 0.1rem 0.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.item-qty-controls .item-remove {
+  border-color: #f0d5dc;
+  color: #b4233e;
+}
+
 .item-price {
   font-weight: 700;
   color: var(--bookly-blue, #1e3a8a);

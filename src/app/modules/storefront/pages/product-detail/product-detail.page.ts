@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { map, switchMap } from 'rxjs';
 import { ProductService } from '../../../../services/product.services';
 import { Product } from '../../../../models/product.model';
 import { CartService } from '../../../../core/services/cart.service';
 import { NotificationService } from '../../../../services/notification';
+import { AuthSessionService } from '../../../../core/services/auth-session.service';
 
 @Component({
   selector: 'app-storefront-product-detail-page',
@@ -18,6 +19,8 @@ export class ProductDetailPage {
   private readonly productService = inject(ProductService);
   private readonly cart = inject(CartService);
   private readonly notification = inject(NotificationService);
+  private readonly authSession = inject(AuthSessionService);
+  private readonly router = inject(Router);
 
   readonly loading = signal(true);
   readonly product = signal<Product | null>(null);
@@ -70,9 +73,26 @@ export class ProductDetailPage {
       return;
     }
 
-    this.cart.add(product);
-    this.cart.open();
-    this.notification.show(`Se agregó ${product.nombreProducto} al carrito.`, 'success');
+    if (!this.authSession.isAuthenticated()) {
+      this.notification.show('Inicia sesión para agregar productos al carrito.', 'info');
+      this.router.navigateByUrl('/ingresar');
+      return;
+    }
+
+    if (!product.idProducto) {
+      this.notification.show('No se pudo agregar el producto.', 'error');
+      return;
+    }
+
+    this.cart.addItem({ idProducto: product.idProducto, cantidad: 1 }).subscribe({
+      next: () => {
+        this.cart.open();
+        this.notification.show(`Se agregó ${product.nombreProducto} al carrito.`, 'success');
+      },
+      error: () => {
+        this.notification.show('No se pudo agregar el producto al carrito.', 'error');
+      },
+    });
   }
 
   private humanizeKey(key: string): string {

@@ -8,6 +8,7 @@ import { CatalogSettingsService } from '../../../../services/catalog-settings.se
 import { CatalogStateService } from '../../../../core/services/catalog-state.service';
 import { CartService } from '../../../../core/services/cart.service';
 import { NotificationService } from '../../../../services/notification';
+import { AuthSessionService } from '../../../../core/services/auth-session.service';
 
 @Component({
   selector: 'app-catalog-page',
@@ -30,6 +31,7 @@ export class CatalogPage {
   readonly catalogState = inject(CatalogStateService);
   private readonly cartService = inject(CartService);
   private readonly notification = inject(NotificationService);
+  private readonly authSession = inject(AuthSessionService);
 
   readonly products = signal<Product[]>([]);
   readonly categories = signal<string[]>(['Todos']);
@@ -69,9 +71,26 @@ export class CatalogPage {
   }
 
   addToCart(product: Product): void {
-    this.cartService.add(product);
-    this.cartService.open();
-    this.notification.show(`Se agregó ${product.nombreProducto} al carrito.`, 'success');
+    if (!this.authSession.isAuthenticated()) {
+      this.notification.show('Inicia sesión para agregar productos al carrito.', 'info');
+      this.router.navigateByUrl('/ingresar');
+      return;
+    }
+
+    if (!product.idProducto) {
+      this.notification.show('No se pudo agregar el producto.', 'error');
+      return;
+    }
+
+    this.cartService.addItem({ idProducto: product.idProducto, cantidad: 1 }).subscribe({
+      next: () => {
+        this.cartService.open();
+        this.notification.show(`Se agregó ${product.nombreProducto} al carrito.`, 'success');
+      },
+      error: () => {
+        this.notification.show('No se pudo agregar el producto al carrito.', 'error');
+      },
+    });
   }
 
   goToProductDetail(product: Product): void {

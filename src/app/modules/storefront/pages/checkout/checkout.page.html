@@ -3,9 +3,8 @@
     <h1>Confirmar Compra</h1>
 
     <div class="checkout-grid">
-      <!-- Resumen del carrito -->
       <div class="order-summary">
-        <h2>Resumen de Orden</h2>
+        <h2>Resumen del Carrito</h2>
 
         @if (cartItems().length > 0) {
         <ul class="summary-items">
@@ -13,10 +12,15 @@
           <li class="summary-item">
             <div class="item-info">
               <p class="item-name">{{ item.nombreProducto }}</p>
-              <small class="item-qty">x{{ item.cantidad }}</small>
+              <div class="item-qty-controls">
+                <button type="button" (click)="decreaseItem(item.idItem, item.cantidad)">−</button>
+                <small class="item-qty">{{ item.cantidad }}</small>
+                <button type="button" (click)="increaseItem(item.idItem, item.cantidad)">+</button>
+                <button type="button" class="item-remove" (click)="removeItem(item.idItem)">Eliminar</button>
+              </div>
             </div>
             <div class="item-price">
-              {{ item.precioUnitario * item.cantidad | currency: 'ARS':'symbol':'1.2-2' }}
+              {{ item.subtotal | currency: 'USD':'symbol':'1.2-2' }}
             </div>
           </li>
           }
@@ -24,51 +28,49 @@
 
         <div class="summary-total">
           <h3>Total</h3>
-          <p class="total-amount">{{ cartTotal() | currency: 'ARS':'symbol':'1.2-2' }}</p>
+          <p class="total-amount">{{ cartTotal() | currency: 'USD':'symbol':'1.2-2' }}</p>
         </div>
         } @else {
         <p class="empty-cart">Tu carrito está vacío. Regresa al catálogo para agregar productos.</p>
         }
       </div>
 
-      <!-- Formulario de envío -->
       <div class="shipping-form">
-        <h2>Detalles de Envío</h2>
+        <h2>Datos de Checkout</h2>
         <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()">
           <div class="form-group">
-            <label for="direccionEnvio">Dirección de Envío *</label>
-            <input id="direccionEnvio" type="text" formControlName="direccionEnvio"
-              placeholder="Calle 123, Apartamento 4B, Buenos Aires" class="form-input" />
-            @if
-            (checkoutForm.get('direccionEnvio')?.hasError('required') &&
-            checkoutForm.get('direccionEnvio')?.touched)
-            {
-            <span class="error">La dirección es requerida.</span>
-            } @if
-            (checkoutForm.get('direccionEnvio')?.hasError('minlength') &&
-            checkoutForm.get('direccionEnvio')?.touched)
-            {
-            <span class="error">La dirección debe tener al menos 5 caracteres.</span>
+            <label for="idSucursal">Sucursal *</label>
+            <input id="idSucursal" type="number" min="1" formControlName="idSucursal" class="form-input" />
+            @if (checkoutForm.get('idSucursal')?.invalid && checkoutForm.get('idSucursal')?.touched) {
+            <span class="error">Debes indicar una sucursal válida.</span>
             }
           </div>
 
           <div class="form-group">
-            <label for="numeroTelefono">Número de Teléfono *</label>
-            <input id="numeroTelefono" type="tel" formControlName="numeroTelefono" placeholder="11 2345 6789"
-              class="form-input" />
-            @if
-            (checkoutForm.get('numeroTelefono')?.hasError('required') &&
-            checkoutForm.get('numeroTelefono')?.touched)
-            {
-            <span class="error">El teléfono es requerido.</span>
+            <label for="idFormaPago">Forma de pago *</label>
+            <input id="idFormaPago" type="number" min="1" formControlName="idFormaPago" class="form-input" />
+            @if (checkoutForm.get('idFormaPago')?.invalid && checkoutForm.get('idFormaPago')?.touched) {
+            <span class="error">Debes indicar una forma de pago válida.</span>
             }
           </div>
 
           <div class="form-group">
-            <label for="observaciones">Observaciones (Opcional)</label>
-            <textarea id="observaciones" formControlName="observaciones"
-              placeholder="Ej: Dejar con el portero, no tocar el timbre..." class="form-input form-textarea"
-              rows="4"></textarea>
+            <label for="tipoEnvio">Tipo de envío *</label>
+            <select id="tipoEnvio" formControlName="tipoEnvio" class="form-input">
+              <option value="DOMICILIO">DOMICILIO</option>
+              <option value="RETIRO">RETIRO</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Monto abonado</label>
+            <input type="text" class="form-input" [value]="(cartTotal() | currency: 'USD':'symbol':'1.2-2')" readonly />
+          </div>
+
+          <div class="form-group">
+            <label for="observacionesEnvio">Observaciones de envío</label>
+            <textarea id="observacionesEnvio" formControlName="observacionesEnvio"
+              placeholder="Ej: Entregar por la tarde" class="form-input form-textarea" rows="4"></textarea>
           </div>
 
           <div class="form-actions">

@@ -11,32 +11,36 @@
         <h2>ORD-{{ (order.idVenta || '').slice(0, 8) }}</h2>
         <p>{{ order.fecha | date: 'short' }}</p>
       </div>
-      <strong>{{ order.montoTotal | currency: 'ARS':'symbol':'1.2-2' }}</strong>
+      <strong>{{ order.totalFinal | currency: 'USD':'symbol':'1.2-2' }}</strong>
     </header>
 
     <div class="order-status">
-      <p>Estado: <span class="status-badge" [class]="'status-' + order.estado?.toLowerCase()">{{ order.estado }}</span>
+      <p>Estado: <span class="status-badge" [class]="'status-' + order.estadoVenta?.toLowerCase()">{{ order.estadoVenta
+          }}</span>
       </p>
+    </div>
+
+    <div class="order-status">
+      <p>Origen: <strong>{{ order.origenVenta }}</strong></p>
+      <p>Pagado: <strong>{{ order.totalPagado | currency: 'USD':'symbol':'1.2-2' }}</strong></p>
     </div>
 
     <div class="order-items">
       <h3>Productos</h3>
-      @for (item of order.items; track item.idProducto) {
+      @for (item of order.detalles; track item.idProducto) {
       <div class="item-row">
         <span>{{ item.nombreProducto }} x{{ item.cantidad }}</span>
-        <span>{{ item.subtotal | currency: 'ARS':'symbol':'1.2-2' }}</span>
+        <span>{{ item.subtotalRenglon | currency: 'USD':'symbol':'1.2-2' }}</span>
       </div>
       }
     </div>
 
-    @if (order.envio) {
+    @if (order.idEnvio || order.tipoEnvio) {
     <div class="shipping-info">
       <h3>Envío</h3>
-      <p>Tipo: {{ order.envio.tipoEnvio }}</p>
-      <p>Estado: <span class="status-badge" [class]="'status-' + order.envio.estadoLogistica?.toLowerCase()">{{
-          order.envio.estadoLogistica }}</span></p>
-      @if (order.envio.numeroTracking) {
-      <p>Tracking: {{ order.envio.numeroTracking }}</p>
+      <p>Tipo: {{ order.tipoEnvio || 'N/A' }}</p>
+      @if (order.idEnvio) {
+      <p>ID envío: {{ order.idEnvio }}</p>
       }
     </div>
     }

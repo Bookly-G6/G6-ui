@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { CheckoutService, OrderDetail } from '../../../../core/services/checkout.service';
+import { CheckoutService } from '../../../../core/services/checkout.service';
 import { NotificationService } from '../../../../services/notification';
+import { Venta } from '../../../../models/venta.model';
 
 @Component({
   selector: 'app-orders-page',
@@ -13,13 +14,13 @@ import { NotificationService } from '../../../../services/notification';
 export class OrdersPage {
   private readonly checkoutService = inject(CheckoutService);
   private readonly notification = inject(NotificationService);
-  readonly orders = signal<OrderDetail[]>([]);
+  readonly orders = signal<Venta[]>([]);
   readonly loading = signal(true);
 
   readonly normalizedOrders = computed(() =>
     this.orders().map((order) => ({
       ...order,
-      estadoActual: (order.estado ?? 'CONFIRMADA').toUpperCase(),
+      estadoActual: (order.estadoVenta ?? 'CONFIRMADA').toUpperCase(),
     })),
   );
 

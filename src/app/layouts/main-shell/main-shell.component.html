@@ -88,12 +88,17 @@
       <li class="cart-item">
         <div>
           <p>{{ item.nombreProducto }}</p>
-          <small>x{{ item.cantidad }}</small>
+          <small>{{ item.precioUnitario | currency: 'USD':'symbol':'1.2-2' }} c/u</small>
         </div>
         <div>
-          {{ item.precioUnitario * item.cantidad | currency: 'USD':'symbol':'1.2-2' }}
+          {{ item.subtotal | currency: 'USD':'symbol':'1.2-2' }}
         </div>
-        <button (click)="cart.removeItem(item.idItem)">Eliminar</button>
+        <div class="qty-controls">
+          <button type="button" (click)="decreaseItem(item.idItem, item.cantidad)">−</button>
+          <strong>{{ item.cantidad }}</strong>
+          <button type="button" (click)="increaseItem(item.idItem, item.cantidad)">+</button>
+        </div>
+        <button type="button" (click)="removeItem(item.idItem)">Eliminar</button>
       </li>
       }
     </ul>

@@ -5,6 +5,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
 import { AuthSessionService } from '../../core/services/auth-session.service';
 import { CatalogStateService } from '../../core/services/catalog-state.service';
 import { CartService } from '../../core/services/cart.service';
+import { NotificationService } from '../../services/notification';
 
 @Component({
   selector: 'app-main-shell',
@@ -28,6 +29,7 @@ export class MainShellComponent {
   readonly authSession = inject(AuthSessionService);
   readonly catalogState = inject(CatalogStateService);
   readonly cart = inject(CartService);
+  private readonly notification = inject(NotificationService);
 
   readonly isAdmin = computed(() => this.authSession.role() === 'admin');
   readonly isCliente = computed(() => this.authSession.role() === 'cliente');
@@ -53,8 +55,51 @@ export class MainShellComponent {
   }
 
   goToCheckout(): void {
+    if (!this.authSession.isAuthenticated()) {
+      this.notification.show('Debes iniciar sesión para continuar con la compra.', 'info');
+      this.router.navigateByUrl('/ingresar');
+      return;
+    }
+
+    if (this.cart.items().length === 0) {
+      this.notification.show('Tu carrito está vacío.', 'info');
+      return;
+    }
+
     this.cart.close();
     this.router.navigateByUrl('/checkout');
+  }
+
+  increaseItem(itemId: string, currentQty: number): void {
+    this.cart.updateItem(itemId, { cantidad: currentQty + 1 }).subscribe({
+      error: () => {
+        this.notification.show('No fue posible actualizar la cantidad.', 'error');
+      },
+    });
+  }
+
+  decreaseItem(itemId: string, currentQty: number): void {
+    if (currentQty <= 1) {
+      this.removeItem(itemId);
+      return;
+    }
+
+    this.cart.updateItem(itemId, { cantidad: currentQty - 1 }).subscribe({
+      error: () => {
+        this.notification.show('No fue posible actualizar la cantidad.', 'error');
+      },
+    });
+  }
+
+  removeItem(itemId: string): void {
+    this.cart.removeItem(itemId).subscribe({
+      next: () => {
+        this.notification.show('Producto eliminado del carrito.', 'info');
+      },
+      error: () => {
+        this.notification.show('No fue posible eliminar el producto.', 'error');
+      },
+    });
   }
 
   logout(): void {
