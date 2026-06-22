@@ -35,6 +35,8 @@ export class AuthPageComponent {
 
   readonly isRegister = signal(false);
   readonly loading = signal(false);
+  readonly showLoginPassword = signal(false);
+  readonly showRegisterPassword = signal(false);
 
   readonly loginForm = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -52,6 +54,16 @@ export class AuthPageComponent {
 
   toggleMode(): void {
     this.isRegister.update((value) => !value);
+    this.showLoginPassword.set(false);
+    this.showRegisterPassword.set(false);
+  }
+
+  togglePasswordVisibility(form: 'login' | 'register'): void {
+    if (form === 'login') {
+      this.showLoginPassword.update((value) => !value);
+      return;
+    }
+    this.showRegisterPassword.update((value) => !value);
   }
 
   submitLogin(): void {

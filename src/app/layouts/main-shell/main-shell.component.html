@@ -1,11 +1,11 @@
 <div class="bookly-shell">
-  <header class="topbar">
+  <header class="topbar" [class.admin-topbar]="isAdmin()">
     <a class="brand" routerLink="/">Bookly<span>.</span></a>
 
     @if (!isAdmin()) {
     <div class="search-wrap">
       <input class="bookly-input" type="search" [value]="catalogState.searchTerm()"
-        (input)="onSearchInput($any($event.target).value)" placeholder="Buscar por título, autor o ISBN..."
+        (input)="onSearchInput($any($event.target).value)" placeholder="Buscar por título"
         aria-label="Buscar en catálogo" />
     </div>
 
@@ -48,7 +48,7 @@
     <nav class="admin-nav">
       <button class="bookly-btn nav-pill" routerLink="/admin" routerLinkActive="active-pill"
         [routerLinkActiveOptions]="{ exact: true }">
-        Productos o Admin
+        Productos
       </button>
       <button class="bookly-btn nav-pill" routerLink="/admin/ordenes" routerLinkActive="active-pill">Ordenes</button>
       <button class="bookly-btn nav-pill" routerLink="/admin/venta" routerLinkActive="active-pill">Venta</button>
@@ -65,7 +65,7 @@
           <path d="M18 12H9" />
         </svg>
       </span>
-      Salir
+
     </button>
     }
   </header>

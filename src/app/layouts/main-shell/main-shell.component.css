@@ -29,7 +29,12 @@
 }
 
 .search-wrap {
-  max-width: 780px;
+  max-width: 560px;
+  width: 100%;
+}
+
+.topbar.admin-topbar {
+  grid-template-columns: 180px minmax(380px, 1fr) auto auto;
 }
 
 .topbar-actions {
@@ -67,7 +72,10 @@
 
 .admin-nav {
   display: flex;
+  justify-self: center;
   justify-content: center;
+  align-items: center;
+  flex-wrap: nowrap;
   gap: 0.55rem;
 }
 
@@ -93,6 +101,7 @@
 
 .topbar > .bookly-btn.btn-with-icon {
   justify-self: end;
+  align-self: center;
 }
 
 .content-wrap {

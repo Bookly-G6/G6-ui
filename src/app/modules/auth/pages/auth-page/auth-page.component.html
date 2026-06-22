@@ -31,7 +31,26 @@
 
           <label>
             Contraseña
-            <input class="bookly-input" type="password" formControlName="password" placeholder="••••••••" />
+            <div class="password-field">
+              <input class="bookly-input" [type]="showLoginPassword() ? 'text' : 'password'" formControlName="password"
+                placeholder="••••••••" />
+              <button class="password-toggle" type="button" (click)="togglePasswordVisibility('login')"
+                [attr.aria-label]="showLoginPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                @if (showLoginPassword()) {
+                <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                  <path d="M3 3l18 18" />
+                  <path d="M10.7 10.7a2 2 0 0 0 2.6 2.6" />
+                  <path d="M9.9 5.1A11 11 0 0 1 12 5c5.2 0 9.5 3.4 11 7-0.6 1.5-1.7 2.9-3.2 4" />
+                  <path d="M6.2 6.2C4.3 7.5 2.9 9.2 2 12c1.5 3.6 5.8 7 10 7 1.7 0 3.3-0.4 4.8-1.1" />
+                </svg>
+                } @else {
+                <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                  <path d="M2 12s3.8-7 10-7 10 7 10 7-3.8 7-10 7-10-7-10-7z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                }
+              </button>
+            </div>
           </label>
 
           <!--  <button class="link-btn" type="button">¿Olvidaste tu contraseña?</button>  -->
@@ -61,7 +80,26 @@
 
           <label>
             Contraseña
-            <input class="bookly-input" type="password" formControlName="password" placeholder="Mínimo 6 caracteres" />
+            <div class="password-field">
+              <input class="bookly-input" [type]="showRegisterPassword() ? 'text' : 'password'" formControlName="password"
+                placeholder="Mínimo 6 caracteres" />
+              <button class="password-toggle" type="button" (click)="togglePasswordVisibility('register')"
+                [attr.aria-label]="showRegisterPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                @if (showRegisterPassword()) {
+                <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                  <path d="M3 3l18 18" />
+                  <path d="M10.7 10.7a2 2 0 0 0 2.6 2.6" />
+                  <path d="M9.9 5.1A11 11 0 0 1 12 5c5.2 0 9.5 3.4 11 7-0.6 1.5-1.7 2.9-3.2 4" />
+                  <path d="M6.2 6.2C4.3 7.5 2.9 9.2 2 12c1.5 3.6 5.8 7 10 7 1.7 0 3.3-0.4 4.8-1.1" />
+                </svg>
+                } @else {
+                <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                  <path d="M2 12s3.8-7 10-7 10 7 10 7-3.8 7-10 7-10-7-10-7z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                }
+              </button>
+            </div>
           </label>
 
           <div class="field-grid field-grid-two">
