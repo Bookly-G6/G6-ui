@@ -15,7 +15,8 @@
     </header>
 
     <div class="order-status">
-      <p>Estado: <span class="status-badge" [class]="'status-' + order.estado?.toLowerCase()">{{ order.estado }}</span></p>
+      <p>Estado: <span class="status-badge" [class]="'status-' + order.estado?.toLowerCase()">{{ order.estado }}</span>
+      </p>
     </div>
 
     <div class="order-items">
@@ -32,7 +33,8 @@
     <div class="shipping-info">
       <h3>Envío</h3>
       <p>Tipo: {{ order.envio.tipoEnvio }}</p>
-      <p>Estado: <span class="status-badge" [class]="'status-' + order.envio.estadoLogistica?.toLowerCase()">{{ order.envio.estadoLogistica }}</span></p>
+      <p>Estado: <span class="status-badge" [class]="'status-' + order.envio.estadoLogistica?.toLowerCase()">{{
+          order.envio.estadoLogistica }}</span></p>
       @if (order.envio.numeroTracking) {
       <p>Tracking: {{ order.envio.numeroTracking }}</p>
       }
@@ -45,5 +47,4 @@
     <p>Aún no tienes órdenes activas.</p>
   </article>
   }
-</section>
 </section>

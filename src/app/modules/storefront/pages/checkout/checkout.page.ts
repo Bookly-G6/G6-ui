@@ -51,7 +51,10 @@ export class CheckoutPage {
     }
 
     if (this.cartItems().length === 0) {
-      this.notification.show('Tu carrito está vacío. Agrega productos antes de continuar.', 'error');
+      this.notification.show(
+        'Tu carrito está vacío. Agrega productos antes de continuar.',
+        'error',
+      );
       return;
     }
 
@@ -60,10 +63,7 @@ export class CheckoutPage {
     this.checkout.checkout(this.checkoutForm.value).subscribe({
       next: (response) => {
         this.loading.set(false);
-        this.notification.show(
-          `¡Compra confirmada! ID de venta: ${response.idVenta}`,
-          'success',
-        );
+        this.notification.show(`¡Compra confirmada! ID de venta: ${response.idVenta}`, 'success');
         this.cart.clear();
         this.router.navigateByUrl('/mis-ordenes');
       },

@@ -37,13 +37,8 @@
         <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()">
           <div class="form-group">
             <label for="direccionEnvio">Dirección de Envío *</label>
-            <input
-              id="direccionEnvio"
-              type="text"
-              formControlName="direccionEnvio"
-              placeholder="Calle 123, Apartamento 4B, Buenos Aires"
-              class="form-input"
-            />
+            <input id="direccionEnvio" type="text" formControlName="direccionEnvio"
+              placeholder="Calle 123, Apartamento 4B, Buenos Aires" class="form-input" />
             @if
             (checkoutForm.get('direccionEnvio')?.hasError('required') &&
             checkoutForm.get('direccionEnvio')?.touched)
@@ -59,13 +54,8 @@
 
           <div class="form-group">
             <label for="numeroTelefono">Número de Teléfono *</label>
-            <input
-              id="numeroTelefono"
-              type="tel"
-              formControlName="numeroTelefono"
-              placeholder="11 2345 6789"
-              class="form-input"
-            />
+            <input id="numeroTelefono" type="tel" formControlName="numeroTelefono" placeholder="11 2345 6789"
+              class="form-input" />
             @if
             (checkoutForm.get('numeroTelefono')?.hasError('required') &&
             checkoutForm.get('numeroTelefono')?.touched)
@@ -76,29 +66,16 @@
 
           <div class="form-group">
             <label for="observaciones">Observaciones (Opcional)</label>
-            <textarea
-              id="observaciones"
-              formControlName="observaciones"
-              placeholder="Ej: Dejar con el portero, no tocar el timbre..."
-              class="form-input form-textarea"
-              rows="4"
-            ></textarea>
+            <textarea id="observaciones" formControlName="observaciones"
+              placeholder="Ej: Dejar con el portero, no tocar el timbre..." class="form-input form-textarea"
+              rows="4"></textarea>
           </div>
 
           <div class="form-actions">
-            <button
-              type="submit"
-              class="bookly-btn bookly-btn-primary"
-              [disabled]="loading()"
-            >
+            <button type="submit" class="bookly-btn bookly-btn-primary" [disabled]="loading()">
               {{ loading() ? 'Procesando...' : 'Confirmar Compra' }}
             </button>
-            <button
-              type="button"
-              class="bookly-btn bookly-btn-ghost"
-              (click)="onCancel()"
-              [disabled]="loading()"
-            >
+            <button type="button" class="bookly-btn bookly-btn-ghost" (click)="onCancel()" [disabled]="loading()">
               Cancelar
             </button>
           </div>

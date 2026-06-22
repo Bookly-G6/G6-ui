@@ -1,6 +1,6 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, map, tap } from 'rxjs';
+import { Observable, catchError, map, tap, throwError } from 'rxjs';
 import { NotificationService } from '../../services/notification';
 import { SessionRole, SessionUser } from '../models/session-user.model';
 import { environment } from '../../../environments/environment';
@@ -32,14 +32,6 @@ interface RegisterPayload {
   password: string;
   dni?: string;
   telefono?: string;
-}
-
-interface JwtPayload {
-  sub: string;
-  roles?: string[];
-  iat: number;
-  exp: number;
-  [key: string]: unknown;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -83,11 +75,15 @@ export class AuthSessionService {
         this.persistSession(sessionUser);
       }),
       map((meResponse) => this.mapMeResponseToSessionUser(meResponse)),
-      catchError(() => {
+      catchError((error) => {
         this.logout();
-        throw new Error('Session expired or invalid');
+        return throwError(() => error);
       }),
     );
+  }
+
+  hasToken(): boolean {
+    return this.getToken() !== null;
   }
 
   logout(): void {
@@ -98,7 +94,9 @@ export class AuthSessionService {
   }
 
   getToken(): string | null {
-    return localStorage.getItem(TOKEN_STORAGE_KEY);
+    const sessionToken = this.currentUser()?.token;
+    const storageToken = localStorage.getItem(TOKEN_STORAGE_KEY);
+    return this.normalizeToken(sessionToken ?? storageToken);
   }
 
   private mapAuthResponseToSessionUser(authResponse: AuthResponse): SessionUser {
@@ -112,11 +110,13 @@ export class AuthSessionService {
   }
 
   private mapMeResponseToSessionUser(meResponse: MeResponse): SessionUser {
+    const token = this.getToken() ?? undefined;
     return {
       id: meResponse.idUsuario,
       nombre: `${meResponse.nombre} ${meResponse.apellido}`.trim(),
       email: meResponse.email,
       role: this.normalizeRole(meResponse.rol),
+      token,
     };
   }
 
@@ -128,10 +128,14 @@ export class AuthSessionService {
   }
 
   private persistSession(sessionUser: SessionUser): void {
-    this.currentUser.set(sessionUser);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(sessionUser));
-    if (sessionUser.token) {
-      localStorage.setItem(TOKEN_STORAGE_KEY, sessionUser.token);
+    const token = this.normalizeToken(sessionUser.token ?? this.getToken()) ?? undefined;
+    const userToStore: SessionUser = token ? { ...sessionUser, token } : { ...sessionUser };
+
+    this.currentUser.set(userToStore);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(userToStore));
+
+    if (token) {
+      localStorage.setItem(TOKEN_STORAGE_KEY, token);
     }
   }
 
@@ -142,11 +146,23 @@ export class AuthSessionService {
     }
 
     try {
-      return JSON.parse(raw) as SessionUser;
+      const parsed = JSON.parse(raw) as SessionUser;
+      const token = this.normalizeToken(parsed.token);
+      return token ? { ...parsed, token } : parsed;
     } catch {
       localStorage.removeItem(STORAGE_KEY);
       localStorage.removeItem(TOKEN_STORAGE_KEY);
       return null;
     }
+  }
+
+  private normalizeToken(rawToken: string | null | undefined): string | null {
+    if (!rawToken) {
+      return null;
+    }
+
+    const unquoted = rawToken.trim().replace(/^\"|\"$/g, '');
+    const withoutBearer = unquoted.replace(/^Bearer\s+/i, '').trim();
+    return withoutBearer.length > 0 ? withoutBearer : null;
   }
 }

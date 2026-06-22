@@ -50,8 +50,13 @@ function handleApiError(
   }
 
   if (error.status === 401) {
-    authSession?.logout();
-    notification.show('Sesión expirada. Por favor, inicia sesión nuevamente.', 'error');
+    // Solo cerramos sesión para errores reales de token.
+    if (code === 'TOKEN_EXPIRED' || code === 'TOKEN_INVALID') {
+      authSession?.logout();
+      notification.show('Sesión expirada. Por favor, inicia sesión nuevamente.', 'error');
+      return;
+    }
+    notification.show(displayMessage || 'Debes iniciar sesión para continuar.', 'error');
   } else if (error.status === 403) {
     notification.show(displayMessage || 'No tienes permisos para esta acción.', 'error');
   } else if (error.status === 400) {

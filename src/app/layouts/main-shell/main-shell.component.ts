@@ -34,7 +34,7 @@ export class MainShellComponent {
 
   constructor() {
     effect(() => {
-      if (this.authSession.isAuthenticated()) {
+      if (this.authSession.isAuthenticated() && this.authSession.role() === 'cliente') {
         this.cart.getCart().subscribe({
           error: () => {
             console.warn('Failed to load cart on init');

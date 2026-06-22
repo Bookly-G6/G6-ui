@@ -7,7 +7,6 @@ import { Categoria, EditorialSello, RangoEtario, TipoProducto } from '../models/
 @Injectable({ providedIn: 'root' })
 export class CatalogSettingsService {
   private readonly apiV1 = environment.apiUrl;
-  private readonly baseUrl = environment.apiUrl.replace(/\/api\/v1$/, '');
 
   constructor(private readonly http: HttpClient) {}
 
@@ -30,7 +29,7 @@ export class CatalogSettingsService {
 
   getEditoriales(): Observable<EditorialSello[]> {
     return this.http
-      .get<unknown>(`${this.baseUrl}/editorial-sello`)
+      .get<unknown>(`${this.apiV1}/editoriales`)
       .pipe(
         map((response) =>
           this.normalizeList<EditorialSello>(response, ['editoriales', 'editorialSello']),
@@ -39,14 +38,14 @@ export class CatalogSettingsService {
   }
 
   createEditorial(nombreEditorial: string): Observable<EditorialSello> {
-    return this.http.post<EditorialSello>(`${this.baseUrl}/editorial-sello`, {
+    return this.http.post<EditorialSello>(`${this.apiV1}/editoriales`, {
       nombreEditorial,
       activa: true,
     });
   }
 
   deleteEditorial(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/editorial-sello/${id}`);
+    return this.http.delete<void>(`${this.apiV1}/editoriales/${id}`);
   }
 
   getRangosEtarios(): Observable<RangoEtario[]> {
