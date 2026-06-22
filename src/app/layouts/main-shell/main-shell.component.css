@@ -39,6 +39,28 @@
   gap: 0.6rem;
 }
 
+.btn-with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+}
+
+.btn-icon {
+  width: 1.05rem;
+  height: 1.05rem;
+  display: inline-flex;
+}
+
+.btn-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .active-link {
   border-color: var(--bookly-blue);
 }
@@ -67,6 +89,10 @@
   gap: 0.5rem;
   font-size: 1.2rem;
   color: var(--bookly-blue);
+}
+
+.topbar > .bookly-btn.btn-with-icon {
+  justify-self: end;
 }
 
 .content-wrap {
@@ -169,7 +195,8 @@
   .search-wrap,
   .topbar-actions,
   .admin-nav,
-  .admin-badge {
+  .admin-badge,
+  .topbar > .bookly-btn.btn-with-icon {
     justify-self: stretch;
   }
 
