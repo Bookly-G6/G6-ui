@@ -28,7 +28,7 @@ export interface ProductUpsertPayload {
 })
 export class ProductService {
   private apiUrl = environment.apiUrl + '/productos';
-  private apiDetailUrl = environment.apiUrl + '/producto';
+  private apiDetailUrl = environment.apiUrl + '/productos';
   private readonly authSession = inject(AuthSessionService);
 
   constructor(private http: HttpClient) {}

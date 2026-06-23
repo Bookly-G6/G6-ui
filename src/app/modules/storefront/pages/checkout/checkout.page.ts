@@ -6,6 +6,7 @@ import { CartService } from '../../../../core/services/cart.service';
 import { CheckoutService } from '../../../../core/services/checkout.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { NotificationService } from '../../../../services/notification';
+import { CheckoutRequest } from '../../../../models/venta.model';
 
 @Component({
   selector: 'app-checkout-page',
@@ -36,11 +37,13 @@ export class CheckoutPage {
       this.router.navigateByUrl('/ingresar');
       return;
     }
+    // falta enviar el estado del envio
 
     this.checkoutForm = this.fb.group({
-      direccionEnvio: ['', [Validators.required, Validators.minLength(5)]],
-      numeroTelefono: ['', Validators.required],
-      observaciones: [''],
+      idSucursal: [1, [Validators.required, Validators.min(1)]],
+      idFormaPago: [1, [Validators.required, Validators.min(1)]],
+      tipoEnvio: ['DOMICILIO', Validators.required],
+      observacionesEnvio: [''],
     });
   }
 
@@ -58,12 +61,21 @@ export class CheckoutPage {
       return;
     }
 
+    const payload = this.buildCheckoutRequest();
+    if (!payload) {
+      this.notification.show('No se pudo preparar el checkout con los datos actuales.', 'error');
+      return;
+    }
+
     this.loading.set(true);
 
-    this.checkout.checkout(this.checkoutForm.value).subscribe({
+    this.checkout.checkout(payload).subscribe({
       next: (response) => {
         this.loading.set(false);
-        this.notification.show(`¡Compra confirmada! ID de venta: ${response.idVenta}`, 'success');
+        this.notification.show(
+          `Compra confirmada. Venta ${response.idVenta.slice(0, 8)}${response.idEnvio ? ` · Envío ${response.idEnvio.slice(0, 8)}` : ''}`,
+          'success',
+        );
         this.cart.clear();
         this.router.navigateByUrl('/mis-ordenes');
       },
@@ -78,5 +90,69 @@ export class CheckoutPage {
 
   onCancel(): void {
     this.router.navigateByUrl('/');
+  }
+
+  increaseItem(itemId: string, currentQty: number): void {
+    this.cart.updateItem(itemId, { cantidad: currentQty + 1 }).subscribe({
+      error: () => {
+        this.notification.show('No fue posible actualizar el carrito.', 'error');
+      },
+    });
+  }
+
+  decreaseItem(itemId: string, currentQty: number): void {
+    if (currentQty <= 1) {
+      this.removeItem(itemId);
+      return;
+    }
+
+    this.cart.updateItem(itemId, { cantidad: currentQty - 1 }).subscribe({
+      error: () => {
+        this.notification.show('No fue posible actualizar el carrito.', 'error');
+      },
+    });
+  }
+
+  removeItem(itemId: string): void {
+    this.cart.removeItem(itemId).subscribe({
+      error: () => {
+        this.notification.show('No fue posible eliminar el item.', 'error');
+      },
+    });
+  }
+
+  private buildCheckoutRequest(): CheckoutRequest | null {
+    const rawItems = this.cartItems();
+    const items = rawItems
+      .filter((item) => !!item.idProducto)
+      .map((item) => ({
+        idProducto: item.idProducto,
+        cantidad: item.cantidad,
+        idPromocion: null,
+      }));
+
+    if (items.length === 0) {
+      return null;
+    }
+
+    const idSucursal = Number(this.checkoutForm.value.idSucursal ?? 1);
+    const idFormaPago = Number(this.checkoutForm.value.idFormaPago ?? 1);
+    const tipoEnvio = String(this.checkoutForm.value.tipoEnvio ?? '').trim();
+    const observacionesEnvio = String(this.checkoutForm.value.observacionesEnvio ?? '').trim();
+
+    return {
+      origenVenta: 'WEB',
+      idSucursal,
+      items,
+      pagos: [
+        {
+          idFormaPago,
+          montoAbonado: this.cartTotal(),
+        },
+      ],
+      generarEnvio: true,
+      tipoEnvio,
+      observacionesEnvio: observacionesEnvio || undefined,
+    };
   }
 }

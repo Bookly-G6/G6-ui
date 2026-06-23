@@ -54,6 +54,19 @@ export class LogisticaService {
     return this.http.put<Logistica>(`${this.apiUrl}/${id}`, logistica);
   }
 
+  actualizarEstado(
+    idEnvio: string,
+    nuevoEstado: string,
+    datos?: { numeroTracking?: string; empresaCorreo?: string },
+  ): Observable<Logistica> {
+    const body = {
+      nuevoEstado,
+      idEmpleado: 'e2e2e2e2-e2e2-e2e2-e2e2-e2e2e2e2e2e2', // ID estático temporal según DTO
+      ...datos,
+    };
+    return this.http.patch<Logistica>(`${this.apiUrl}/${idEnvio}/estado`, body);
+  }
+
   deleteLogistica(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }

@@ -3,10 +3,12 @@ import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
 import { AuthSessionService } from '../services/auth-session.service';
 import { NotificationService } from '../../services/notification';
+import { Router } from '@angular/router';
 
 export const authTokenInterceptor: HttpInterceptorFn = (req, next) => {
   const authSession = inject(AuthSessionService);
   const notification = inject(NotificationService);
+  const router = inject(Router);
   const token = authSession.getToken();
 
   const isAuthCall = req.url.includes('/auth/login') || req.url.includes('/auth/register');
@@ -14,7 +16,7 @@ export const authTokenInterceptor: HttpInterceptorFn = (req, next) => {
   if (!token || isAuthCall) {
     return next(req).pipe(
       catchError((error: HttpErrorResponse) => {
-        handleApiError(error, notification);
+        handleApiError(error, req.url, notification, authSession, router);
         return throwError(() => error);
       }),
     );
@@ -28,7 +30,7 @@ export const authTokenInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authorizedReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      handleApiError(error, notification, authSession);
+      handleApiError(error, req.url, notification, authSession, router);
       return throwError(() => error);
     }),
   );
@@ -36,8 +38,10 @@ export const authTokenInterceptor: HttpInterceptorFn = (req, next) => {
 
 function handleApiError(
   error: HttpErrorResponse,
+  requestUrl: string,
   notification: NotificationService,
   authSession?: AuthSessionService,
+  router?: Router,
 ): void {
   const body = error.error || {};
   const message = body.message || body.error || 'Error en la solicitud';
@@ -49,11 +53,19 @@ function handleApiError(
     displayMessage = `${message}\n${details.join('\n')}`;
   }
 
+  const isProtectedEndpoint =
+    requestUrl.includes('/carrito') ||
+    requestUrl.includes('/ventas') ||
+    requestUrl.includes('/auth/me');
+
   if (error.status === 401) {
-    // Solo cerramos sesión para errores reales de token.
-    if (code === 'TOKEN_EXPIRED' || code === 'TOKEN_INVALID') {
+    const shouldForceLogout =
+      isProtectedEndpoint || code === 'TOKEN_EXPIRED' || code === 'TOKEN_INVALID';
+
+    if (shouldForceLogout && authSession?.hasToken()) {
       authSession?.logout();
       notification.show('Sesión expirada. Por favor, inicia sesión nuevamente.', 'error');
+      router?.navigateByUrl('/ingresar');
       return;
     }
     notification.show(displayMessage || 'Debes iniciar sesión para continuar.', 'error');

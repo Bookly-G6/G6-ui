@@ -5,28 +5,41 @@
   <article class="bookly-panel detail-loading">Cargando detalle del producto...</article>
   } @else if (product()) {
   <article class="bookly-panel detail-card">
+
     <div class="detail-cover" [style.background]="'linear-gradient(150deg, #1e3a8a 0%, #274aa7 56%, #3b82f6 100%)'">
       <div class="cover-top">
         <span class="label">{{ (product()?.tipoProducto ?? 'Producto').toUpperCase() }}</span>
-        <span class="status-pill" [class.inactive]="!product()?.activo">{{ product()?.activo ? 'Disponible' : 'No
-          disponible' }}</span>
+        <span class="status-pill" [class.inactive]="!product()?.activo">
+          {{ product()?.activo ? 'Disponible' : 'No disponible' }}
+        </span>
       </div>
 
-      <div class="cover-main">
-        <h1>{{ product()?.nombreProducto }}</h1>
-        <p>{{ product()?.descripcion || 'Sin descripción disponible para este producto.' }}</p>
-      </div>
-
-      <div class="cover-bottom">
-        <p class="code-chip">Código {{ product()?.codigoBarras }}</p>
+      <div class="cover-buy-box">
+        <span class="price-label">Precio</span>
         <strong class="price-tag">{{ product()?.precioActual | currency: 'USD':'symbol':'1.2-2' }}</strong>
+
+        <button class="bookly-btn bookly-btn-gold btn-block" type="button" (click)="addToCart()">
+          Agregar al carrito
+        </button>
       </div>
     </div>
 
     <div class="detail-body">
+      <header class="product-header">
+        <h1>{{ product()?.nombreProducto }}</h1>
+
+        @if (product()?.autores && product()!.autores!.length > 0) {
+        <p class="product-author">por <span>{{ product()?.autores?.join(', ') }}</span></p>
+        }
+      </header>
+
+      <section class="product-description-block">
+        <p class="description-text">{{ product()?.descripcion || 'Sin descripción disponible para este producto.' }}</p>
+      </section>
+
       <div class="meta-grid">
         <article class="meta-card">
-          <p class="meta-label">Editorial</p>
+          <p class="meta-label">Editorial / Sello</p>
           <strong>{{ product()?.editorialSello || 'Sin editorial' }}</strong>
         </article>
         <article class="meta-card">
@@ -41,7 +54,7 @@
 
       @if (detailAttributes().length > 0) {
       <section class="attributes-block">
-        <h2>Características</h2>
+        <h2>Especificaciones técnicas</h2>
         <div class="attributes-grid">
           @for (attr of detailAttributes(); track attr.key) {
           <article class="attribute-item">
@@ -52,10 +65,6 @@
         </div>
       </section>
       }
-
-      <div class="detail-actions">
-        <button class="bookly-btn bookly-btn-gold" type="button" (click)="addToCart()">Agregar al carrito</button>
-      </div>
     </div>
   </article>
   } @else {
