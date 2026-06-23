@@ -75,7 +75,6 @@ export class AdminOrdersPage {
 
     if (!nuevoEstado) return;
 
-    // Asumimos que agregamos el método 'actualizarEstado' a tu logisticaService que hace el PATCH
     this.logisticaService.actualizarEstado(order.idEnvio, nuevoEstado, datosExtra).subscribe({
       next: (updatedOrder) => {
         // Actualizamos de forma reactiva el ítem en la señal

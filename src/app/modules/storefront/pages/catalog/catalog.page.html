@@ -31,11 +31,9 @@
         (keydown.space)="$event.preventDefault(); goToProductDetail(product)">
         <div class="cover" [style.background]="'linear-gradient(155deg, #1E3A8A 0%, #365ecf 85%)'">
           <span class="label">{{ (product.tipoProducto ?? 'Libro').toUpperCase() }}</span>
-          <strong>{{ product.nombreProducto }}</strong>
         </div>
 
         <div class="book-card-body">
-          <p class="category">{{ product.categorias?.[0] ?? product.tipoProducto ?? 'General' }}</p>
           <h3>{{ product.nombreProducto }}</h3>
           <p class="description">{{ product.descripcion || 'Sin descripción disponible.' }}</p>
 

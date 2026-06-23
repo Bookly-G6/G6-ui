@@ -10,7 +10,7 @@
   z-index: 1400;
   display: grid;
   place-items: start center;
-  padding: 5.3rem 1rem 1rem;
+  padding: 1rem;
   background: rgba(15, 23, 42, 0.55);
   backdrop-filter: blur(4px);
   overflow-y: auto;

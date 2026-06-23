@@ -9,6 +9,8 @@
   padding: 1.3rem;
   position: sticky;
   top: 92px;
+  max-height: 450px;
+  overflow-y: auto;
 }
 
 .catalog-sidebar p {
@@ -70,6 +72,9 @@
   transition:
     transform 220ms ease,
     box-shadow 220ms ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .book-card:hover {
@@ -78,7 +83,7 @@
 }
 
 .cover {
-  min-height: 120px;
+  min-height: 70px;
   padding: 0.9rem;
   display: flex;
   flex-direction: column;
@@ -104,6 +109,10 @@
 
 .book-card-body {
   padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 0.6rem;
 }
 
 .category {
@@ -127,7 +136,8 @@
 .description {
   color: #6576a1;
   font-size: 0.9rem;
-  min-height: 2.6rem;
+  /* min-height: 2.6rem; */
+  flex: 1;
 }
 
 .book-card-footer {
@@ -135,6 +145,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.8rem;
+  margin-top: auto;
 }
 
 .empty-state {

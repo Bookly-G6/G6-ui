@@ -36,12 +36,6 @@ export const PRODUCT_ATTRIBUTES_CONFIG: ProductAttributeConfig[] = [
     placeholder: 'Ej: 464',
   },
   {
-    key: 'isbn',
-    label: 'ISBN',
-    type: 'text',
-    placeholder: 'Ej: 978-1234567890',
-  },
-  {
     key: 'anio_publicacion',
     label: 'Año de publicación',
     type: 'number',
@@ -100,6 +94,21 @@ export type LogisticaEstadoOption = (typeof LOGISTICA_ESTADO_OPTIONS)[number];
 
 export const TIPO_ENVIO_OPTIONS = ['DOMICILIO', 'RETIRO_SUCURSAL'] as const;
 export type TipoEnvioOption = (typeof TIPO_ENVIO_OPTIONS)[number];
+
+export const ADMIN_TIPO_ENVIO_OPTIONS = [...TIPO_ENVIO_OPTIONS, 'DIGITAL'] as const;
+export type AdminTipoEnvioOption = (typeof ADMIN_TIPO_ENVIO_OPTIONS)[number];
+
+export interface FormaPagoOption {
+  idFormaPago: number;
+  label: string;
+}
+
+export const FORMA_PAGO_OPTIONS: FormaPagoOption[] = [
+  { idFormaPago: 1, label: 'Efectivo' },
+  { idFormaPago: 2, label: 'Tarjeta débito' },
+  { idFormaPago: 3, label: 'Tarjeta crédito' },
+  { idFormaPago: 4, label: 'Transferencia' },
+];
 
 export const STOCK_MOVIMIENTO_OPTIONS = ['ENTRADA', 'SALIDA'] as const;
 export type StockMovimientoOption = (typeof STOCK_MOVIMIENTO_OPTIONS)[number];

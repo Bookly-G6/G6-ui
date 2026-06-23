@@ -10,7 +10,7 @@
       <div class="cover-top">
         <span class="label">{{ (product()?.tipoProducto ?? 'Producto').toUpperCase() }}</span>
         <span class="status-pill" [class.inactive]="!product()?.activo">
-          {{ product()?.activo ? 'Disponible' : 'No disponible' }}
+          {{ product()?.activo ? 'Disponible' : 'Sin Stock' }}
         </span>
       </div>
 

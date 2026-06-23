@@ -1,4 +1,4 @@
-import { SaleOriginOption, TipoEnvioOption } from '../core/constants/business-options';
+import { AdminTipoEnvioOption, SaleOriginOption } from '../core/constants/business-options';
 
 export interface CheckoutItemRequest {
   idProducto: string;
@@ -12,14 +12,14 @@ export interface CheckoutPagoRequest {
 }
 
 export interface CheckoutRequest {
-  origenVenta: SaleOriginOption | 'LOCAL';
-  idSucursal: number;
+  origenVenta: SaleOriginOption;
+  idSucursal?: number;
   idCliente?: string;
   idEmpleado?: string;
   items: CheckoutItemRequest[];
   pagos: CheckoutPagoRequest[];
-  generarEnvio: boolean;
-  tipoEnvio: TipoEnvioOption;
+  generarEnvio?: boolean;
+  tipoEnvio?: AdminTipoEnvioOption;
   observacionesEnvio?: string;
 }
 
