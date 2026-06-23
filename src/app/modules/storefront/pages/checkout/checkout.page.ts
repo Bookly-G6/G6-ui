@@ -37,6 +37,7 @@ export class CheckoutPage {
       this.router.navigateByUrl('/ingresar');
       return;
     }
+    // falta enviar el estado del envio
 
     this.checkoutForm = this.fb.group({
       idSucursal: [1, [Validators.required, Validators.min(1)]],

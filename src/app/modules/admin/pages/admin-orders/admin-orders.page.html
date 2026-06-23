@@ -1,44 +1,142 @@
 <section class="fulfillment-board">
-  <header>
-    <h1>Tubería de cumplimiento</h1>
-    <p>Gestionar operaciones diarias y estados de envío.</p>
+  <header class="board-header">
+    <div>
+      <h1>Flujos de trabajo logísticos</h1>
+      <p>Gestionar operaciones diarias y estados de envío.</p>
+    </div>
   </header>
 
+  @if (loading()) {
+  <div class="board-loading">Cargando flujos de trabajo logísticos...</div>
+  } @else {
   <div class="columns">
+
     <article class="bookly-panel column">
-      <h2>Ordenes pendientes</h2>
-      @for (order of pendientes(); track order.idEnvio ?? order.idVenta) {
-      <div class="ticket">
-        <strong>ORD-{{ (order.idVenta || '').slice(0, 8) }}</strong>
-        <p>{{ order.observaciones || 'Sin observaciones.' }}</p>
+      <header class="column-title-box">
+        <h2>Órdenes pendientes</h2>
+        <span class="counter-badge">{{ pendientes().length }}</span>
+      </header>
+
+      <div class="tickets-list">
+        @for (order of pendientes(); track order.idEnvio ?? order.idVenta) {
+        <div class="ticket section-enter">
+          <div class="ticket-header">
+            <strong class="order-id">ORD-{{ (order.idVenta || '').slice(0, 8).toUpperCase() }}</strong>
+            <button class="btn-more" type="button">•••</button>
+          </div>
+
+          <div class="ticket-body">
+            <p class="observaciones">{{ order.observaciones || 'Sin observaciones de empaque.' }}</p>
+            <span class="type-pill">{{ order.tipoEnvio }}</span>
+          </div>
+
+          <div class="ticket-footer">
+            <span class="time-stamp">Pendiente</span>
+            <button class="action-btn label-btn" type="button" (click)="avanzarEstado(order)">
+              <span class="btn-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="M6 8V3h12v5" />
+                  <rect x="6" y="14" width="12" height="7" rx="1" ry="1" />
+                  <path d="M6 17H4a1 1 0 0 1-1-1v-5a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v5a1 1 0 0 1-1 1h-2" />
+                </svg>
+              </span>
+              <span>Imprimir etiqueta</span>
+            </button>
+          </div>
+        </div>
+        } @empty {
+        <div class="ticket empty">Sin pendientes</div>
+        }
       </div>
-      } @empty {
-      <div class="ticket empty">Sin pendientes</div>
-      }
     </article>
 
     <article class="bookly-panel column">
-      <h2>Embalaje y etiquetas</h2>
-      @for (order of embalaje(); track order.idEnvio ?? order.idVenta) {
-      <div class="ticket">
-        <strong>ORD-{{ (order.idVenta || '').slice(0, 8) }}</strong>
-        <p>{{ order.numeroTracking || 'Tracking pendiente' }}</p>
+      <header class="column-title-box">
+        <h2>Embalaje y etiquetas</h2>
+        <span class="counter-badge">{{ embalaje().length }}</span>
+      </header>
+
+      <div class="tickets-list">
+        @for (order of embalaje(); track order.idEnvio ?? order.idVenta) {
+        <div class="ticket section-enter">
+          <div class="ticket-header">
+            <strong class="order-id text-gold">ORD-{{ (order.idVenta || '').slice(0, 8).toUpperCase() }}</strong>
+            <button class="btn-more" type="button">•••</button>
+          </div>
+
+          <div class="ticket-body">
+            <p class="tracking-code">
+              <span class="inline-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="M3 7.5 12 3l9 4.5-9 4.5L3 7.5Z" />
+                  <path d="M3 7.5V16.5L12 21l9-4.5V7.5" />
+                  <path d="M12 12v9" />
+                </svg>
+              </span>
+              {{ order.numeroTracking || 'Tracking pendiente' }}
+            </p>
+            <span class="status-inner-tag">{{ order.estadoLogistica || order.estado }}</span>
+          </div>
+
+          <div class="ticket-footer">
+            <span class="time-stamp">En proceso</span>
+            <button class="action-btn orange-btn" type="button" (click)="avanzarEstado(order)">
+              <span class="btn-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="M3 6h11v8H3z" />
+                  <path d="M14 10h3l3 3v1h-6z" />
+                  <circle cx="7" cy="17" r="2" />
+                  <circle cx="17" cy="17" r="2" />
+                  <path d="M5 17h-2v-2" />
+                </svg>
+              </span>
+              <span>Despacho</span>
+            </button>
+          </div>
+        </div>
+        } @empty {
+        <div class="ticket empty">Sin órdenes en proceso</div>
+        }
       </div>
-      } @empty {
-      <div class="ticket empty">Sin ordenes en proceso</div>
-      }
     </article>
 
     <article class="bookly-panel column">
-      <h2>Shipped</h2>
-      @for (order of shipped(); track order.idEnvio ?? order.idVenta) {
-      <div class="ticket">
-        <strong>ORD-{{ (order.idVenta || '').slice(0, 8) }}</strong>
-        <p>{{ order.empresaCorreo || 'Entrega finalizada' }}</p>
+      <header class="column-title-box">
+        <h2>Shipped</h2>
+        <span class="counter-badge">{{ shipped().length }}</span>
+      </header>
+
+      <div class="tickets-list">
+        @for (order of shipped(); track order.idEnvio ?? order.idVenta) {
+        <div class="ticket ticket-completed section-enter">
+          <div class="ticket-header">
+            <strong class="order-id text-muted">ORD-{{ (order.idVenta || '').slice(0, 8).toUpperCase() }}</strong>
+            <button class="btn-more" type="button">•••</button>
+          </div>
+
+          <div class="ticket-body">
+            <p class="courier-text">Compañía: <strong>{{ order.empresaCorreo || 'Correo asignado' }}</strong></p>
+            <p class="tracking-sub" *ngIf="order.numeroTracking">Tracking: {{ order.numeroTracking }}</p>
+          </div>
+
+          <div class="ticket-footer">
+            <span class="success-status">
+              <span class="inline-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="m8 12 2.5 2.5L16 9" />
+                </svg>
+              </span>
+              Entregado
+            </span>
+          </div>
+        </div>
+        } @empty {
+        <div class="ticket empty">Sin entregadas</div>
+        }
       </div>
-      } @empty {
-      <div class="ticket empty">Sin entregadas</div>
-      }
     </article>
+
   </div>
+  }
 </section>

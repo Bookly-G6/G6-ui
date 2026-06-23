@@ -12,6 +12,7 @@ import { Logistica } from '../../../../models/logistica.model';
 export class AdminOrdersPage {
   private readonly logisticaService = inject(LogisticaService);
   readonly allOrders = signal<Logistica[]>([]);
+  readonly loading = signal(true);
 
   readonly pendientes = computed(() =>
     this.allOrders().filter((order) => {
@@ -35,9 +36,56 @@ export class AdminOrdersPage {
   );
 
   constructor() {
+    this.loadLogistica();
+  }
+
+  private loadLogistica(): void {
+    this.loading.set(true);
     this.logisticaService.getLogistica().subscribe({
-      next: (orders) => this.allOrders.set(orders),
-      error: () => this.allOrders.set([]),
+      next: (orders) => {
+        this.allOrders.set(orders);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.allOrders.set([]);
+        this.loading.set(false);
+      },
+    });
+  }
+
+  // Ejecuta la actualización parcial en base al DTO de tu API
+  avanzarEstado(order: Logistica): void {
+    if (!order.idEnvio) return;
+
+    let nuevoEstado = '';
+    let datosExtra = {};
+
+    const estadoActual = (order.estado ?? order.estadoLogistica ?? '').toUpperCase();
+
+    if (estadoActual === 'EN_PREPARACION' || estadoActual === 'LISTO_PARA_RETIRO') {
+      nuevoEstado = 'DESPACHADO';
+    } else if (estadoActual === 'DESPACHADO' || estadoActual === 'EN_CAMINO') {
+      nuevoEstado = 'ENTREGADO';
+      datosExtra = { numeroTracking: 'AR-987654321X', empresaCorreo: 'Andreani' }; // Datos requeridos por el DTO
+    }
+
+    if (!nuevoEstado) return;
+
+    // Asumimos que agregamos el método 'actualizarEstado' a tu logisticaService que hace el PATCH
+    this.logisticaService.actualizarEstado(order.idEnvio, nuevoEstado, datosExtra).subscribe({
+      next: (updatedOrder) => {
+        // Actualizamos de forma reactiva el ítem en la señal
+        this.allOrders.update((orders) =>
+          orders.map((o) =>
+            o.idEnvio === order.idEnvio
+              ? { ...o, estado: nuevoEstado, estadoLogistica: nuevoEstado, ...datosExtra }
+              : o,
+          ),
+        );
+      },
+      error: (err) => {
+        console.error('Error al actualizar el estado del envío', err);
+      },
     });
   }
 }
