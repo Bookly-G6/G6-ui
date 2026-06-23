@@ -54,6 +54,14 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./modules/admin/pages/admin-sale/admin-sale.page').then((m) => m.AdminSalePage),
       },
+      {
+        path: 'admin/inventario',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./modules/admin/pages/admin-stock/admin-stock.page').then(
+            (m) => m.AdminStockPage,
+          ),
+      },
     ],
   },
   {

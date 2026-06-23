@@ -56,6 +56,7 @@ function handleApiError(
   const isProtectedEndpoint =
     requestUrl.includes('/carrito') ||
     requestUrl.includes('/ventas') ||
+    requestUrl.includes('/inventario') ||
     requestUrl.includes('/auth/me');
 
   if (error.status === 401) {

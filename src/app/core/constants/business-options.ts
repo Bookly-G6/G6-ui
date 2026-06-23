@@ -100,3 +100,6 @@ export type LogisticaEstadoOption = (typeof LOGISTICA_ESTADO_OPTIONS)[number];
 
 export const TIPO_ENVIO_OPTIONS = ['DOMICILIO', 'RETIRO_SUCURSAL'] as const;
 export type TipoEnvioOption = (typeof TIPO_ENVIO_OPTIONS)[number];
+
+export const STOCK_MOVIMIENTO_OPTIONS = ['ENTRADA', 'SALIDA'] as const;
+export type StockMovimientoOption = (typeof STOCK_MOVIMIENTO_OPTIONS)[number];

@@ -1,0 +1,124 @@
+<section class="stock-wrap">
+  <header>
+    <h1>Gestión de Inventario</h1>
+    <p>Registra entradas y salidas de stock y visualiza existencias por producto.</p>
+  </header>
+
+  <div class="stock-grid">
+    <article class="bookly-panel stock-form-panel">
+      <h2>Registra Entrada o Salida de Stock de un producto</h2>
+
+      <form [formGroup]="movementForm" (ngSubmit)="onSubmit()" class="form-grid">
+        <div class="field field-span-2">
+          <label for="idProducto">Elegir producto</label>
+          <select id="idProducto" class="bookly-input" formControlName="idProducto">
+            <option value="">Selecciona un producto</option>
+            @for (product of products(); track product.idProducto) {
+            <option [value]="product.idProducto">{{ product.nombreProducto }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="cantidad">Cantidad</label>
+          <input id="cantidad" type="number" min="1" class="bookly-input" formControlName="cantidad"
+            placeholder="Ej: 200" />
+        </div>
+
+        <div class="field">
+          <label for="tipoMovimiento">Tipo de Movimiento</label>
+          <select id="tipoMovimiento" class="bookly-input" formControlName="tipoMovimiento">
+            <option value="">Selecciona tipo</option>
+            @for (option of movementOptions; track option) {
+            <option [value]="option">{{ option }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field field-span-2">
+          <label for="idEmpleado">Empleado que registra esta operación</label>
+          <select id="idEmpleado" class="bookly-input" formControlName="idEmpleado">
+            <option value="">Selecciona un empleado</option>
+            @for (employee of employees(); track employee.idEmpleado) {
+            <option [value]="employee.idEmpleado">{{ employeeLabel(employee) }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="actions field-span-2">
+          <button type="submit" class="bookly-btn bookly-btn-primary" [disabled]="submitting()">
+            {{ submitting() ? 'Registrando...' : 'Registrar movimiento' }}
+          </button>
+        </div>
+      </form>
+    </article>
+
+    <article class="bookly-panel stock-list-panel">
+      <h2>Inventario actual</h2>
+
+      @if (loading()) {
+      <p class="empty-state">Cargando inventario...</p>
+      } @else if (inventoryCards().length === 0) {
+      <p class="empty-state">No hay productos en inventario para mostrar.</p>
+      } @else {
+      <div class="cards-list">
+        @for (item of inventoryCards(); track item.idProducto) {
+        <div class="stock-card">
+          <div>
+            <h3>{{ item.nombreProducto }}</h3>
+            <p>{{ item.tipoProducto }}</p>
+          </div>
+          <div class="stock-pill">
+            Stock: {{ item.stock }}
+          </div>
+        </div>
+        }
+      </div>
+      }
+    </article>
+  </div>
+
+  <article class="bookly-panel history-panel">
+    <div class="history-head">
+      <h2>Historial de Movimientos</h2>
+    </div>
+
+    @if (loadingMovimientos()) {
+    <p class="empty-state">Cargando historial...</p>
+    } @else if (movementRows().length === 0) {
+    <p class="empty-state">Aún no hay movimientos registrados.</p>
+    } @else {
+    <div class="history-table-wrap">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Producto</th>
+            <th>Tipo</th>
+            <th>Cantidad</th>
+            <th>Empleado</th>
+            <th>Stock resultante</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (movement of movementRows(); track movement.idMovimiento) {
+          <tr>
+            <td>{{ movement.fecha | date: 'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ movement.nombreProducto }}</td>
+            <td>
+              <span class="type-chip" [class.type-entry]="movement.tipoMovimiento === 'ENTRADA'"
+                [class.type-exit]="movement.tipoMovimiento === 'SALIDA'">
+                {{ movement.tipoMovimiento }}
+              </span>
+            </td>
+            <td>{{ movement.cantidad }}</td>
+            <td>{{ movement.nombreEmpleado }}</td>
+            <td>{{ movement.stockResultante }}</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    }
+  </article>
+</section>
