@@ -39,7 +39,7 @@ export class MainShellComponent {
       if (this.authSession.isAuthenticated() && this.authSession.role() === 'cliente') {
         this.cart.getCart().subscribe({
           error: () => {
-            console.warn('Failed to load cart on init');
+            console.warn('No se pudo obtener el carrito.');
           },
         });
       }

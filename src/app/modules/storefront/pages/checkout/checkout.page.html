@@ -57,8 +57,9 @@
           <div class="form-group">
             <label for="tipoEnvio">Tipo de envío *</label>
             <select id="tipoEnvio" formControlName="tipoEnvio" class="form-input">
-              <option value="DOMICILIO">DOMICILIO</option>
-              <option value="RETIRO_SUCURSAL">RETIRO</option>
+              @for (tipoEnvio of tipoEnvioOptions; track tipoEnvio) {
+              <option [value]="tipoEnvio">{{ tipoEnvio }}</option>
+              }
             </select>
           </div>
 

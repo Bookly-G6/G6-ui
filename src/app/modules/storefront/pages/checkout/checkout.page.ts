@@ -7,6 +7,7 @@ import { CheckoutService } from '../../../../core/services/checkout.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { NotificationService } from '../../../../services/notification';
 import { CheckoutRequest } from '../../../../models/venta.model';
+import { TIPO_ENVIO_OPTIONS, TipoEnvioOption } from '../../../../core/constants/business-options';
 
 @Component({
   selector: 'app-checkout-page',
@@ -25,6 +26,7 @@ export class CheckoutPage {
 
   readonly loading = signal(false);
   readonly checkoutForm!: FormGroup;
+  readonly tipoEnvioOptions = TIPO_ENVIO_OPTIONS;
 
   readonly cartTotal = computed(() =>
     this.cart.items().reduce((sum, item) => sum + item.precioUnitario * item.cantidad, 0),
@@ -42,7 +44,7 @@ export class CheckoutPage {
     this.checkoutForm = this.fb.group({
       idSucursal: [1, [Validators.required, Validators.min(1)]],
       idFormaPago: [1, [Validators.required, Validators.min(1)]],
-      tipoEnvio: ['DOMICILIO', Validators.required],
+      tipoEnvio: [this.tipoEnvioOptions[0], Validators.required],
       observacionesEnvio: [''],
     });
   }
@@ -137,7 +139,10 @@ export class CheckoutPage {
 
     const idSucursal = Number(this.checkoutForm.value.idSucursal ?? 1);
     const idFormaPago = Number(this.checkoutForm.value.idFormaPago ?? 1);
-    const tipoEnvio = String(this.checkoutForm.value.tipoEnvio ?? '').trim();
+    const tipoEnvioRaw = String(this.checkoutForm.value.tipoEnvio ?? '').trim();
+    const tipoEnvio = this.tipoEnvioOptions.includes(tipoEnvioRaw as TipoEnvioOption)
+      ? (tipoEnvioRaw as TipoEnvioOption)
+      : this.tipoEnvioOptions[0];
     const observacionesEnvio = String(this.checkoutForm.value.observacionesEnvio ?? '').trim();
 
     return {

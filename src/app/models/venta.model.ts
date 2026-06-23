@@ -1,3 +1,5 @@
+import { SaleOriginOption, TipoEnvioOption } from '../core/constants/business-options';
+
 export interface CheckoutItemRequest {
   idProducto: string;
   cantidad: number;
@@ -10,14 +12,14 @@ export interface CheckoutPagoRequest {
 }
 
 export interface CheckoutRequest {
-  origenVenta: 'WEB' | 'SUCURSAL';
+  origenVenta: SaleOriginOption | 'LOCAL';
   idSucursal: number;
   idCliente?: string;
   idEmpleado?: string;
   items: CheckoutItemRequest[];
   pagos: CheckoutPagoRequest[];
   generarEnvio: boolean;
-  tipoEnvio: string;
+  tipoEnvio: TipoEnvioOption;
   observacionesEnvio?: string;
 }
 

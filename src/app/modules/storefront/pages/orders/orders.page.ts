@@ -4,6 +4,10 @@ import { RouterLink } from '@angular/router';
 import { CheckoutService } from '../../../../core/services/checkout.service';
 import { NotificationService } from '../../../../services/notification';
 import { Venta } from '../../../../models/venta.model';
+import { LOGISTICA_ESTADO_OPTIONS } from '../../../../core/constants/business-options';
+
+const [EN_PREPARACION, LISTO_PARA_RETIRO, DESPACHADO, EN_CAMINO, ENTREGADO] =
+  LOGISTICA_ESTADO_OPTIONS;
 
 @Component({
   selector: 'app-orders-page',
@@ -60,14 +64,14 @@ export class OrdersPage {
 
   private getRank(status: string): number {
     switch (status) {
-      case 'EN_PREPARACION':
+      case EN_PREPARACION:
         return 1;
-      case 'LISTO_PARA_RETIRO':
-      case 'DESPACHADO':
+      case LISTO_PARA_RETIRO:
+      case DESPACHADO:
         return 2;
-      case 'EN_CAMINO':
+      case EN_CAMINO:
         return 3;
-      case 'ENTREGADO':
+      case ENTREGADO:
         return 4;
       default:
         return 1;

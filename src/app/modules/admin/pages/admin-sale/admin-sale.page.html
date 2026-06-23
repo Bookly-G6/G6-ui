@@ -7,6 +7,17 @@
   <div class="pos-grid">
     <article class="bookly-panel block">
       <h2>Registrar cliente sin cita previa</h2>
+      <div class="inputs origin-row">
+        <div>
+          <label for="saleOrigin" class="origin-label">Tipo de venta</label>
+          <select id="saleOrigin" class="bookly-input" [value]="selectedSaleOrigin"
+            (change)="onSaleOriginChange($any($event.target).value)">
+            @for (origin of saleOriginOptions; track origin) {
+            <option [value]="origin">{{ origin }}</option>
+            }
+          </select>
+        </div>
+      </div>
       <div class="inputs">
         <input class="bookly-input" placeholder="Nombre completo" />
         <input class="bookly-input" placeholder="Identificación" />

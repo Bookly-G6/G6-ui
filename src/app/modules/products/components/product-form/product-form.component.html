@@ -158,9 +158,71 @@
         </div>
       </div>
 
+      <div class="rounded-lg border border-slate-200 p-3 space-y-3">
+        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500">
+          Atributos del producto (opcionales)
+        </label>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          @for (attr of productAttributesConfig; track attr.key) {
+          <div [ngSwitch]="attr.type">
+            <!-- Select fields -->
+            @switch (attr.type) {
+            @case ('select') {
+            <div>
+              <label [for]="'attr_' + attr.key"
+                class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                {{ attr.label }}
+              </label>
+              <select [id]="'attr_' + attr.key" [formControlName]="'attr_' + attr.key"
+                class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]">
+                <option value="">-- Sin especificar --</option>
+                @for (option of attr.options; track option) {
+                <option [value]="option">{{ option }}</option>
+                }
+              </select>
+            </div>
+            }
+            <!-- Number fields -->
+            @case ('number') {
+            <div>
+              <label [for]="'attr_' + attr.key"
+                class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                {{ attr.label }}
+              </label>
+              <input type="number" min="0" [id]="'attr_' + attr.key" [formControlName]="'attr_' + attr.key"
+                [placeholder]="attr.placeholder || ''"
+                class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]" />
+            </div>
+            }
+            <!-- Text fields -->
+            @case ('text') {
+            <div>
+              <label [for]="'attr_' + attr.key"
+                class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                {{ attr.label }}
+              </label>
+              <input type="text" [id]="'attr_' + attr.key" [formControlName]="'attr_' + attr.key"
+                [placeholder]="attr.placeholder || ''"
+                class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]" />
+            </div>
+            }
+            <!-- Boolean fields -->
+            @case ('boolean') {
+            <div class="flex items-center gap-2 pt-6">
+              <input [id]="'attr_' + attr.key" type="checkbox" [formControlName]="'attr_' + attr.key" />
+              <label [for]="'attr_' + attr.key" class="text-sm text-slate-700">{{ attr.label }}</label>
+            </div>
+            }
+            }
+          </div>
+          }
+        </div>
+      </div>
+
       <div>
         <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
-          Atributos específicos
+          Atributos específicos adicionales
         </label>
         <div class="space-y-2 rounded-lg border border-slate-200 p-3">
           @for (row of attributeRows; track $index) {
@@ -187,7 +249,8 @@
           </div>
         </div>
         <p class="mt-1 text-[11px] text-slate-500">
-          Tip: los valores numéricos (ej: 96), booleanos (true/false) u objetos JSON se convierten automáticamente.
+          Tip: solo se envían los atributos que selecciones o completes explícitamente. Aquí también puedes agregar
+          claves extra.
         </p>
       </div>
 

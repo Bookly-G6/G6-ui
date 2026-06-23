@@ -2,6 +2,10 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { LogisticaService } from '../../../../services/logistica.service';
 import { Logistica } from '../../../../models/logistica.model';
+import { LOGISTICA_ESTADO_OPTIONS } from '../../../../core/constants/business-options';
+
+const [EN_PREPARACION, LISTO_PARA_RETIRO, DESPACHADO, EN_CAMINO, ENTREGADO] =
+  LOGISTICA_ESTADO_OPTIONS;
 
 @Component({
   selector: 'app-admin-orders-page',
@@ -17,21 +21,21 @@ export class AdminOrdersPage {
   readonly pendientes = computed(() =>
     this.allOrders().filter((order) => {
       const status = (order.estado ?? order.estadoLogistica ?? '').toUpperCase();
-      return status === 'EN_PREPARACION' || status === 'LISTO_PARA_RETIRO';
+      return status === EN_PREPARACION || status === LISTO_PARA_RETIRO;
     }),
   );
 
   readonly embalaje = computed(() =>
     this.allOrders().filter((order) => {
       const status = (order.estado ?? order.estadoLogistica ?? '').toUpperCase();
-      return status === 'DESPACHADO' || status === 'EN_CAMINO';
+      return status === DESPACHADO || status === EN_CAMINO;
     }),
   );
 
   readonly shipped = computed(() =>
     this.allOrders().filter((order) => {
       const status = (order.estado ?? order.estadoLogistica ?? '').toUpperCase();
-      return status === 'ENTREGADO';
+      return status === ENTREGADO;
     }),
   );
 
@@ -62,10 +66,10 @@ export class AdminOrdersPage {
 
     const estadoActual = (order.estado ?? order.estadoLogistica ?? '').toUpperCase();
 
-    if (estadoActual === 'EN_PREPARACION' || estadoActual === 'LISTO_PARA_RETIRO') {
-      nuevoEstado = 'DESPACHADO';
-    } else if (estadoActual === 'DESPACHADO' || estadoActual === 'EN_CAMINO') {
-      nuevoEstado = 'ENTREGADO';
+    if (estadoActual === EN_PREPARACION || estadoActual === LISTO_PARA_RETIRO) {
+      nuevoEstado = DESPACHADO;
+    } else if (estadoActual === DESPACHADO || estadoActual === EN_CAMINO) {
+      nuevoEstado = ENTREGADO;
       datosExtra = { numeroTracking: 'AR-987654321X', empresaCorreo: 'Andreani' }; // Datos requeridos por el DTO
     }
 

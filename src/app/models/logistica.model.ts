@@ -1,11 +1,14 @@
-export type TipoEnvio = 'DOMICILIO' | 'RETIRO_SUCURSAL' | 'DIGITAL';
+import { LogisticaEstadoOption, TipoEnvioOption } from '../core/constants/business-options';
+
+export type TipoEnvio = TipoEnvioOption | 'DIGITAL';
+export type EstadoLogistica = LogisticaEstadoOption;
 
 export interface Logistica {
   idEnvio?: string;
   idVenta: string;
   tipoEnvio: TipoEnvio;
-  estado?: string;
-  estadoLogistica?: string;
+  estado?: EstadoLogistica | string;
+  estadoLogistica?: EstadoLogistica | string;
   empresaCorreo?: string;
   numeroTracking?: string;
   codigoRetiro?: string;

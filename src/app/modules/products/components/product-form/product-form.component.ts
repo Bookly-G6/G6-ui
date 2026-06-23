@@ -1,4 +1,12 @@
-import { Component, EventEmitter, Output, OnInit, Input } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Output,
+  OnInit,
+  Input,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ProductService, ProductUpsertPayload } from '../../../../services/product.services';
@@ -13,6 +21,10 @@ import {
   TipoProducto,
 } from '../../../../models/catalog.model';
 import { catchError, forkJoin, of } from 'rxjs';
+import {
+  PRODUCT_ATTRIBUTES_CONFIG,
+  ProductAttributeConfig,
+} from '../../../../core/constants/business-options';
 
 interface AttributeRow {
   key: string;
@@ -26,7 +38,7 @@ interface AttributeRow {
   templateUrl: './product-form.component.html',
   styleUrl: './product-form.component.css',
 })
-export class ProductFormComponent implements OnInit {
+export class ProductFormComponent implements OnInit, OnChanges {
   @Input() productToEdit: Product | null = null;
   @Output() close = new EventEmitter<void>();
   @Output() saved = new EventEmitter<void>();
@@ -39,7 +51,9 @@ export class ProductFormComponent implements OnInit {
   categorias: Categoria[] = [];
   autores: AutorArtista[] = [];
   loadingCatalogs = false;
+  readonly productAttributesConfig = PRODUCT_ATTRIBUTES_CONFIG;
   attributeRows: AttributeRow[] = [{ key: '', value: '' }];
+  private initialConfiguredAttributeKeys = new Set<string>();
 
   constructor(
     private fb: FormBuilder,
@@ -51,31 +65,90 @@ export class ProductFormComponent implements OnInit {
   ngOnInit(): void {
     this.initForm();
     this.loadCatalogs();
-    // Si viene un producto para editar, se cargan los datos en el formulario
     if (this.productToEdit) {
-      this.productForm.patchValue({
-        ...this.productToEdit,
-        idsCategorias: [],
-        idsAutores: [],
-      });
-      this.initAttributeRowsFromProduct(this.productToEdit.atributosEspecificos);
+      this.applyProductToForm(this.productToEdit);
     }
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!this.productForm || !changes['productToEdit']) {
+      return;
+    }
+
+    const current = changes['productToEdit'].currentValue as Product | null;
+    if (current) {
+      this.applyProductToForm(current);
+      return;
+    }
+
+    this.productForm.reset({
+      codigoBarras: '',
+      nombreProducto: '',
+      descripcion: '',
+      precioCosto: null,
+      precioActual: 1,
+      activo: true,
+      idTipoProducto: this.tiposProducto[0]?.idTipoProducto ?? 1,
+      idEditorialSello: this.editoriales[0]?.idEditorialSello ?? 1,
+      idRangoEtario: this.rangosEtarios[0]?.idRangoEtario ?? 1,
+      idsCategorias: [],
+      idsAutores: [],
+    });
+    this.productAttributesConfig.forEach((config) => {
+      this.productForm.get(`attr_${config.key}`)?.setValue('');
+    });
+    this.initialConfiguredAttributeKeys.clear();
+    this.attributeRows = [{ key: '', value: '' }];
+  }
+
+  private applyProductToForm(product: Product): void {
+    this.productForm.patchValue(
+      {
+        codigoBarras: product.codigoBarras ?? '',
+        nombreProducto: product.nombreProducto ?? '',
+        descripcion: product.descripcion ?? '',
+        precioCosto: product.precioCosto ?? null,
+        precioActual: Number(product.precioActual ?? 1),
+        activo: Boolean(product.activo),
+        idTipoProducto: Number(product.idTipoProducto ?? 1),
+        idEditorialSello: Number(product.idEditorialSello ?? 1),
+        idRangoEtario: Number(product.idRangoEtario ?? 1),
+        idsCategorias: (product.idsCategorias ?? []).map((id) => Number(id)),
+        idsAutores: (product.idsAutores ?? []).map((id) => Number(id)),
+      },
+      { emitEvent: false },
+    );
+    this.initAttributeRowsFromProduct(product.atributosEspecificos);
+  }
+
   private initForm(): void {
-    this.productForm = this.fb.group({
+    const formControls: Record<string, [unknown, any]> = {
       codigoBarras: ['', [Validators.required, Validators.minLength(8)]],
       nombreProducto: ['', [Validators.required, Validators.maxLength(100)]],
-      descripcion: [''],
-      precioCosto: [null],
+      descripcion: ['', []],
+      precioCosto: [null, []],
       precioActual: [1, [Validators.required, Validators.min(0.01)]],
-      activo: [true],
+      activo: [true, []],
       idTipoProducto: [1, [Validators.required]],
       idEditorialSello: [1, [Validators.required]],
       idRangoEtario: [1, [Validators.required]],
       idsCategorias: [[], [Validators.required]],
-      idsAutores: [[]],
+      idsAutores: [[], []],
+    };
+
+    // Agregar dinámicamente controles para cada atributo configurado
+    this.productAttributesConfig.forEach((config) => {
+      const defaultVal = config.defaultValue ?? '';
+      const validators = config.required ? [Validators.required] : [];
+
+      if (config.type === 'number') {
+        validators.push(Validators.min(0));
+      }
+
+      formControls[`attr_${config.key}`] = [defaultVal, validators];
     });
+
+    this.productForm = this.fb.group(formControls);
   }
 
   addAttributeRow(): void {
@@ -152,20 +225,90 @@ export class ProductFormComponent implements OnInit {
   private initAttributeRowsFromProduct(
     atributosEspecificos: Record<string, unknown> | undefined,
   ): void {
-    if (!atributosEspecificos || Object.keys(atributosEspecificos).length === 0) {
-      this.attributeRows = [{ key: '', value: '' }];
-      return;
+    this.initialConfiguredAttributeKeys.clear();
+
+    // Cargar dinámicamente los valores para cada atributo configurado
+    if (atributosEspecificos) {
+      this.productAttributesConfig.forEach((config) => {
+        const value = atributosEspecificos[config.key];
+        if (value !== undefined) {
+          this.initialConfiguredAttributeKeys.add(config.key);
+          this.productForm.patchValue({
+            [`attr_${config.key}`]: this.coerceAttributeValue(value, config),
+          });
+          return;
+        }
+
+        this.productForm.patchValue({ [`attr_${config.key}`]: '' });
+      });
+    } else {
+      this.productAttributesConfig.forEach((config) => {
+        this.productForm.patchValue({ [`attr_${config.key}`]: '' });
+      });
     }
 
-    this.attributeRows = Object.entries(atributosEspecificos).map(([key, value]) => ({
-      key,
-      value:
-        typeof value === 'string'
-          ? value
-          : typeof value === 'number' || typeof value === 'boolean'
-            ? String(value)
-            : JSON.stringify(value),
-    }));
+    // Atributos personalizados adicionales
+    const configuredKeys = new Set(this.productAttributesConfig.map((c) => c.key));
+    const customRows = Object.entries(atributosEspecificos ?? {})
+      .filter(([key]) => !configuredKeys.has(key))
+      .map(([key, value]) => ({
+        key,
+        value:
+          typeof value === 'string'
+            ? value
+            : typeof value === 'number' || typeof value === 'boolean'
+              ? String(value)
+              : JSON.stringify(value),
+      }));
+
+    this.attributeRows = customRows.length > 0 ? customRows : [{ key: '', value: '' }];
+  }
+
+  private coerceAttributeValue(value: unknown, config: ProductAttributeConfig): unknown {
+    if (config.type === 'number') {
+      return Number(value) || 0;
+    }
+    if (config.type === 'boolean') {
+      return Boolean(value);
+    }
+    return String(value);
+  }
+
+  private buildAtributosEspecificosFromForm(): Record<string, unknown> {
+    const attributes: Record<string, unknown> = {};
+
+    // Construir desde controles configurados
+    this.productAttributesConfig.forEach((config) => {
+      const val = this.productForm.get(`attr_${config.key}`)?.value;
+
+      if (config.type === 'boolean') {
+        const boolValue = Boolean(val);
+        if (boolValue || this.initialConfiguredAttributeKeys.has(config.key)) {
+          attributes[config.key] = boolValue;
+        }
+        return;
+      }
+
+      if (config.type === 'number') {
+        if (val === null || val === undefined || val === '') {
+          return;
+        }
+        const numericValue = Number(val);
+        if (Number.isFinite(numericValue)) {
+          attributes[config.key] = numericValue;
+        }
+        return;
+      }
+
+      const textValue = String(val ?? '').trim();
+      if (textValue !== '') {
+        attributes[config.key] = textValue;
+      }
+    });
+
+    // Agregar atributos personalizados adicionales
+    const customAttributes = this.buildAtributosEspecificosFromRows();
+    return { ...attributes, ...customAttributes };
   }
 
   private parseAttributeValue(rawValue: string): unknown {
@@ -250,7 +393,7 @@ export class ProductFormComponent implements OnInit {
 
     this.isSubmitting = true;
     const raw = this.productForm.getRawValue();
-    const atributosEspecificos = this.buildAtributosEspecificosFromRows();
+    const atributosEspecificos = this.buildAtributosEspecificosFromForm();
 
     const productData: ProductUpsertPayload = {
       codigoBarras: raw.codigoBarras,

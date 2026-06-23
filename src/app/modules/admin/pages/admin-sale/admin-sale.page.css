@@ -25,6 +25,18 @@
   gap: 0.6rem;
 }
 
+.origin-row {
+  grid-template-columns: minmax(0, 260px);
+}
+
+.origin-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--bookly-muted);
+}
+
 .summary strong {
   display: block;
   margin: 0.8rem 0;
