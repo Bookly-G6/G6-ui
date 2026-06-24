@@ -53,17 +53,20 @@
       </div>
 
       @if (detailAttributes().length > 0) {
+      @if (detailAttributes().length > 0) {
       <section class="attributes-block">
-        <h2>Especificaciones técnicas</h2>
-        <div class="attributes-grid">
+        <h2>Especificaciones</h2>
+
+        <div class="attribute-list">
           @for (attr of detailAttributes(); track attr.key) {
-          <article class="attribute-item">
-            <p>{{ attr.key }}</p>
-            <strong>{{ attr.value }}</strong>
-          </article>
+          <div class="attribute-row">
+            <span class="attribute-key">{{ attr.key }}</span>
+            <strong class="attribute-value">{{ attr.value }}</strong>
+          </div>
           }
         </div>
       </section>
+      }
       }
     </div>
   </article>

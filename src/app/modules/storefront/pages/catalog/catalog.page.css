@@ -83,7 +83,7 @@
 }
 
 .cover {
-  min-height: 70px;
+  min-height: 60px;
   padding: 0.9rem;
   display: flex;
   flex-direction: column;

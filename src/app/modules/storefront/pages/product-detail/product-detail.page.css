@@ -26,7 +26,7 @@
 /* Contenedor Grid Principal */
 .detail-card {
   display: grid;
-  grid-template-columns: 340px 1fr;
+  grid-template-columns: 280px 1fr;
   overflow: hidden;
   border-radius: 1.1rem;
   background: #fff;
@@ -126,6 +126,13 @@
   color: var(--bookly-blue);
 }
 
+.product-description-block {
+  padding: 1rem 1.2rem;
+  border: 1px solid var(--bookly-border);
+  border-radius: 0.9rem;
+  background: #fafafa;
+}
+
 .description-text {
   margin: 0;
   font-size: 1.05rem;
@@ -175,31 +182,52 @@
   margin: 0 0 1rem 0;
 }
 
-.attributes-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.8rem;
+.attributes-block {
+  border-top: 1px solid var(--bookly-border);
+  padding-top: 1.5rem;
 }
 
-.attribute-item {
+.attributes-block h2 {
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  margin: 0 0 1rem 0;
+}
+
+.attribute-list {
+  max-height: 260px;
+  overflow-y: auto;
   border: 1px solid var(--bookly-border);
-  border-radius: 0.8rem;
-  padding: 0.8rem;
+  border-radius: 0.9rem;
   background: #fff;
 }
 
-.attribute-item p {
-  margin: 0 0 0.2rem 0;
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  color: #64748b;
-  letter-spacing: 0.04em;
+.attribute-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid var(--bookly-border);
 }
 
-.attribute-item strong {
-  display: block;
-  font-size: 0.95rem;
+.attribute-row:last-child {
+  border-bottom: none;
+}
+
+.attribute-key {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.attribute-value {
   color: #1e293b;
+  text-align: right;
+  font-size: 0.95rem;
 }
 
 /* Responsive Desktops chicos y tablets */
@@ -221,10 +249,6 @@
   }
 
   .meta-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .attributes-grid {
     grid-template-columns: 1fr;
   }
 }
