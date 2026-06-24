@@ -10,39 +10,104 @@
 
       <form [formGroup]="movementForm" (ngSubmit)="onSubmit()" class="form-grid">
         <div class="field field-span-2">
-          <label for="idProducto">Elegir producto</label>
-          <select id="idProducto" class="bookly-input" formControlName="idProducto">
-            <option value="">Selecciona un producto</option>
-            @for (product of products(); track product.idProducto) {
-            <option [value]="product.idProducto">{{ product.nombreProducto }}</option>
+          <label>Elegir producto</label>
+          <div class="custom-select-container custom-select-container-product" [class.open]="isProductDropdownOpen()">
+            <div class="custom-select-trigger"
+              [class.invalid]="movementForm.get('idProducto')?.touched && movementForm.get('idProducto')?.invalid"
+              (click)="isProductDropdownOpen.set(!isProductDropdownOpen())">
+              <span>{{ getSelectedProductLabel() }}</span>
+              <span class="arrow-icon">▼</span>
+            </div>
+            @if (isProductDropdownOpen()) {
+            <div class="custom-select-dropdown">
+              <div class="custom-select-search-wrap">
+                <input type="text" class="custom-select-search-input"
+                  placeholder="Buscar producto por nombre o código..." [value]="productSearchText()"
+                  (input)="productSearchText.set($any($event.target).value)" (click)="$event.stopPropagation()"
+                  autofocus />
+              </div>
+              <ul class="custom-select-options">
+                @if (filteredProductsSearch().length === 0) {
+                <li class="custom-select-no-results">No se encontraron productos</li>
+                }
+                @for (product of filteredProductsSearch(); track product.idProducto) {
+                <li class="custom-select-option" (click)="selectProduct(product.idProducto!)">
+                  <span class="option-name">{{ product.nombreProducto }}</span>
+                  <span class="option-sub">Cód: {{ product.codigoBarras }}</span>
+                </li>
+                }
+              </ul>
+            </div>
             }
-          </select>
+          </div>
+          @if (movementForm.get('idProducto')?.touched && movementForm.get('idProducto')?.invalid) {
+          <span class="error-text">El producto es obligatorio.</span>
+          }
         </div>
 
         <div class="field">
           <label for="cantidad">Cantidad</label>
-          <input id="cantidad" type="number" min="1" class="bookly-input" formControlName="cantidad"
-            placeholder="Ej: 200" />
+          <input id="cantidad" type="text" inputmode="numeric" pattern="[0-9]*" class="bookly-input"
+            [class.input-error]="movementForm.get('cantidad')?.touched && movementForm.get('cantidad')?.invalid"
+            formControlName="cantidad" placeholder="Ej: 200" (keypress)="onlyPositiveNumbers($event)" />
+          @if (movementForm.get('cantidad')?.touched && movementForm.get('cantidad')?.invalid) {
+          <span class="error-text">
+            @if (movementForm.get('cantidad')?.errors?.['required']) {
+            La cantidad es obligatoria.
+            } @else {
+            Debe ser un número entero positivo.
+            }
+          </span>
+          }
         </div>
 
         <div class="field">
           <label for="tipoMovimiento">Tipo de Movimiento</label>
-          <select id="tipoMovimiento" class="bookly-input" formControlName="tipoMovimiento">
+          <select id="tipoMovimiento" class="bookly-input"
+            [class.input-error]="movementForm.get('tipoMovimiento')?.touched && movementForm.get('tipoMovimiento')?.invalid"
+            formControlName="tipoMovimiento">
             <option value="">Selecciona tipo</option>
-            @for (option of movementOptions; track option) {
-            <option [value]="option">{{ option }}</option>
-            }
+            <option value="ENTRADA">Entrada (ingreso de stock)</option>
+            <option value="SALIDA">Salida (egreso de stock)</option>
           </select>
+          @if (movementForm.get('tipoMovimiento')?.touched && movementForm.get('tipoMovimiento')?.invalid) {
+          <span class="error-text">Selecciona el tipo de movimiento.</span>
+          }
         </div>
 
         <div class="field field-span-2">
-          <label for="idEmpleado">Empleado que registra esta operación</label>
-          <select id="idEmpleado" class="bookly-input" formControlName="idEmpleado">
-            <option value="">Selecciona un empleado</option>
-            @for (employee of employees(); track employee.idEmpleado) {
-            <option [value]="employee.idEmpleado">{{ employeeLabel(employee) }}</option>
+          <label>Empleado que registra esta operación</label>
+          <div class="custom-select-container custom-select-container-employee" [class.open]="isEmployeeDropdownOpen()">
+            <div class="custom-select-trigger"
+              [class.invalid]="movementForm.get('idEmpleado')?.touched && movementForm.get('idEmpleado')?.invalid"
+              (click)="isEmployeeDropdownOpen.set(!isEmployeeDropdownOpen())">
+              <span>{{ getSelectedEmployeeLabel() }}</span>
+              <span class="arrow-icon">▼</span>
+            </div>
+            @if (isEmployeeDropdownOpen()) {
+            <div class="custom-select-dropdown">
+              <div class="custom-select-search-wrap">
+                <input type="text" class="custom-select-search-input" placeholder="Buscar empleado por nombre..."
+                  [value]="employeeSearchText()" (input)="employeeSearchText.set($any($event.target).value)"
+                  (click)="$event.stopPropagation()" />
+              </div>
+              <ul class="custom-select-options">
+                @if (filteredEmployeesSearch().length === 0) {
+                <li class="custom-select-no-results">No se encontraron empleados</li>
+                }
+                @for (employee of filteredEmployeesSearch(); track employee.idEmpleado) {
+                <li class="custom-select-option" (click)="selectEmployee(employee.idEmpleado)">
+                  <span class="option-name">{{ employeeLabel(employee) }}</span>
+                  <span class="option-sub">{{ employeeRole(employee) }}</span>
+                </li>
+                }
+              </ul>
+            </div>
             }
-          </select>
+          </div>
+          @if (movementForm.get('idEmpleado')?.touched && movementForm.get('idEmpleado')?.invalid) {
+          <span class="error-text">El empleado es obligatorio.</span>
+          }
         </div>
 
         <div class="actions field-span-2">
@@ -108,6 +173,7 @@
         <thead>
           <tr>
             <th>Fecha</th>
+            <th>Código de Barra</th>
             <th>Producto</th>
             <th>Tipo</th>
             <th>Cantidad</th>
@@ -119,11 +185,12 @@
           @for (movement of paginatedMovementRows; track movement.idMovimiento) {
           <tr>
             <td>{{ movement.fecha | date: 'dd/MM/yyyy HH:mm' }}</td>
+            <td><code class="barcode-badge">{{ movement.codigoBarras }}</code></td>
             <td>{{ movement.nombreProducto }}</td>
             <td>
               <span class="type-chip" [class.type-entry]="movement.tipoMovimiento === 'ENTRADA'"
                 [class.type-exit]="movement.tipoMovimiento === 'SALIDA'">
-                {{ movement.tipoMovimiento }}
+                {{ movement.tipoMovimiento === 'ENTRADA' ? 'Entrada' : 'Salida' }}
               </span>
             </td>
             <td>{{ movement.cantidad }}</td>

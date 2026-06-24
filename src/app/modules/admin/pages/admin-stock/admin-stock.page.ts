@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, HostListener } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import jsPDF from 'jspdf';
@@ -46,6 +46,11 @@ export class AdminStockPage {
   currentPage = 1;
   pageSize = 10;
 
+  readonly isProductDropdownOpen = signal(false);
+  readonly isEmployeeDropdownOpen = signal(false);
+  readonly productSearchText = signal('');
+  readonly employeeSearchText = signal('');
+
   readonly inventoryCards = computed(() =>
     this.inventario().map((item) => ({
       idProducto: item.idProducto,
@@ -74,6 +79,24 @@ export class AdminStockPage {
     return map;
   });
 
+  readonly productBarcodeById = computed(() => {
+    const map = new Map<string, string>();
+    this.products().forEach((product) => {
+      if (product.idProducto) {
+        map.set(product.idProducto, product.codigoBarras);
+      }
+    });
+
+    this.inventario().forEach((item) => {
+      const barcode = item.producto?.codigoBarras;
+      if (barcode) {
+        map.set(item.idProducto, barcode);
+      }
+    });
+
+    return map;
+  });
+
   readonly employeeNameById = computed(() => {
     const map = new Map<string, string>();
     this.employees().forEach((employee) => {
@@ -88,14 +111,42 @@ export class AdminStockPage {
       nombreProducto:
         this.productNameById().get(movement.idProducto) ??
         `Producto ${movement.idProducto.slice(0, 8)}`,
+      codigoBarras:
+        this.productBarcodeById().get(movement.idProducto) ??
+        '--',
       nombreEmpleado:
         this.employeeNameById().get(movement.idEmpleado) ??
         `Empleado ${movement.idEmpleado.slice(0, 8)}`,
     })),
   );
 
+  readonly filteredProductsSearch = computed(() => {
+    const term = this.productSearchText().toLowerCase().trim();
+    const allProducts = this.products();
+    if (!term) {
+      return allProducts;
+    }
+    return allProducts.filter((product) =>
+      product.nombreProducto.toLowerCase().includes(term) ||
+      product.codigoBarras.toLowerCase().includes(term)
+    );
+  });
+
+  readonly filteredEmployeesSearch = computed(() => {
+    const term = this.employeeSearchText().toLowerCase().trim();
+    const allEmployees = this.employees();
+    if (!term) {
+      return allEmployees;
+    }
+    return allEmployees.filter((employee) =>
+      this.employeeLabel(employee).toLowerCase().includes(term) ||
+      this.employeeRole(employee).toLowerCase().includes(term) ||
+      (employee.email && employee.email.toLowerCase().includes(term))
+    );
+  });
+
   get filteredMovementRows(): Array<
-    InventarioMovimiento & { nombreProducto: string; nombreEmpleado: string }
+    InventarioMovimiento & { nombreProducto: string; nombreEmpleado: string; codigoBarras: string }
   > {
     const term = this.searchTerm.trim().toLowerCase();
     const rows = this.movementRows();
@@ -107,6 +158,7 @@ export class AdminStockPage {
     return rows.filter(
       (movement) =>
         movement.nombreProducto.toLowerCase().includes(term) ||
+        movement.codigoBarras.toLowerCase().includes(term) ||
         movement.nombreEmpleado.toLowerCase().includes(term) ||
         movement.tipoMovimiento.toLowerCase().includes(term),
     );
@@ -117,7 +169,7 @@ export class AdminStockPage {
   }
 
   get paginatedMovementRows(): Array<
-    InventarioMovimiento & { nombreProducto: string; nombreEmpleado: string }
+    InventarioMovimiento & { nombreProducto: string; nombreEmpleado: string; codigoBarras: string }
   > {
     const start = (this.currentPage - 1) * this.pageSize;
     return this.filteredMovementRows.slice(start, start + this.pageSize);
@@ -125,13 +177,67 @@ export class AdminStockPage {
 
   readonly movementForm = this.fb.group({
     idProducto: ['', [Validators.required]],
-    cantidad: [null as number | null, [Validators.required, Validators.min(1)]],
+    cantidad: [
+      null as number | null,
+      [Validators.required, Validators.min(1), Validators.pattern(/^[1-9]\d*$/)],
+    ],
     tipoMovimiento: ['', [Validators.required]],
     idEmpleado: ['', [Validators.required]],
   });
 
   constructor() {
     this.loadData();
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.custom-select-container-product')) {
+      this.isProductDropdownOpen.set(false);
+      this.productSearchText.set('');
+    }
+    if (!target.closest('.custom-select-container-employee')) {
+      this.isEmployeeDropdownOpen.set(false);
+      this.employeeSearchText.set('');
+    }
+  }
+
+  selectProduct(productId: string): void {
+    this.movementForm.patchValue({ idProducto: productId });
+    this.movementForm.get('idProducto')?.markAsTouched();
+    this.isProductDropdownOpen.set(false);
+    this.productSearchText.set('');
+  }
+
+  selectEmployee(employeeId: string): void {
+    this.movementForm.patchValue({ idEmpleado: employeeId });
+    this.movementForm.get('idEmpleado')?.markAsTouched();
+    this.isEmployeeDropdownOpen.set(false);
+    this.employeeSearchText.set('');
+  }
+
+  getSelectedProductLabel(): string {
+    const id = this.movementForm.get('idProducto')?.value;
+    if (!id) return 'Selecciona un producto';
+    const product = this.products().find((p) => p.idProducto === id);
+    return product ? `${product.nombreProducto} (Cód: ${product.codigoBarras})` : 'Selecciona un producto';
+  }
+
+  getSelectedEmployeeLabel(): string {
+    const id = this.movementForm.get('idEmpleado')?.value;
+    if (!id) return 'Selecciona un empleado';
+    const employee = this.employees().find((e) => e.idEmpleado === id);
+    return employee ? this.employeeLabel(employee) : 'Selecciona un empleado';
+  }
+
+  onlyPositiveNumbers(event: KeyboardEvent): boolean {
+    const charCode = event.key;
+    // Allow only numbers 0-9
+    if (charCode < '0' || charCode > '9') {
+      event.preventDefault();
+      return false;
+    }
+    return true;
   }
 
   loadData(): void {
@@ -212,6 +318,20 @@ export class AdminStockPage {
     return employee.idEmpleado;
   }
 
+  employeeRole(employee: EmpleadoInventario): string {
+    const rol = employee.rol;
+    if (!rol) {
+      return 'Empleado';
+    }
+    if (typeof rol === 'string') {
+      return rol;
+    }
+    if (typeof rol === 'object' && 'nombreRol' in rol) {
+      return rol.nombreRol;
+    }
+    return 'Empleado';
+  }
+
   onSearchChange(): void {
     this.currentPage = 1;
   }
@@ -231,6 +351,7 @@ export class AdminStockPage {
 
   private readonly exportHeaders = [
     'Fecha',
+    'Código de Barra',
     'Producto',
     'Tipo',
     'Cantidad',
@@ -256,6 +377,7 @@ export class AdminStockPage {
   private getExportRows(): (string | number)[][] {
     return this.filteredMovementRows.map((movement) => [
       this.formatDate(movement.fecha),
+      movement.codigoBarras,
       movement.nombreProducto,
       movement.tipoMovimiento,
       movement.cantidad,

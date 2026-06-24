@@ -1,4 +1,5 @@
 import { Product } from './product.model';
+import { Rol } from './rol.model';
 import { StockMovimientoOption } from '../core/constants/business-options';
 
 export interface EmpleadoInventario {
@@ -7,6 +8,7 @@ export interface EmpleadoInventario {
   apellido?: string;
   nombreCompleto?: string;
   email?: string;
+  rol?: string | Rol;
 }
 
 export interface InventarioMovimientoRequest {
