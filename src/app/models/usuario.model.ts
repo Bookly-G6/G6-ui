@@ -6,6 +6,8 @@ export interface Usuario {
   apellido: string;
   email: string;
   password?: string;
+  dni?: string;
+  telefono?: string;
   activo?: boolean;
   estado?: string;
   idRol?: number;

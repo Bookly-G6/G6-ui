@@ -83,10 +83,25 @@
       <h2>Historial de Movimientos</h2>
     </div>
 
+    <div class="history-toolbar">
+      <div class="search-wrap">
+        <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()"
+          placeholder="Buscar por producto, empleado o tipo..." class="bookly-input history-search" />
+      </div>
+
+      <div class="history-actions">
+        <button type="button" class="bookly-btn bookly-btn-ghost" (click)="exportExcel()">Excel</button>
+        <button type="button" class="bookly-btn bookly-btn-ghost" (click)="exportCsv()">CSV</button>
+        <button type="button" class="bookly-btn bookly-btn-ghost" (click)="exportPdf()">PDF</button>
+      </div>
+    </div>
+
     @if (loadingMovimientos()) {
     <p class="empty-state">Cargando historial...</p>
-    } @else if (movementRows().length === 0) {
-    <p class="empty-state">Aún no hay movimientos registrados.</p>
+    } @else if (filteredMovementRows.length === 0) {
+    <p class="empty-state">
+      {{ searchTerm ? 'No hay movimientos que coincidan con la búsqueda.' : 'Aún no hay movimientos registrados.' }}
+    </p>
     } @else {
     <div class="history-table-wrap">
       <table class="history-table">
@@ -101,7 +116,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (movement of movementRows(); track movement.idMovimiento) {
+          @for (movement of paginatedMovementRows; track movement.idMovimiento) {
           <tr>
             <td>{{ movement.fecha | date: 'dd/MM/yyyy HH:mm' }}</td>
             <td>{{ movement.nombreProducto }}</td>
@@ -118,6 +133,20 @@
           }
         </tbody>
       </table>
+    </div>
+
+    <div class="history-pagination">
+      <span>Mostrando {{ paginatedMovementRows.length }} de {{ filteredMovementRows.length }} movimientos</span>
+      <div class="history-pagination-actions">
+        <button type="button" class="bookly-btn bookly-btn-ghost" (click)="prevPage()" [disabled]="currentPage === 1">
+          Anterior
+        </button>
+        <span>Página {{ currentPage }} de {{ totalPages }}</span>
+        <button type="button" class="bookly-btn bookly-btn-ghost" (click)="nextPage()"
+          [disabled]="currentPage === totalPages">
+          Siguiente
+        </button>
+      </div>
     </div>
     }
   </article>

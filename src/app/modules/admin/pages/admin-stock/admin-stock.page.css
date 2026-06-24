@@ -143,6 +143,37 @@
   font-size: 0.76rem;
 }
 
+.history-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.search-wrap {
+  flex: 1;
+  min-width: 240px;
+  max-width: 360px;
+}
+
+.history-search {
+  width: 100%;
+}
+
+.history-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.history-actions .bookly-btn,
+.history-pagination-actions .bookly-btn {
+  min-height: 2rem;
+  padding: 0.35rem 0.75rem;
+}
+
 .history-table-wrap {
   overflow: auto;
   border: 1px solid #e2e8f0;
@@ -176,6 +207,28 @@
 
 .history-table tbody tr:hover {
   background: #f8fafc;
+}
+
+.history-pagination {
+  margin-top: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  color: #64748b;
+  font-size: 0.83rem;
+  flex-wrap: wrap;
+}
+
+.history-pagination-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.history-pagination-actions .bookly-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .type-chip {
@@ -222,5 +275,25 @@
   .history-head {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .history-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-wrap {
+    max-width: none;
+    min-width: 0;
+  }
+
+  .history-actions,
+  .history-pagination-actions {
+    width: 100%;
+  }
+
+  .history-actions .bookly-btn,
+  .history-pagination-actions .bookly-btn {
+    flex: 1;
   }
 }

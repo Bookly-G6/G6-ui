@@ -9,18 +9,18 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Nombre</label>
-          <input type="text" formControlName="nombre" placeholder="Ej: Luciano"
+          <input type="text" formControlName="nombre" placeholder="Ej: Luciano" minlength="2" maxlength="80"
             class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]">
-          <small *ngIf="userForm.get('nombre')?.touched && userForm.get('nombre')?.invalid"
-            class="text-rose-600 text-xs">El nombre es obligatorio.</small>
+          <small *ngIf="isControlInvalid('nombre')" class="text-rose-600 text-xs">Nombre obligatorio (2-80), solo letras
+            y espacios.</small>
         </div>
 
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Apellido</label>
-          <input type="text" formControlName="apellido" placeholder="Ej: Favatier"
+          <input type="text" formControlName="apellido" placeholder="Ej: Favatier" minlength="2" maxlength="80"
             class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]">
-          <small *ngIf="userForm.get('apellido')?.touched && userForm.get('apellido')?.invalid"
-            class="text-rose-600 text-xs">El apellido es obligatorio.</small>
+          <small *ngIf="isControlInvalid('apellido')" class="text-rose-600 text-xs">Apellido obligatorio (2-80), solo
+            letras y espacios.</small>
         </div>
       </div>
 
@@ -29,16 +29,35 @@
           <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Email</label>
           <input type="email" formControlName="email" placeholder="correo@dominio.com"
             class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]">
-          <small *ngIf="userForm.get('email')?.touched && userForm.get('email')?.invalid"
-            class="text-rose-600 text-xs">Ingresa un email válido.</small>
+          <small *ngIf="isControlInvalid('email')" class="text-rose-600 text-xs">Ingresa un email válido.</small>
         </div>
 
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Contraseña</label>
           <input type="password" formControlName="password" placeholder="Mínimo 6 caracteres"
             class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]">
-          <small *ngIf="userForm.get('password')?.touched && userForm.get('password')?.invalid"
-            class="text-rose-600 text-xs">La contraseña debe tener al menos 6 caracteres.</small>
+          <small *ngIf="isControlInvalid('password')" class="text-rose-600 text-xs">La contraseña debe tener al menos 6
+            caracteres.</small>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Documento
+            (DNI)</label>
+          <input type="text" formControlName="dni" placeholder="8 dígitos (opcional)" maxlength="8" inputmode="numeric"
+            class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]">
+          <small *ngIf="isControlInvalid('dni')" class="text-rose-600 text-xs">Si lo completas, debe tener exactamente 8
+            dígitos numéricos.</small>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Teléfono</label>
+          <input type="text" formControlName="telefono" placeholder="Solo números (opcional)" maxlength="15"
+            inputmode="numeric"
+            class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]">
+          <small *ngIf="isControlInvalid('telefono')" class="text-rose-600 text-xs">Si lo completas, debe contener solo
+            números (8 a 15 dígitos).</small>
         </div>
       </div>
 
@@ -54,21 +73,22 @@
 
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Rol</label>
-          <select formControlName="idRol"
+          <select formControlName="rol"
             class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]">
             @if (roles.length === 0) {
-            <option [ngValue]="1">Cargando roles...</option>
+            <option value="">Cargando roles...</option>
             } @else {
             @for (rol of roles; track rol.idRol) {
-            <option [ngValue]="rol.idRol">{{ rol.nombreRol }}</option>
+            <option [value]="toBackendRoleFromOption(rol)">{{ rol.nombreRol }}</option>
             }
             }
           </select>
+          <small *ngIf="isControlInvalid('rol')" class="text-rose-600 text-xs">Selecciona un rol.</small>
         </div>
       </div>
 
       <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
-        <button type="button" (click)="onCancel()" [disabled]="isSubmitting"
+        <button type="button" (click)="onCancel()"
           class="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
           Cancelar
         </button>

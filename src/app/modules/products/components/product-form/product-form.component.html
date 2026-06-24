@@ -22,21 +22,20 @@
             (ISBN/UPC)</label>
           <input type="text" formControlName="codigoBarras" placeholder="Ej: 9789507319854"
             class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]"
-            minlength="8" maxlength="20">
-          <small *ngIf="productForm.get('codigoBarras')?.touched && productForm.get('codigoBarras')?.invalid"
-            class="text-rose-600 text-xs">
-            El código es obligatorio (mínimo 8 caracteres).
+            minlength="8" maxlength="20" inputmode="numeric" required>
+          <small *ngIf="isControlInvalid('codigoBarras')" class="text-rose-600 text-xs">
+            El código es obligatorio, numérico y de 8 a 20 dígitos.
           </small>
         </div>
 
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Título / Nombre del
             Artículo</label>
-          <input type="text" formControlName="nombreProducto" placeholder="Ej: Rayuela"
+          <input type="text" formControlName="nombreProducto" placeholder="Ej: Rayuela" minlength="3" maxlength="100"
+            required
             class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]">
-          <small *ngIf="productForm.get('nombreProducto')?.touched && productForm.get('nombreProducto')?.invalid"
-            class="text-rose-600 text-xs">
-            El nombre es requerido.
+          <small *ngIf="isControlInvalid('nombreProducto')" class="text-rose-600 text-xs">
+            El nombre es obligatorio y debe tener entre 3 y 100 caracteres.
           </small>
         </div>
       </div>
@@ -44,8 +43,12 @@
       <div>
         <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Descripción
           corta</label>
-        <textarea formControlName="descripcion" rows="2" placeholder="Detalles del artículo..."
+        <textarea formControlName="descripcion" rows="2" placeholder="Detalles del artículo..." minlength="10"
+          maxlength="500" required
           class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A] resize-none"></textarea>
+        <small *ngIf="isControlInvalid('descripcion')" class="text-rose-600 text-xs">
+          La descripción es obligatoria y debe tener entre 10 y 500 caracteres.
+        </small>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -54,10 +57,13 @@
             Costo</label>
           <div class="relative">
             <span class="absolute left-3 top-2 text-slate-400 text-sm">$</span>
-            <input type="number" formControlName="precioCosto" step="0.01" min="0"
+            <input type="number" formControlName="precioCosto" step="0.01" min="0" required
               class="w-full border border-slate-200 pl-7 pr-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]"
               placeholder="Ej: 8500.00">
           </div>
+          <small *ngIf="isControlInvalid('precioCosto')" class="text-rose-600 text-xs">
+            El precio de costo es obligatorio y no puede ser negativo.
+          </small>
         </div>
 
         <div>
@@ -68,8 +74,7 @@
             <input type="number" formControlName="precioActual" step="0.01" min="0"
               class="w-full border border-slate-200 pl-7 pr-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]">
           </div>
-          <small *ngIf="productForm.get('precioActual')?.touched && productForm.get('precioActual')?.invalid"
-            class="text-rose-600 text-xs">
+          <small *ngIf="isControlInvalid('precioActual')" class="text-rose-600 text-xs">
             El precio debe ser mayor a 0.
           </small>
         </div>
@@ -97,6 +102,9 @@
             <option [ngValue]="1">Sin datos</option>
             }
           </select>
+          <small *ngIf="isControlInvalid('idTipoProducto')" class="text-rose-600 text-xs">
+            Selecciona un tipo de producto.
+          </small>
         </div>
         <div>
           <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Editorial /
@@ -109,6 +117,9 @@
             <option [ngValue]="1">Sin datos</option>
             }
           </select>
+          <small *ngIf="isControlInvalid('idEditorialSello')" class="text-rose-600 text-xs">
+            Selecciona una editorial o sello.
+          </small>
         </div>
         <div>
           <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Rango Etario</label>
@@ -120,6 +131,9 @@
             <option [ngValue]="1">Sin datos</option>
             }
           </select>
+          <small *ngIf="isControlInvalid('idRangoEtario')" class="text-rose-600 text-xs">
+            Selecciona un rango etario.
+          </small>
         </div>
       </div>
 
@@ -139,6 +153,9 @@
             <p class="text-xs text-slate-500">Sin categorías disponibles.</p>
             }
           </div>
+          <small *ngIf="isControlInvalid('idsCategorias')" class="text-rose-600 text-xs">
+            Debes seleccionar al menos una categoría.
+          </small>
         </div>
 
         <div class="rounded-lg border border-slate-200 p-3">
@@ -156,6 +173,9 @@
             <p class="text-xs text-slate-500">Sin autores disponibles.</p>
             }
           </div>
+          <small *ngIf="isControlInvalid('idsAutores')" class="text-rose-600 text-xs">
+            Debes seleccionar al menos un autor o artista.
+          </small>
         </div>
       </div>
 
@@ -256,11 +276,11 @@
       </div>
 
       <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
-        <button type="button" (click)="onCancel()" [disabled]="isSubmitting"
+        <button type="button" (click)="onCancel()"
           class="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
           Cancelar
         </button>
-        <button type="submit" [disabled]="isSubmitting"
+        <button type="submit" [disabled]="isSubmitting || loadingCatalogs"
           class="px-4 py-2 bg-[#1E3A8A] hover:bg-[#162a65] text-white rounded-lg text-sm font-medium transition-colors shadow-sm disabled:opacity-50">
           {{ isSubmitting ? 'Guardando...' : 'Guardar Producto' }}
         </button>
