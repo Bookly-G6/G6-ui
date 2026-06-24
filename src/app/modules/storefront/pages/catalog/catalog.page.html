@@ -48,9 +48,9 @@
 
         <!-- Rango de precio -->
         <div class="minimal-price-range flex items-center gap-1 bg-white">
-          <input type="number" class="minimal-price-input" placeholder="Mín $" [value]="minPrice() !== null ? minPrice() : ''" (input)="minPrice.set($any($event.target).value !== '' ? +$any($event.target).value : null)" />
+          <input type="number" min="0" class="minimal-price-input" placeholder="Mín $" [value]="minPrice() !== null ? minPrice() : ''" (keydown)="preventInvalidKeys($event)" (paste)="preventInvalidPaste($event)" (input)="setMinPrice($any($event.target).value)" />
           <span class="text-slate-300 text-[10px] select-none">-</span>
-          <input type="number" class="minimal-price-input" placeholder="Máx $" [value]="maxPrice() !== null ? maxPrice() : ''" (input)="maxPrice.set($any($event.target).value !== '' ? +$any($event.target).value : null)" />
+          <input type="number" min="0" class="minimal-price-input" placeholder="Máx $" [value]="maxPrice() !== null ? maxPrice() : ''" (keydown)="preventInvalidKeys($event)" (paste)="preventInvalidPaste($event)" (input)="setMaxPrice($any($event.target).value)" />
         </div>
 
         <!-- Botón de Limpieza (Solo visible si hay algún filtro activo) -->

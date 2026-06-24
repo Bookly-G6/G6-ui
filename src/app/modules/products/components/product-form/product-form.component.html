@@ -193,10 +193,10 @@
         <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500">
           Atributos del producto (opcionales)
         </label>
-
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
           @for (attr of productAttributesConfig; track attr.key) {
-          <div [ngSwitch]="attr.type">
+          @if (productForm.get('attr_' + attr.key)?.enabled) {
+          <div [ngSwitch]="attr.type" class="animate-in fade-in slide-in-from-top-1 duration-200">
             <!-- Select fields -->
             @switch (attr.type) {
             @case ('select') {
@@ -206,9 +206,9 @@
                 {{ attr.label }}
               </label>
               <select [id]="'attr_' + attr.key" [formControlName]="'attr_' + attr.key"
-                class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]">
+                class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A] disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed">
                 <option value="">-- Sin especificar --</option>
-                @for (option of attr.options; track option) {
+                @for (option of (attr.key === 'formato' ? availableFormatoOptions : attr.options); track option) {
                 <option [value]="option">{{ option }}</option>
                 }
               </select>
@@ -223,7 +223,7 @@
               </label>
               <input type="number" min="0" [id]="'attr_' + attr.key" [formControlName]="'attr_' + attr.key"
                 [placeholder]="attr.placeholder || ''"
-                class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]" />
+                class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A] disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed" />
             </div>
             }
             <!-- Text fields -->
@@ -235,18 +235,20 @@
               </label>
               <input type="text" [id]="'attr_' + attr.key" [formControlName]="'attr_' + attr.key"
                 [placeholder]="attr.placeholder || ''"
-                class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]" />
+                class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A] disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed" />
             </div>
             }
             <!-- Boolean fields -->
             @case ('boolean') {
             <div class="flex items-center gap-2 pt-6">
-              <input [id]="'attr_' + attr.key" type="checkbox" [formControlName]="'attr_' + attr.key" />
+              <input [id]="'attr_' + attr.key" type="checkbox" [formControlName]="'attr_' + attr.key"
+                class="disabled:opacity-50 disabled:cursor-not-allowed" />
               <label [for]="'attr_' + attr.key" class="text-sm text-slate-700">{{ attr.label }}</label>
             </div>
             }
             }
           </div>
+          }
           }
         </div>
       </div>

@@ -192,6 +192,66 @@ export class CatalogPage {
     this.catalogState.setSearchTerm('');
   }
 
+  preventInvalidKeys(event: KeyboardEvent): void {
+    const allowedKeys = [
+      'Backspace',
+      'Tab',
+      'Enter',
+      'Escape',
+      'Delete',
+      'ArrowLeft',
+      'ArrowRight',
+      'ArrowUp',
+      'ArrowDown',
+      'Home',
+      'End',
+    ];
+    if (allowedKeys.includes(event.key)) {
+      return;
+    }
+
+    const isDigit = /^[0-9]$/.test(event.key);
+    const isSeparator = event.key === '.' || event.key === ',';
+
+    if (isSeparator) {
+      const input = event.target as HTMLInputElement;
+      if (input.value.includes('.') || input.value.includes(',')) {
+        event.preventDefault();
+      }
+      return;
+    }
+
+    if (!isDigit) {
+      event.preventDefault();
+    }
+  }
+
+  preventInvalidPaste(event: ClipboardEvent): void {
+    const pasteData = event.clipboardData?.getData('text') || '';
+    const isPositiveNumber = /^[0-9]+([.,][0-9]+)?$/.test(pasteData);
+    if (!isPositiveNumber) {
+      event.preventDefault();
+    }
+  }
+
+  setMinPrice(value: string): void {
+    const num = value !== '' ? Number(value.replace(',', '.')) : null;
+    if (num === null || (num >= 0 && !isNaN(num))) {
+      this.minPrice.set(num);
+    } else {
+      this.minPrice.set(null);
+    }
+  }
+
+  setMaxPrice(value: string): void {
+    const num = value !== '' ? Number(value.replace(',', '.')) : null;
+    if (num === null || (num >= 0 && !isNaN(num))) {
+      this.maxPrice.set(num);
+    } else {
+      this.maxPrice.set(null);
+    }
+  }
+
   private loadCatalog(): void {
     this.loading.set(true);
 
