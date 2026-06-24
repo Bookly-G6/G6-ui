@@ -1,3 +1,122 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import 'tailwindcss';
+
+:root {
+  --bookly-blue: #1e3a8a;
+  --bookly-gold: #f59e0b;
+  --bookly-cream: #fffbeb;
+  --bookly-ink: #14213d;
+  --bookly-muted: #7f8db5;
+  --bookly-surface: #ffffff;
+  --bookly-border: #d9dfef;
+  --bookly-shadow: 0 10px 30px rgba(30, 58, 138, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: radial-gradient(circle at 20% 0%, #fffef5 0%, var(--bookly-cream) 45%, #f7f2dd 100%);
+  color: var(--bookly-ink);
+  font-family: 'Roboto', sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  font-family: 'Lora', serif;
+  color: var(--bookly-blue);
+}
+
+.bookly-shell {
+  min-height: 100vh;
+}
+
+.bookly-panel {
+  background: var(--bookly-surface);
+  border: 1px solid var(--bookly-border);
+  border-radius: 1rem;
+  box-shadow: var(--bookly-shadow);
+}
+
+.bookly-panel-font {
+  background: #1e3a8a0d;
+}
+
+.bookly-btn {
+  border: 0;
+  border-radius: 0.7rem;
+  padding: 0.65rem 1rem;
+  font-weight: 600;
+  font-family: 'Roboto', sans-serif;
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    background-color 180ms ease;
+}
+
+.bookly-btn:hover {
+  transform: translateY(-1px);
+}
+
+.bookly-btn-primary {
+  background: var(--bookly-blue);
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(30, 58, 138, 0.25);
+}
+
+.bookly-btn-primary:hover {
+  background: #16306f;
+}
+
+.bookly-btn-gold {
+  background: var(--bookly-gold);
+  color: #fff;
+}
+
+.bookly-btn-ghost {
+  background: #fff;
+  color: var(--bookly-blue);
+  border: 1px solid var(--bookly-border);
+}
+
+.bookly-input {
+  width: 100%;
+  border: 1px solid var(--bookly-border);
+  border-radius: 999px;
+  padding: 0.85rem 1rem;
+  font-size: 0.95rem;
+  color: var(--bookly-ink);
+  background: #fff;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.bookly-input:focus-visible {
+  outline: none;
+  border-color: var(--bookly-blue);
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.15);
+}
+
+.section-enter {
+  animation: section-enter 420ms ease both;
+}
+
+@keyframes section-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

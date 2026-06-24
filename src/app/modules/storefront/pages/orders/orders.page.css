@@ -1,0 +1,169 @@
+.orders-wrap {
+  max-width: 980px;
+  margin: 0 auto;
+  display: grid;
+  gap: 1rem;
+}
+
+.orders-wrap h1 {
+  font-family: Lora, serif;
+  font-size: 2rem;
+  color: var(--bookly-blue);
+  margin-bottom: 1.5rem;
+}
+
+.loading {
+  text-align: center;
+  color: var(--bookly-muted);
+  padding: 2rem;
+}
+
+.order-card {
+  padding: 1.5rem;
+}
+
+.order-card header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px solid var(--bookly-gold);
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+.order-card header h2 {
+  font-size: 1.5rem;
+  color: var(--bookly-blue);
+  margin: 0;
+  font-family: Lora, serif;
+}
+
+.order-card header p {
+  margin: 0.3rem 0 0 0;
+  color: var(--bookly-muted);
+  font-size: 0.9rem;
+}
+
+.order-card header strong {
+  color: var(--bookly-gold);
+  font-family: Lora, serif;
+  font-size: 1.3rem;
+}
+
+.order-status {
+  margin-bottom: 1.2rem;
+  padding: 0.75rem;
+  background: #f9fafb;
+  border-radius: 4px;
+}
+
+.order-status p {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.status-confirmada,
+.status-completada {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.status-en_preparacion {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.status-en_camino {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.status-entregado {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-cancelada {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.order-items {
+  margin-bottom: 1.2rem;
+}
+
+.order-items h3 {
+  font-size: 1rem;
+  color: var(--bookly-blue);
+  margin: 0 0 0.75rem 0;
+  font-family: Lora, serif;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0.5rem;
+}
+
+.item-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.item-row span:last-child {
+  font-weight: 600;
+  color: var(--bookly-blue);
+}
+
+.shipping-info {
+  padding: 1rem;
+  background: #f0f9ff;
+  border-left: 3px solid var(--bookly-blue);
+  border-radius: 4px;
+}
+
+.shipping-info h3 {
+  font-size: 1rem;
+  color: var(--bookly-blue);
+  margin: 0 0 0.5rem 0;
+  font-family: Lora, serif;
+}
+
+.shipping-info p {
+  margin: 0.3rem 0;
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+.empty-order {
+  padding: 2.5rem;
+  text-align: center;
+  color: var(--bookly-muted);
+}
+
+.empty-order p {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 700px) {
+  .orders-wrap {
+    gap: 0.75rem;
+  }
+
+  .order-card header {
+    flex-direction: column;
+  }
+
+  .order-card header strong {
+    margin-top: 0.75rem;
+  }
+}

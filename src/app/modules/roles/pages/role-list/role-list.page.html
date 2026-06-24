@@ -1,0 +1,59 @@
+<div class="flex flex-col gap-2 md:flex-row md:justify-between md:items-center mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-slate-900">Gestión de Roles</h1>
+    <p class="text-sm text-slate-500">Administración de roles del sistema</p>
+  </div>
+  <button (click)="openModal(null)"
+    class="bg-[#1E3A8A] hover:bg-[#162a65] text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center justify-center gap-2">
+    <span>+</span> Nuevo Rol
+  </button>
+</div>
+
+<div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden max-w-4xl mx-auto">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+          <th class="px-6 py-4">Nombre</th>
+          <th class="px-6 py-4 text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100 text-sm text-slate-700">
+        @for (role of roles; track role.idRol) {
+        <tr class="hover:bg-slate-50 transition-colors cursor-pointer" (click)="openDetail(role)">
+          <td class="px-6 py-4 text-slate-700">{{ role.nombreRol }}</td>
+          <td class="px-6 py-4 text-right text-xs" (click)="$event.stopPropagation()">
+            <button (click)="openModal(role)" class="text-[#1E3A8A] hover:underline font-medium mr-3">Editar</button>
+            <button (click)="requestDeleteRole(role.idRol)"
+              class="text-rose-600 hover:underline font-medium">Eliminar</button>
+          </td>
+        </tr>
+        } @empty {
+        <tr>
+          <td colspan="2" class="px-6 py-12 text-center">
+            <div class="w-12 h-12 bg-[#FFFBEB] rounded-full flex items-center justify-center mx-auto mb-3">
+              <span class="text-xl">🔐</span>
+            </div>
+            <h3 class="text-base font-semibold text-slate-800 mb-0.5">No hay roles registrados</h3>
+            <p class="text-xs text-slate-500 max-w-sm mx-auto">Aún no existen roles cargados en el sistema.</p>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+@if (isModalOpen) {
+<app-role-form [roleToEdit]="selectedRole" (close)="closeModal()" (saved)="loadRoles()"></app-role-form>
+}
+
+@if (isDetailOpen && selectedRoleId !== null) {
+<app-role-detail [roleId]="selectedRoleId" (close)="closeDetail()"></app-role-detail>
+}
+
+@if (isDeleteConfirmOpen) {
+<app-confirm-dialog [isOpen]="isDeleteConfirmOpen" title="Eliminar rol" message="¿Seguro que deseas eliminar este rol?"
+  confirmText="Eliminar" cancelText="Cancelar" confirmButtonClass="bg-rose-600 hover:bg-rose-700"
+  (confirmed)="confirmDelete()" (cancelled)="cancelDelete()"></app-confirm-dialog>
+}

@@ -1,35 +1,41 @@
-<div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+<div class="product-form-overlay">
 
-  <div
-    class="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-200">
+  <div class="product-form-dialog animate-in fade-in zoom-in-95 duration-200">
 
-    <div class="bg-[#1E3A8A] text-white px-6 py-4 flex justify-between items-center">
-      <h2 class="text-lg font-bold tracking-wide">Registrar Nuevo Producto</h2>
+    <div class="bg-[#1E3A8A] px-6 py-4 flex justify-between items-center">
+      <h2 class="text-lg font-bold tracking-wide text-white">{{ productToEdit ? 'Editar Producto' : 'Registrar Nuevo
+        Producto' }}
+      </h2>
       <button (click)="onCancel()" class="text-white/80 hover:text-white font-semibold text-xl">&times;</button>
     </div>
 
     <form [formGroup]="productForm" (ngSubmit)="onSubmit()" class="p-6 space-y-4">
+      @if (loadingCatalogs) {
+      <div class="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-blue-900">
+        Cargando catálogos maestros...
+      </div>
+      }
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Código de Barras
             (ISBN/UPC)</label>
-          <input type="text" formControlName="codigo_barras" placeholder="Ej: 9789507319854"
-            class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]">
-          <small *ngIf="productForm.get('codigo_barras')?.touched && productForm.get('codigo_barras')?.invalid"
-            class="text-rose-600 text-xs">
-            El código es obligatorio (mínimo 3 caracteres).
+          <input type="text" formControlName="codigoBarras" placeholder="Ej: 9789507319854"
+            class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]"
+            minlength="8" maxlength="20" inputmode="numeric" required>
+          <small *ngIf="isControlInvalid('codigoBarras')" class="text-rose-600 text-xs">
+            El código es obligatorio, numérico y de 8 a 20 dígitos.
           </small>
         </div>
 
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Título / Nombre del
             Artículo</label>
-          <input type="text" formControlName="nombre_producto" placeholder="Ej: Rayuela"
+          <input type="text" formControlName="nombreProducto" placeholder="Ej: Rayuela" minlength="3" maxlength="100"
+            required
             class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]">
-          <small *ngIf="productForm.get('nombre_producto')?.touched && productForm.get('nombre_producto')?.invalid"
-            class="text-rose-600 text-xs">
-            El nombre es requerido.
+          <small *ngIf="isControlInvalid('nombreProducto')" class="text-rose-600 text-xs">
+            El nombre es obligatorio y debe tener entre 3 y 100 caracteres.
           </small>
         </div>
       </div>
@@ -37,21 +43,38 @@
       <div>
         <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Descripción
           corta</label>
-        <textarea formControlName="descripcion" rows="2" placeholder="Detalles del artículo..."
+        <textarea formControlName="descripcion" rows="2" placeholder="Detalles del artículo..." minlength="10"
+          maxlength="500" required
           class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A] resize-none"></textarea>
+        <small *ngIf="isControlInvalid('descripcion')" class="text-rose-600 text-xs">
+          La descripción es obligatoria y debe tener entre 10 y 500 caracteres.
+        </small>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Precio de
+            Costo</label>
+          <div class="relative">
+            <span class="absolute left-3 top-2 text-slate-400 text-sm">$</span>
+            <input type="number" formControlName="precioCosto" step="0.01" min="0" required
+              class="w-full border border-slate-200 pl-7 pr-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]"
+              placeholder="Ej: 8500.00">
+          </div>
+          <small *ngIf="isControlInvalid('precioCosto')" class="text-rose-600 text-xs">
+            El precio de costo es obligatorio y no puede ser negativo.
+          </small>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Precio de
             Venta</label>
           <div class="relative">
             <span class="absolute left-3 top-2 text-slate-400 text-sm">$</span>
-            <input type="number" formControlName="precio_actual" step="0.01" min="0"
+            <input type="number" formControlName="precioActual" step="0.01" min="0"
               class="w-full border border-slate-200 pl-7 pr-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]">
           </div>
-          <small *ngIf="productForm.get('precio_actual')?.touched && productForm.get('precio_actual')?.invalid"
-            class="text-rose-600 text-xs">
+          <small *ngIf="isControlInvalid('precioActual')" class="text-rose-600 text-xs">
             El precio debe ser mayor a 0.
           </small>
         </div>
@@ -65,47 +88,211 @@
             <option [ngValue]="false">Inactivo (Oculto / Sin Stock)</option>
           </select>
         </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Stock / Cantidad Disponible</label>
+          <input type="number" formControlName="stock" min="0" step="1" required
+            class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]"
+            placeholder="Ej: 10">
+          <small *ngIf="isControlInvalid('stock')" class="text-rose-600 text-xs">
+            El stock es obligatorio y no puede ser menor a 0.
+          </small>
+        </div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 p-3 rounded-lg border border-slate-100">
         <div>
           <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Tipo
             Producto</label>
-          <select formControlName="id_tipo_producto"
+          <select formControlName="idTipoProducto"
             class="w-full border border-slate-200 bg-white px-2 py-1.5 rounded-md text-xs">
-            <option [ngValue]="1">Libro Físico</option>
-            <option [ngValue]="2">E-Book</option>
-            <option [ngValue]="3">Música / Vinilo</option>
+            @for (tipo of tiposProducto; track tipo.idTipoProducto) {
+            <option [ngValue]="tipo.idTipoProducto">{{ tipo.nombreTipoProducto }}</option>
+            } @empty {
+            <option [ngValue]="1">Sin datos</option>
+            }
           </select>
+          <small *ngIf="isControlInvalid('idTipoProducto')" class="text-rose-600 text-xs">
+            Selecciona un tipo de producto.
+          </small>
         </div>
         <div>
           <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Editorial /
             Sello</label>
-          <select formControlName="id_editorial_sello"
+          <select formControlName="idEditorialSello"
             class="w-full border border-slate-200 bg-white px-2 py-1.5 rounded-md text-xs">
-            <option [ngValue]="1">Editorial Planeta</option>
-            <option [ngValue]="2">Sudamericana</option>
+            @for (editorial of editoriales; track editorial.idEditorialSello) {
+            <option [ngValue]="editorial.idEditorialSello">{{ editorial.nombreEditorial }}</option>
+            } @empty {
+            <option [ngValue]="1">Sin datos</option>
+            }
           </select>
+          <small *ngIf="isControlInvalid('idEditorialSello')" class="text-rose-600 text-xs">
+            Selecciona una editorial o sello.
+          </small>
         </div>
         <div>
           <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Rango Etario</label>
-          <select formControlName="id_rango_etario"
+          <select formControlName="idRangoEtario"
             class="w-full border border-slate-200 bg-white px-2 py-1.5 rounded-md text-xs">
-            <option [ngValue]="1">Infantil</option>
-            <option [ngValue]="2">Juvenil</option>
-            <option [ngValue]="3">Adultos</option>
+            @for (rango of rangosEtarios; track rango.idRangoEtario) {
+            <option [ngValue]="rango.idRangoEtario">{{ rango.descripcion }}</option>
+            } @empty {
+            <option [ngValue]="1">Sin datos</option>
+            }
           </select>
+          <small *ngIf="isControlInvalid('idRangoEtario')" class="text-rose-600 text-xs">
+            Selecciona un rango etario.
+          </small>
         </div>
       </div>
 
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="rounded-lg border border-slate-200 p-3">
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+            Categorías
+          </label>
+          <div class="max-h-32 overflow-auto space-y-1">
+            @for (categoria of categorias; track categoria.idCategoria) {
+            <label class="flex items-center gap-2 text-xs text-slate-700">
+              <input type="checkbox" [checked]="isSelected('idsCategorias', categoria.idCategoria)"
+                (change)="toggleMultiSelection('idsCategorias', categoria.idCategoria)" />
+              <span>{{ categoria.nombreCategoria }}</span>
+            </label>
+            } @empty {
+            <p class="text-xs text-slate-500">Sin categorías disponibles.</p>
+            }
+          </div>
+          <small *ngIf="isControlInvalid('idsCategorias')" class="text-rose-600 text-xs">
+            Debes seleccionar al menos una categoría.
+          </small>
+        </div>
+
+        <div class="rounded-lg border border-slate-200 p-3">
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+            Autores / Artistas
+          </label>
+          <div class="max-h-32 overflow-auto space-y-1">
+            @for (autor of autores; track autor.idAutorArtista) {
+            <label class="flex items-center gap-2 text-xs text-slate-700">
+              <input type="checkbox" [checked]="isSelected('idsAutores', autor.idAutorArtista)"
+                (change)="toggleMultiSelection('idsAutores', autor.idAutorArtista)" />
+              <span>{{ autor.nombre }}</span>
+            </label>
+            } @empty {
+            <p class="text-xs text-slate-500">Sin autores disponibles.</p>
+            }
+          </div>
+          <small *ngIf="isControlInvalid('idsAutores')" class="text-rose-600 text-xs">
+            Debes seleccionar al menos un autor o artista.
+          </small>
+        </div>
+      </div>
+
+      <div class="rounded-lg border border-slate-200 p-3 space-y-3">
+        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500">
+          Atributos del producto (opcionales)
+        </label>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          @for (attr of productAttributesConfig; track attr.key) {
+          <div [ngSwitch]="attr.type">
+            <!-- Select fields -->
+            @switch (attr.type) {
+            @case ('select') {
+            <div>
+              <label [for]="'attr_' + attr.key"
+                class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                {{ attr.label }}
+              </label>
+              <select [id]="'attr_' + attr.key" [formControlName]="'attr_' + attr.key"
+                class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]">
+                <option value="">-- Sin especificar --</option>
+                @for (option of attr.options; track option) {
+                <option [value]="option">{{ option }}</option>
+                }
+              </select>
+            </div>
+            }
+            <!-- Number fields -->
+            @case ('number') {
+            <div>
+              <label [for]="'attr_' + attr.key"
+                class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                {{ attr.label }}
+              </label>
+              <input type="number" min="0" [id]="'attr_' + attr.key" [formControlName]="'attr_' + attr.key"
+                [placeholder]="attr.placeholder || ''"
+                class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]" />
+            </div>
+            }
+            <!-- Text fields -->
+            @case ('text') {
+            <div>
+              <label [for]="'attr_' + attr.key"
+                class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                {{ attr.label }}
+              </label>
+              <input type="text" [id]="'attr_' + attr.key" [formControlName]="'attr_' + attr.key"
+                [placeholder]="attr.placeholder || ''"
+                class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]" />
+            </div>
+            }
+            <!-- Boolean fields -->
+            @case ('boolean') {
+            <div class="flex items-center gap-2 pt-6">
+              <input [id]="'attr_' + attr.key" type="checkbox" [formControlName]="'attr_' + attr.key" />
+              <label [for]="'attr_' + attr.key" class="text-sm text-slate-700">{{ attr.label }}</label>
+            </div>
+            }
+            }
+          </div>
+          }
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+          Atributos específicos adicionales
+        </label>
+        <div class="space-y-2 rounded-lg border border-slate-200 p-3">
+          @for (row of attributeRows; track $index) {
+          <div class="grid grid-cols-12 gap-2 items-center">
+            <input type="text" [value]="row.key" (input)="setAttributeKey($index, $any($event.target).value)"
+              class="col-span-4 border border-slate-200 px-2 py-1.5 rounded-md text-xs focus:outline-none focus:border-[#1E3A8A]"
+              placeholder="Clave (ej: formato)" />
+            <input type="text" [value]="row.value" (input)="setAttributeValue($index, $any($event.target).value)"
+              class="col-span-7 border border-slate-200 px-2 py-1.5 rounded-md text-xs font-mono focus:outline-none focus:border-[#1E3A8A]"
+              placeholder="Valor (ej: Tapa dura, 96, true)" />
+            <button type="button" (click)="removeAttributeRow($index)"
+              class="col-span-1 inline-flex items-center justify-center rounded-md border border-slate-200 text-slate-500 hover:bg-slate-100">
+              −
+            </button>
+          </div>
+          }
+
+          <div class="flex justify-end">
+            <button type="button" (click)="addAttributeRow()"
+              class="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2 py-1 text-xs text-slate-700 hover:bg-slate-100">
+              <span class="text-sm">+</span>
+              Agregar atributo
+            </button>
+          </div>
+        </div>
+        <p class="mt-1 text-[11px] text-slate-500">
+          Tip: solo se envían los atributos que selecciones o completes explícitamente. Aquí también puedes agregar
+          claves extra.
+        </p>
+      </div>
+
       <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
-        <button type="button" (click)="onCancel()" [disabled]="isSubmitting"
+        <button type="button" (click)="onCancel()"
           class="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
           Cancelar
         </button>
-        <button type="submit" [disabled]="isSubmitting"
+        <button type="submit" [disabled]="isSubmitting || loadingCatalogs"
           class="px-4 py-2 bg-[#1E3A8A] hover:bg-[#162a65] text-white rounded-lg text-sm font-medium transition-colors shadow-sm disabled:opacity-50">
-          {{ isSubmitting ? 'Guardando...' : 'Guardar Artículo' }}
+          {{ isSubmitting ? 'Guardando...' : 'Guardar Producto' }}
         </button>
       </div>
 

@@ -1,0 +1,166 @@
+<section class="auth-shell" [class.register-mode]="isRegister()">
+  <div class="auth-stage" [class.register-mode]="isRegister()">
+    <aside class="media-panel" [@imageSwap]="isRegister() ? 'register' : 'login'">
+      <div class="media-overlay">
+        <div class="media-brand">Bookly</div>
+        <h1>Descubre tu próxima gran lectura.</h1>
+        <p>Colecciones seleccionadas, hallazgos raros y clásicos literarios entregados a tu puerta.</p>
+      </div>
+    </aside>
+
+    <article class="form-panel" [@formSwapPanel]="isRegister() ? 'register' : 'login'">
+      <div class="form-card">
+        <header>
+          <h2>{{ isRegister() ? 'Crea tu cuenta' : 'Bienvenido' }}</h2>
+          <p>
+            {{
+            isRegister()
+            ? 'Por favor completa tus datos para crear tu cuenta.'
+            : 'Por favor ingresa tus datos para iniciar sesión.'
+            }}
+          </p>
+        </header>
+
+        @if (!isRegister()) {
+        <form [formGroup]="loginForm" (ngSubmit)="submitLogin()" @formSwap>
+          <label>
+            Dirección de correo electrónico
+            <input class="bookly-input" [class.input-error]="hasLoginError('email')" type="email"
+              formControlName="email" placeholder="Ingresa tu correo electrónico" />
+            @if (hasLoginError('email')) {
+            <small class="field-error">{{ getLoginErrorMessage('email') }}</small>
+            }
+          </label>
+
+          <label>
+            Contraseña
+            <div class="password-field">
+              <input class="bookly-input" [class.input-error]="hasLoginError('password')"
+                [type]="showLoginPassword() ? 'text' : 'password'" formControlName="password" placeholder="••••••••" />
+              <button class="password-toggle" type="button" (click)="togglePasswordVisibility('login')"
+                [attr.aria-label]="showLoginPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                @if (showLoginPassword()) {
+                <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                  <path d="M3 3l18 18" />
+                  <path d="M10.7 10.7a2 2 0 0 0 2.6 2.6" />
+                  <path d="M9.9 5.1A11 11 0 0 1 12 5c5.2 0 9.5 3.4 11 7-0.6 1.5-1.7 2.9-3.2 4" />
+                  <path d="M6.2 6.2C4.3 7.5 2.9 9.2 2 12c1.5 3.6 5.8 7 10 7 1.7 0 3.3-0.4 4.8-1.1" />
+                </svg>
+                } @else {
+                <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                  <path d="M2 12s3.8-7 10-7 10 7 10 7-3.8 7-10 7-10-7-10-7z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                }
+              </button>
+            </div>
+            @if (hasLoginError('password')) {
+            <small class="field-error">{{ getLoginErrorMessage('password') }}</small>
+            }
+          </label>
+
+          <!--  <button class="link-btn" type="button">¿Olvidaste tu contraseña?</button>  -->
+
+          <button class="bookly-btn bookly-btn-gold submit-btn" [class.is-disabled]="shouldDisableLoginSubmit()"
+            type="submit" [disabled]="shouldDisableLoginSubmit()">
+            {{ loading() ? 'Iniciando sesión...' : 'Iniciar sesión' }}
+          </button>
+        </form>
+        } @else {
+        <form [formGroup]="registerForm" (ngSubmit)="submitRegister()" class="register-form" @formSwap>
+          <div class="field-grid field-grid-two">
+            <label>
+              Nombre
+              <input class="bookly-input" [class.input-error]="hasRegisterError('nombre')" type="text"
+                formControlName="nombre" placeholder="Ana" />
+              @if (hasRegisterError('nombre')) {
+              <small class="field-error">{{ getRegisterErrorMessage('nombre') }}</small>
+              }
+            </label>
+
+            <label>
+              Apellido
+              <input class="bookly-input" [class.input-error]="hasRegisterError('apellido')" type="text"
+                formControlName="apellido" placeholder="Perez" />
+              @if (hasRegisterError('apellido')) {
+              <small class="field-error">{{ getRegisterErrorMessage('apellido') }}</small>
+              }
+            </label>
+          </div>
+
+          <label>
+            Dirección de correo electrónico
+            <input class="bookly-input" [class.input-error]="hasRegisterError('email')" type="email"
+              formControlName="email" placeholder="ana@mail.com" />
+            @if (hasRegisterError('email')) {
+            <small class="field-error">{{ getRegisterErrorMessage('email') }}</small>
+            }
+          </label>
+
+          <label>
+            Contraseña
+            <div class="password-field">
+              <input class="bookly-input" [class.input-error]="hasRegisterError('password')"
+                [type]="showRegisterPassword() ? 'text' : 'password'" formControlName="password"
+                placeholder="Mínimo 6 caracteres" />
+              <button class="password-toggle" type="button" (click)="togglePasswordVisibility('register')"
+                [attr.aria-label]="showRegisterPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                @if (showRegisterPassword()) {
+                <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                  <path d="M3 3l18 18" />
+                  <path d="M10.7 10.7a2 2 0 0 0 2.6 2.6" />
+                  <path d="M9.9 5.1A11 11 0 0 1 12 5c5.2 0 9.5 3.4 11 7-0.6 1.5-1.7 2.9-3.2 4" />
+                  <path d="M6.2 6.2C4.3 7.5 2.9 9.2 2 12c1.5 3.6 5.8 7 10 7 1.7 0 3.3-0.4 4.8-1.1" />
+                </svg>
+                } @else {
+                <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                  <path d="M2 12s3.8-7 10-7 10 7 10 7-3.8 7-10 7-10-7-10-7z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                }
+              </button>
+            </div>
+            @if (hasRegisterError('password')) {
+            <small class="field-error">{{ getRegisterErrorMessage('password') }}</small>
+            }
+          </label>
+
+          <div class="field-grid field-grid-two">
+            <label>
+              DNI (opcional)
+              <input class="bookly-input" [class.input-error]="hasRegisterError('dni')" type="text"
+                formControlName="dni" placeholder="30111222" />
+              @if (hasRegisterError('dni')) {
+              <small class="field-error">{{ getRegisterErrorMessage('dni') }}</small>
+              }
+            </label>
+
+            <label>
+              Teléfono (opcional)
+              <input class="bookly-input" [class.input-error]="hasRegisterError('telefono')" type="text"
+                formControlName="telefono" placeholder="11223344" />
+              @if (hasRegisterError('telefono')) {
+              <small class="field-error">{{ getRegisterErrorMessage('telefono') }}</small>
+              }
+            </label>
+          </div>
+
+          <button class="bookly-btn bookly-btn-gold submit-btn" [class.is-disabled]="shouldDisableRegisterSubmit()"
+            type="submit" [disabled]="shouldDisableRegisterSubmit()">
+            {{ loading() ? 'Creando cuenta...' : 'Registrarse' }}
+          </button>
+        </form>
+        }
+
+        <footer>
+          <span>
+            {{ isRegister() ? '¿Ya tienes una cuenta?' : "¿No tienes una cuenta?" }}
+          </span>
+          <button class="switch-btn" type="button" (click)="toggleMode()">
+            {{ isRegister() ? 'Iniciar sesión' : 'Registrarse' }}
+          </button>
+        </footer>
+      </div>
+    </article>
+  </div>
+</section>

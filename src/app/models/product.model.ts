@@ -1,11 +1,31 @@
 export interface Product {
-  id_producto: string; // Usamos string porque mapea con el UUID del backend
-  codigo_barras: string;
-  nombre_producto: string;
-  descripcion?: string; // Opcional
-  precio_actual: number;
+  idProducto?: string;
+  codigoBarras: string;
+  nombreProducto: string;
+  descripcion?: string;
+  precioCosto?: number;
+  precioActual: number;
   activo: boolean;
-  id_tipo_producto: number;
-  id_editorial_sello: number;
-  id_rango_etario: number;
+  stock?: number;
+  idTipoProducto: number;
+  idEditorialSello: number;
+  idRangoEtario: number;
+  idsCategorias?: number[];
+  idsAutores?: number[];
+  tipoProducto?: string;
+  editorialSello?: string;
+  rangoEtario?: string;
+  categorias?: string[];
+  autores?: string[];
+  atributosEspecificos?: Record<string, unknown>;
+}
+
+export interface HistorialPrecio {
+  idHistorial: string;
+  precioCostoAnterior: number;
+  precioVentaAnterior: number;
+  precioCostoNuevo: number;
+  precioVentaNuevo: number;
+  fechaCambio: string;
+  empleadoNombre: string;
 }

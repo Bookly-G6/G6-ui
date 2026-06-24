@@ -1,0 +1,129 @@
+<div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div
+    class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden border border-slate-200">
+
+    <!-- Header -->
+    <div class="bg-[#1E3A8A] text-white px-6 py-4 flex justify-between items-start shrink-0">
+      <div>
+        <p class="text-xs uppercase tracking-[0.2em] text-blue-100">Detalle del producto</p>
+        <h2 class="text-lg font-bold">{{ product?.nombreProducto || 'Producto' }}</h2>
+      </div>
+      <button type="button" (click)="onClose()"
+        class="text-white/80 hover:text-white text-xl leading-none">&times;</button>
+    </div>
+
+    <!-- Body scrollable -->
+    <div class="p-6 overflow-y-auto">
+      @if (isLoading) {
+      <div class="flex items-center justify-center py-12 text-sm text-slate-500">Cargando producto...</div>
+      } @else if (product) {
+
+      <!-- Datos principales -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+        <div class="bg-slate-50 rounded-lg p-3">
+          <p class="text-[10px] uppercase tracking-wider text-slate-500 mb-0.5">Código de barras</p>
+          <p class="text-sm font-semibold text-slate-900 font-mono break-all">{{ product.codigoBarras || '—' }}</p>
+        </div>
+        <div class="bg-slate-50 rounded-lg p-3">
+          <p class="text-[10px] uppercase tracking-wider text-slate-500 mb-0.5">Precio venta</p>
+          <p class="text-sm font-semibold text-slate-900">{{ product.precioActual | currency:'ARS':'symbol':'1.2-2' }}
+          </p>
+        </div>
+        <div class="bg-slate-50 rounded-lg p-3">
+          <p class="text-[10px] uppercase tracking-wider text-slate-500 mb-0.5">Precio costo</p>
+          <p class="text-sm font-semibold text-slate-900">{{ product.precioCosto | currency:'ARS':'symbol':'1.2-2' }}
+          </p>
+        </div>
+        <div class="bg-slate-50 rounded-lg p-3">
+          <p class="text-[10px] uppercase tracking-wider text-slate-500 mb-0.5">Stock</p>
+          <p class="text-sm font-semibold" [class]="(product.stock ?? 0) <= 5 ? 'text-rose-600' : 'text-slate-900'">
+            {{ product.stock ?? 0 }} unidades
+          </p>
+        </div>
+        <div class="bg-slate-50 rounded-lg p-3">
+          <p class="text-[10px] uppercase tracking-wider text-slate-500 mb-0.5">Estado</p>
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
+            [class]="product.activo ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'">
+            {{ product.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Clasificación (ahora usa los strings que devuelve el GET) -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div>
+          <p class="text-[10px] uppercase tracking-wider text-slate-500 mb-0.5">Tipo</p>
+          <p class="text-sm font-medium text-slate-800">{{ product.tipoProducto || '—' }}</p>
+        </div>
+        <div>
+          <p class="text-[10px] uppercase tracking-wider text-slate-500 mb-0.5">Editorial</p>
+          <p class="text-sm font-medium text-slate-800">{{ product.editorialSello || '—' }}</p>
+        </div>
+        <div>
+          <p class="text-[10px] uppercase tracking-wider text-slate-500 mb-0.5">Rango etario</p>
+          <p class="text-sm font-medium text-slate-800">{{ product.rangoEtario || '—' }}</p>
+        </div>
+      </div>
+
+      <!-- Descripción -->
+      @if (product.descripcion) {
+      <div class="mb-6">
+        <p class="text-[10px] uppercase tracking-wider text-slate-500 mb-1">Descripción</p>
+        <p class="text-sm text-slate-700 leading-relaxed">{{ product.descripcion }}</p>
+      </div>
+      }
+
+      <!-- Categorías (array de strings) -->
+      @if (product.categorias?.length) {
+      <div class="mb-5">
+        <p class="text-[10px] uppercase tracking-wider text-slate-500 mb-2">Categorías</p>
+        <div class="flex flex-wrap gap-1.5">
+          @for (cat of product.categorias; track cat) {
+          <span class="px-2.5 py-1 rounded-full bg-blue-50 text-[#1E3A8A] text-xs font-medium">{{ cat }}</span>
+          }
+        </div>
+      </div>
+      }
+
+      <!-- Autores (array de strings) -->
+      @if (product.autores?.length) {
+      <div class="mb-5">
+        <p class="text-[10px] uppercase tracking-wider text-slate-500 mb-2">Autores / Artistas</p>
+        <div class="flex flex-wrap gap-1.5">
+          @for (autor of product.autores; track autor) {
+          <span class="px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 text-xs font-medium">{{ autor }}</span>
+          }
+        </div>
+      </div>
+      }
+
+      <!-- Atributos específicos (solo si tiene) -->
+      @if (atributos.length) {
+      <div>
+        <p class="text-[10px] uppercase tracking-wider text-slate-500 mb-2">Atributos específicos</p>
+        <dl
+          class="grid grid-cols-1 sm:grid-cols-2 gap-px bg-slate-200 rounded-lg overflow-hidden border border-slate-200">
+          @for (attr of atributos; track attr.key) {
+          <div class="bg-white px-3 py-2 flex justify-between gap-3">
+            <dt class="text-xs text-slate-500 capitalize">{{ attr.key }}</dt>
+            <dd class="text-xs font-semibold text-slate-800 text-right">{{ attr.value }}</dd>
+          </div>
+          }
+        </dl>
+      </div>
+      }
+
+      } @else {
+      <div class="py-10 text-center text-sm text-slate-500">No se encontró información para este producto.</div>
+      }
+    </div>
+
+    <!-- Footer -->
+    <div class="px-6 py-4 border-t border-slate-100 flex justify-end shrink-0">
+      <button type="button" (click)="onClose()"
+        class="px-4 py-2 rounded-lg bg-[#1E3A8A] text-white text-sm font-medium hover:bg-[#162a65] transition-colors">
+        Cerrar
+      </button>
+    </div>
+  </div>
+</div>

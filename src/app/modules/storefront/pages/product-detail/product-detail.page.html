@@ -1,0 +1,104 @@
+<section class="detail-wrap section-enter">
+  <a class="back-link" routerLink="/">← Volver al catálogo</a>
+
+  @if (loading()) {
+  <article class="bookly-panel detail-loading">Cargando detalle del producto...</article>
+  } @else if (product()) {
+  <article class="bookly-panel detail-card">
+
+    <div class="detail-cover" [style.background]="'linear-gradient(150deg, #1e3a8a 0%, #274aa7 56%, #3b82f6 100%)'">
+      <div class="cover-top">
+        <span class="label">{{ (product()?.tipoProducto ?? 'Producto').toUpperCase() }}</span>
+        <span class="status-pill" [class.inactive]="!canBuy()">
+          {{ canBuy() ? 'Disponible' : 'Sin stock' }}
+        </span>
+      </div>
+
+      <div class="cover-buy-box">
+        <span class="price-label">Precio</span>
+        <strong class="price-tag">{{ product()?.precioActual | currency: 'USD':'symbol':'1.2-2' }}</strong>
+        <p class="stock-info">
+          {{ stockMessage() }}
+        </p>
+
+        <button class="bookly-btn bookly-btn-gold btn-block" type="button" [disabled]="!canBuy()" (click)="addToCart()">
+
+          {{ canBuy() ? 'Agregar al carrito' : 'Sin stock' }}
+
+        </button>
+      </div>
+    </div>
+
+    <div class="detail-body">
+      <header class="product-header">
+        <h1>{{ product()?.nombreProducto }}</h1>
+
+        @if (product()?.autores && product()!.autores!.length > 0) {
+        <p class="product-author">por <span>{{ product()?.autores?.join(', ') }}</span></p>
+        }
+      </header>
+
+      <section class="product-description-block">
+        <p class="description-text">{{ product()?.descripcion || 'Sin descripción disponible para este producto.' }}</p>
+      </section>
+
+      <section class="info-block">
+        <h2>Información general</h2>
+
+        <div class="attribute-list">
+
+          <div class="attribute-row">
+            <span class="attribute-key">Editorial</span>
+            <strong class="attribute-value">
+              {{ product()?.editorialSello || 'Sin editorial' }}
+            </strong>
+          </div>
+
+          <div class="attribute-row">
+            <span class="attribute-key">Categorías</span>
+            <strong class="attribute-value">
+              {{ productCategories().join(' · ') }}
+            </strong>
+          </div>
+
+          <div class="attribute-row">
+            <span class="attribute-key">Rango etario</span>
+            <strong class="attribute-value">
+              {{ product()?.rangoEtario || 'General' }}
+            </strong>
+          </div>
+
+          @if (product()?.codigoBarras) {
+          <div class="attribute-row">
+            <span class="attribute-key">
+              {{ product()?.tipoProducto === 'Libro Físico' ? 'ISBN' : 'Código' }}
+            </span>
+            <strong class="attribute-value">
+              {{ product()?.codigoBarras }}
+            </strong>
+          </div>
+          }
+
+        </div>
+      </section>
+
+      @if (detailAttributes().length > 0) {
+      <section class="attributes-block">
+        <h2>Especificaciones</h2>
+
+        <div class="attribute-list">
+          @for (attr of detailAttributes(); track attr.key) {
+          <div class="attribute-row">
+            <span class="attribute-key">{{ attr.key }}</span>
+            <strong class="attribute-value">{{ attr.value }}</strong>
+          </div>
+          }
+        </div>
+      </section>
+      }
+    </div>
+  </article>
+  } @else {
+  <article class="bookly-panel detail-loading">No se encontró el producto solicitado.</article>
+  }
+</section>

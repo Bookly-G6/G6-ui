@@ -1,38 +1,75 @@
 <div class="flex justify-between items-center mb-6">
   <div>
-    <h1 class="text-2xl font-bold text-slate-900">Catálogo de Productos</h1>
-    <p class="text-sm text-slate-500">Gestión del inventario general de la librería</p>
+    <h1 class="text-2xl font-bold text-slate-900">Gestión del inventario</h1>
   </div>
-  <button (click)="openModal()"
+  <button (click)="openModal(null)"
     class="bg-[#1E3A8A] hover:bg-[#162a65] text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2">
     <span>+</span> Nuevo Producto
   </button>
 </div>
 
+<!-- NUEVO: barra de búsqueda + exportar -->
+<div class="max-w-6xl mx-auto mb-4 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+  <div class="relative w-full sm:max-w-xs">
+    <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()"
+      placeholder="Buscar por nombre, código o descripción..."
+      class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/30 focus:border-[#1E3A8A]" />
+    <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.3-4.3" />
+    </svg>
+  </div>
+
+  <div class="flex gap-2">
+    <button (click)="exportExcel()"
+      class="border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+      Excel
+    </button>
+    <button (click)="exportCsv()"
+      class="border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+      CSV
+    </button>
+    <button (click)="exportPdf()"
+      class="border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+      PDF
+    </button>
+  </div>
+</div>
+
 <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden max-w-6xl mx-auto">
-  <div class="overflow-x-auto">
+  <div class="overflow-x-auto overflow-y-auto max-h-100">
     <table class="w-full text-left border-collapse">
-      <thead>
+      <thead class="sticky top-0 z-10 bg-slate-50">
         <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider">
           <th class="px-6 py-4">Código de Barras</th>
           <th class="px-6 py-4">Nombre / Título</th>
           <th class="px-6 py-4">Descripción</th>
-          <th class="px-6 py-4">Precio</th>
+          <th class="px-6 py-4">Precio Costo</th>
+          <th class="px-6 py-4">Precio Venta</th>
+          <th class="px-6 py-4">Stock</th>
           <th class="px-6 py-4">Estado</th>
           <th class="px-6 py-4 text-right">Acciones</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-slate-100 text-sm text-slate-700">
+      <tbody class="bookly-panel-font divide-y divide-slate-100 text-sm text-slate-700">
 
-        @for (product of products; track product.id_producto) {
-        <tr class="hover:bg-slate-50 transition-colors">
-          <td class="px-6 py-4 font-mono text-xs text-slate-500">{{ product.codigo_barras }}</td>
-          <td class="px-6 py-4 font-semibold text-slate-900">{{ product.nombre_producto }}</td>
+        <!-- CAMBIO: ahora itera paginatedProducts -->
+        @for (product of paginatedProducts; track product.idProducto) {
+        <tr class="hover:bg-slate-50 transition-colors cursor-pointer" (click)="openDetail(product)">
+          <td class="px-6 py-4 font-mono text-xs text-slate-500">{{ product.codigoBarras }}</td>
+          <td class="px-6 py-4 font-semibold text-slate-900">{{ product.nombreProducto }}</td>
           <td class="px-6 py-4 max-w-xs truncate text-slate-500" [title]="product.descripcion">
             {{ product.descripcion || 'Sin descripción' }}
           </td>
+          <td class="px-6 py-4 font-medium text-slate-900">{{ product.precioCosto | currency:'ARS':'symbol':'1.2-2' }}
+          </td>
           <td class="px-6 py-4 font-medium text-slate-900">
-            {{ product.precio_actual | currency:'ARS':'symbol':'1.2-2' }}
+            {{ product.precioActual | currency:'ARS':'symbol':'1.2-2' }}
+          </td>
+          <td class="px-6 py-4 font-medium" [class.text-rose-600]="(product.stock ?? 0) <= 5"
+            [class.text-slate-900]="(product.stock ?? 0) > 5">
+            {{ product.stock ?? 0 }}
           </td>
           <td class="px-6 py-4">
             @if (product.activo) {
@@ -47,20 +84,25 @@
             </span>
             }
           </td>
-          <td class="px-6 py-4 text-right text-xs">
-            <button class="text-[#1E3A8A] hover:underline font-medium mr-3">Editar</button>
-            <button class="text-rose-600 hover:underline font-medium">Eliminar</button>
+          <td class="px-6 py-4 text-right text-xs" (click)="$event.stopPropagation()">
+            <button (click)="openPriceHistory(product)" class="text-amber-600 hover:underline font-medium mr-3">Historial Precios</button>
+            <button (click)="openModal(product)" class="text-[#1E3A8A] hover:underline font-medium mr-3">Editar</button>
+            <button (click)="requestDeleteProduct(product.idProducto)"
+              class="text-rose-600 hover:underline font-medium">Dar de baja</button>
           </td>
         </tr>
         } @empty {
         <tr>
-          <td colspan="6" class="px-6 py-12 text-center">
+          <td colspan="8" class="px-6 py-12 text-center">
             <div class="w-12 h-12 bg-[#FFFBEB] rounded-full flex items-center justify-between mx-auto mb-3">
               <span class="text-xl mx-auto">📦</span>
             </div>
-            <h3 class="text-base font-semibold text-slate-800 mb-0.5">El catálogo está vacío</h3>
+            <h3 class="text-base font-semibold text-slate-800 mb-0.5">
+              {{ searchTerm ? 'Sin resultados' : 'El catálogo está vacío' }}
+            </h3>
             <p class="text-xs text-slate-500 max-w-sm mx-auto">
-              No hay productos registrados actualmente en el sistema.
+              {{ searchTerm ? 'No hay productos que coincidan con la búsqueda.' : 'No hay productos registrados
+              actualmente en el sistema.' }}
             </p>
           </td>
         </tr>
@@ -69,9 +111,43 @@
       </tbody>
     </table>
   </div>
+
+  <!-- NUEVO: barra de paginación -->
+  @if (filteredProducts.length > 0) {
+  <div class="flex items-center justify-between px-6 py-3 border-t border-slate-200 text-sm text-slate-600">
+    <span>
+      Mostrando {{ paginatedProducts.length }} de {{ filteredProducts.length }} productos
+    </span>
+    <div class="flex items-center gap-1">
+      <button (click)="prevPage()" [disabled]="currentPage === 1"
+        class="px-3 py-1.5 rounded-md border border-slate-300 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">
+        Anterior
+      </button>
+      <span class="px-3">Página {{ currentPage }} de {{ totalPages }}</span>
+      <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+        class="px-3 py-1.5 rounded-md border border-slate-300 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">
+        Siguiente
+      </button>
+    </div>
+  </div>
+  }
 </div>
 
 @if (isModalOpen) {
-<app-product-form (close)="closeModal()" (saved)="loadProducts()">
-</app-product-form>
+<app-product-form [productToEdit]="selectedProduct" (close)="closeModal()" (saved)="loadProducts()"></app-product-form>
+}
+
+@if (isDetailOpen && selectedProductId) {
+<app-product-detail [productId]="selectedProductId" (close)="closeDetail()"></app-product-detail>
+}
+
+@if (isDeleteConfirmOpen) {
+<app-confirm-dialog [isOpen]="isDeleteConfirmOpen" title="Dar de baja el producto"
+  message="¿Seguro que deseas dar de baja este producto? Esta acción no se puede deshacer." confirmText="Dar de baja"
+  cancelText="Cancelar" confirmButtonClass="bg-rose-600 hover:bg-rose-700" (confirmed)="confirmDelete()"
+  (cancelled)="cancelDelete()"></app-confirm-dialog>
+}
+
+@if (isPriceHistoryOpen) {
+<app-price-history-dialog [productId]="priceHistoryProductId" [productName]="priceHistoryProductName" (close)="closePriceHistory()"></app-price-history-dialog>
 }

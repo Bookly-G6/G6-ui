@@ -1,0 +1,57 @@
+<section class="admin-master">
+  <header>
+    <h1>Master Data Management</h1>
+    <p>Administra productos, tipos de producto, categorías, autores y usuarios del sistema.</p>
+  </header>
+
+  <div class="tab-row bookly-panel">
+    <button class="bookly-btn tab-btn" [class.active]="currentTab() === 'productos'" (click)="setTab('productos')">
+      Productos
+    </button>
+    <button class="bookly-btn tab-btn" [class.active]="currentTab() === 'tipos-producto'"
+      (click)="setTab('tipos-producto')">
+      Tipo Productos
+    </button>
+    <button class="bookly-btn tab-btn" [class.active]="currentTab() === 'categorias'" (click)="setTab('categorias')">
+      Categorías
+    </button>
+    <button class="bookly-btn tab-btn" [class.active]="currentTab() === 'autores'" (click)="setTab('autores')">
+      Autores
+    </button>
+    <button class="bookly-btn tab-btn" [class.active]="currentTab() === 'usuarios'" (click)="setTab('usuarios')">
+      Usuarios
+    </button>
+  </div>
+
+  <div class="admin-content">
+    @if (currentTab() === 'productos') {
+    <div @sectionSwap>
+      <app-product-list></app-product-list>
+    </div>
+    }
+
+    @if (currentTab() === 'tipos-producto') {
+    <div @sectionSwap>
+      <app-tipo-producto-settings></app-tipo-producto-settings>
+    </div>
+    }
+
+    @if (currentTab() === 'categorias') {
+    <div @sectionSwap>
+      <app-catalog-settings-panel></app-catalog-settings-panel>
+    </div>
+    }
+
+    @if (currentTab() === 'autores') {
+    <div @sectionSwap>
+      <app-autores-settings></app-autores-settings>
+    </div>
+    }
+
+    @if (currentTab() === 'usuarios') {
+    <div @sectionSwap>
+      <app-user-list></app-user-list>
+    </div>
+    }
+  </div>
+</section>
