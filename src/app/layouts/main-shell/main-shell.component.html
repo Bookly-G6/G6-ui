@@ -5,7 +5,7 @@
     @if (showCatalogSearch()) {
     <div class="search-wrap">
       <input class="bookly-input" type="search" [value]="catalogState.searchTerm()"
-        (input)="onSearchInput($any($event.target).value)" placeholder="Buscar por título"
+        (input)="onSearchInput($any($event.target).value)" placeholder="Buscar por título o descripción"
         aria-label="Buscar en catálogo" />
     </div>
     }

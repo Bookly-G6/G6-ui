@@ -61,6 +61,8 @@ export class ProductFormComponent implements OnInit, OnChanges {
   submitAttempted = false;
   readonly productAttributesConfig = PRODUCT_ATTRIBUTES_CONFIG;
   attributeRows: AttributeRow[] = [{ key: '', value: '' }];
+  availableFormatoOptions: string[] = ['Físico', 'EPUB', 'PDF', 'MOBI'];
+  tipoProductoActual = '';
   private initialConfiguredAttributeKeys = new Set<string>();
   private pendingProductForForm: Product | null = null;
 
@@ -98,6 +100,7 @@ export class ProductFormComponent implements OnInit, OnChanges {
   ngOnInit(): void {
     this.initForm();
     this.loadCatalogs();
+    this.setupTipoProductoChanges();
     if (this.productToEdit?.idProducto) {
       this.loadFullProduct(this.productToEdit.idProducto); // <-- trae datos completos
     }
@@ -137,6 +140,7 @@ export class ProductFormComponent implements OnInit, OnChanges {
     this.initialConfiguredAttributeKeys.clear();
     this.attributeRows = [{ key: '', value: '' }];
     this.pendingProductForForm = null;
+    this.actualizarCamposPorTipoProducto(this.tiposProducto[0]?.idTipoProducto ?? 1);
     this.cdr.detectChanges();
   }
 
@@ -173,6 +177,7 @@ export class ProductFormComponent implements OnInit, OnChanges {
       { emitEvent: false },
     );
     this.initAttributeRowsFromProduct(product.atributosEspecificos);
+    this.actualizarCamposPorTipoProducto(resolvedTipoProductoId);
     this.productForm.markAsPristine();
     this.productForm.markAsUntouched();
     this.submitAttempted = false;
@@ -352,7 +357,9 @@ export class ProductFormComponent implements OnInit, OnChanges {
       formControls[`attr_${config.key}`] = [defaultVal, validators];
     });
 
-    this.productForm = this.fb.group(formControls);
+    this.productForm = this.fb.group(formControls, {
+      validators: [this.tipoProductoAtributosValidator()],
+    });
   }
 
   addAttributeRow(): void {
@@ -398,6 +405,7 @@ export class ProductFormComponent implements OnInit, OnChanges {
         if (!this.productToEdit) {
           if (tiposProducto.length > 0) {
             this.productForm.patchValue({ idTipoProducto: tiposProducto[0].idTipoProducto });
+            this.actualizarCamposPorTipoProducto(tiposProducto[0].idTipoProducto);
           }
           if (editoriales.length > 0) {
             this.productForm.patchValue({ idEditorialSello: editoriales[0].idEditorialSello });
@@ -657,5 +665,164 @@ export class ProductFormComponent implements OnInit, OnChanges {
 
   onCancel(): void {
     this.close.emit();
+  }
+
+  private setupTipoProductoChanges(): void {
+    this.productForm.get('idTipoProducto')?.valueChanges.subscribe((tipoId) => {
+      this.actualizarCamposPorTipoProducto(Number(tipoId));
+    });
+  }
+
+  actualizarCamposPorTipoProducto(tipoId: number): void {
+    const tipoSelected = this.tiposProducto.find((t) => t.idTipoProducto === tipoId);
+    this.tipoProductoActual = tipoSelected ? tipoSelected.nombreTipoProducto : '';
+    const tipoNombre = this.normalizeText(this.tipoProductoActual);
+
+    // Identificación robusta de tipos de producto
+    const isDigital = tipoNombre.includes('ebook') || tipoNombre.includes('digital') || tipoNombre.includes('virtual');
+    const isAudio = tipoNombre.includes('audio');
+    
+    // Es físico si contiene fisico, libro, papel, impreso o está vacío (y no es digital ni audio)
+    const isPhysical = !isDigital && !isAudio && (
+      tipoNombre.includes('fisico') || 
+      tipoNombre.includes('físico') || 
+      tipoNombre.includes('libro') || 
+      tipoNombre.includes('papel') || 
+      tipoNombre.includes('impreso') || 
+      tipoNombre === ''
+    );
+
+    // Determinamos qué atributos deben deshabilitarse
+    let forbiddenKeys: string[] = [];
+    if (isDigital) {
+      forbiddenKeys = ['tapa', 'peso', 'dimensiones'];
+    } else if (isAudio) {
+      forbiddenKeys = ['tapa', 'paginas', 'peso', 'dimensiones', 'ilustrado', 'numero_tomo', 'formato'];
+    }
+
+    // Actualizamos el estado de habilitación de cada atributo configurado
+    this.productAttributesConfig.forEach((config) => {
+      const control = this.productForm.get(`attr_${config.key}`);
+      if (!control) return;
+
+      const isForbidden = forbiddenKeys.includes(config.key);
+      if (isForbidden) {
+        control.disable({ emitEvent: false });
+        if (config.type === 'boolean') {
+          control.setValue(false, { emitEvent: false });
+        } else if (config.type === 'number') {
+          control.setValue(null, { emitEvent: false });
+        } else {
+          control.setValue('', { emitEvent: false });
+        }
+      } else {
+        control.enable({ emitEvent: false });
+      }
+    });
+
+    // Filtrar opciones de Formato
+    const formatoControl = this.productForm.get('attr_formato');
+    if (formatoControl && formatoControl.enabled) {
+      const currentVal = formatoControl.value;
+      if (isPhysical) {
+        this.availableFormatoOptions = ['Físico'];
+        formatoControl.setValue('Físico', { emitEvent: false });
+      } else if (isDigital) {
+        this.availableFormatoOptions = ['EPUB', 'PDF', 'MOBI'];
+        if (currentVal === 'Físico' || !this.availableFormatoOptions.includes(currentVal)) {
+          formatoControl.setValue('', { emitEvent: false });
+        }
+      } else {
+        this.availableFormatoOptions = ['Físico', 'EPUB', 'PDF', 'MOBI'];
+      }
+    } else {
+      this.availableFormatoOptions = [];
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  private tipoProductoAtributosValidator() {
+    return (group: AbstractControl): Record<string, any> | null => {
+      const formGroup = group as FormGroup;
+      if (!formGroup) return null;
+
+      const tipoId = Number(formGroup.get('idTipoProducto')?.value);
+      const tipoSelected = this.tiposProducto.find((t) => t.idTipoProducto === tipoId);
+      if (!tipoSelected) return null;
+
+      const tipoNombre = this.normalizeText(tipoSelected.nombreTipoProducto);
+      const isDigital = tipoNombre.includes('ebook') || tipoNombre.includes('digital') || tipoNombre.includes('virtual');
+      const isAudio = tipoNombre.includes('audio');
+      const isPhysical = !isDigital && !isAudio && (
+        tipoNombre.includes('fisico') || 
+        tipoNombre.includes('físico') || 
+        tipoNombre.includes('libro') || 
+        tipoNombre.includes('papel') || 
+        tipoNombre.includes('impreso') || 
+        tipoNombre === ''
+      );
+
+      const errors: Record<string, any> = {};
+
+      // 1. Validar Formato
+      const formatoControl = formGroup.get('attr_formato');
+      if (formatoControl && formatoControl.enabled) {
+        const formatoVal = formatoControl.value;
+        if (formatoVal) {
+          if (isPhysical && formatoVal !== 'Físico') {
+            formatoControl.setErrors({ incompatibleFormat: true });
+            errors['incompatibleFormat'] = true;
+          } else if (isDigital && formatoVal === 'Físico') {
+            formatoControl.setErrors({ incompatibleFormat: true });
+            errors['incompatibleFormat'] = true;
+          } else {
+            // Limpiar error previo de incompatibilidad si es correcto
+            if (formatoControl.hasError('incompatibleFormat')) {
+              const currentErrors = formatoControl.errors;
+              if (currentErrors) {
+                delete currentErrors['incompatibleFormat'];
+                formatoControl.setErrors(Object.keys(currentErrors).length ? currentErrors : null);
+              }
+            }
+          }
+        }
+      }
+
+      // Helper para limpiar/establecer error de incompatibilidad
+      const checkIncompatible = (controlKey: string, isForbidden: boolean, errorKey: string) => {
+        const control = formGroup.get(`attr_${controlKey}`);
+        if (control) {
+          const val = control.value;
+          const hasValue = val !== null && val !== undefined && val !== '' && val !== false;
+          if (isForbidden && hasValue) {
+            control.setErrors({ [errorKey]: true });
+            errors[errorKey] = true;
+          } else {
+            if (control.hasError(errorKey)) {
+              const currentErrors = control.errors;
+              if (currentErrors) {
+                delete currentErrors[errorKey];
+                control.setErrors(Object.keys(currentErrors).length ? currentErrors : null);
+              }
+            }
+          }
+        }
+      };
+
+      // 2. Validar Tapa
+      checkIncompatible('tapa', isDigital || isAudio, 'incompatibleTapa');
+
+      // 3. Validar Peso
+      checkIncompatible('peso', isDigital || isAudio, 'incompatiblePeso');
+
+      // 4. Validar Dimensiones
+      checkIncompatible('dimensiones', isDigital || isAudio, 'incompatibleDimensiones');
+
+      // 5. Validar Páginas
+      checkIncompatible('paginas', isAudio, 'incompatiblePaginas');
+
+      return Object.keys(errors).length > 0 ? errors : null;
+    };
   }
 }
