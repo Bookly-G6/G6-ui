@@ -3,29 +3,20 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   ADMIN_TIPO_ENVIO_OPTIONS,
-  FORMA_PAGO_OPTIONS,
   SALE_ORIGIN_OPTIONS,
-  SaleOriginOption,
 } from '../../../../core/constants/business-options';
 import { Product } from '../../../../models/product.model';
 import { Usuario } from '../../../../models/usuario.model';
 import { CheckoutRequest, Venta } from '../../../../models/venta.model';
 import { ProductService } from '../../../../services/product.services';
 import { UsuarioService } from '../../../../services/usuario.services';
-import { InventarioService } from '../../../../services/inventario.service';
 import { NotificationService } from '../../../../services/notification';
 import { CheckoutService } from '../../../../core/services/checkout.service';
-import { EmpleadoInventario } from '../../../../models/inventario.model';
 
 interface SaleItemRow {
   idProducto: string;
   cantidad: number;
   idPromocion: number | null;
-}
-
-interface SalePaymentRow {
-  idFormaPago: number;
-  montoAbonado: number;
 }
 
 @Component({
@@ -38,31 +29,32 @@ export class AdminSalePage {
   private readonly fb = inject(FormBuilder);
   private readonly productService = inject(ProductService);
   private readonly usuarioService = inject(UsuarioService);
-  private readonly inventarioService = inject(InventarioService);
   private readonly checkoutService = inject(CheckoutService);
   private readonly notification = inject(NotificationService);
 
-  readonly saleOriginOptions = SALE_ORIGIN_OPTIONS;
   readonly shippingOptions = ADMIN_TIPO_ENVIO_OPTIONS;
-  readonly paymentOptions = FORMA_PAGO_OPTIONS;
+  readonly paymentOptions = signal<any[]>([]);
 
   readonly loading = signal(false);
   readonly submitting = signal(false);
 
   readonly products = signal<Product[]>([]);
   readonly users = signal<Usuario[]>([]);
-  readonly employees = signal<EmpleadoInventario[]>([]);
+  readonly employees = signal<any[]>([]);
 
   readonly items = signal<SaleItemRow[]>([]);
   readonly lastVenta = signal<Venta | null>(null);
+  readonly generarEnvio = signal(false); // Por defecto desactivado para ventas presenciales locales
   readonly selectedShippingType = signal<string>('DOMICILIO');
-  readonly tax = signal(0.08);
+  readonly tax = signal(0.08); // Impuesto de demostración (8%)
 
   readonly saleForm = this.fb.group({
     idEmpleado: ['', [Validators.required]],
-    nombreCliente: [''],
+    idCliente: [''], // ID del cliente registrado seleccionado
+    nombreCliente: [''], // Datos opcionales de cliente ocasional
     documentoCliente: [''],
     emailCliente: [''],
+    observacionesEnvio: [''],
   });
 
   readonly formaPagoForm = this.fb.group({
@@ -70,16 +62,13 @@ export class AdminSalePage {
     montoAbonado: [null as number | null, [Validators.required, Validators.min(0.01)]],
   });
 
+  // Clientes filtrados del listado de usuarios
   readonly clientes = computed(() => {
-    const candidates = this.users().filter((user) => {
-      if (!user.idUsuario) {
-        return false;
-      }
+    return this.users().filter((user) => {
+      if (!user.idUsuario) return false;
       const role = typeof user.rol === 'string' ? user.rol.toUpperCase() : '';
       return role === '' || role.includes('CLIENTE');
     });
-
-    return candidates.length > 0 ? candidates : this.users().filter((user) => !!user.idUsuario);
   });
 
   readonly subtotal = computed(() =>
@@ -102,6 +91,10 @@ export class AdminSalePage {
     this.selectedShippingType.set(tipo);
   }
 
+  toggleGenerarEnvio(): void {
+    this.generarEnvio.set(!this.generarEnvio());
+  }
+
   addProductToCart(idProducto: string): void {
     if (!idProducto) return;
 
@@ -115,16 +108,27 @@ export class AdminSalePage {
 
       return [...rows, { idProducto, cantidad: 1, idPromocion: null }];
     });
+    
+    // Auto-completar el monto abonado con el total final
+    setTimeout(() => {
+      this.formaPagoForm.patchValue({ montoAbonado: Number(this.totalFinal().toFixed(2)) });
+    });
   }
 
   removeItemRow(index: number): void {
     this.items.update((rows) => rows.filter((_, idx) => idx !== index));
+    setTimeout(() => {
+      this.formaPagoForm.patchValue({ montoAbonado: Number(this.totalFinal().toFixed(2)) });
+    });
   }
 
   increaseItemQty(index: number): void {
     this.items.update((rows) =>
       rows.map((row, idx) => (idx === index ? { ...row, cantidad: row.cantidad + 1 } : row)),
     );
+    setTimeout(() => {
+      this.formaPagoForm.patchValue({ montoAbonado: Number(this.totalFinal().toFixed(2)) });
+    });
   }
 
   decreaseItemQty(index: number): void {
@@ -133,6 +137,9 @@ export class AdminSalePage {
         idx === index && row.cantidad > 1 ? { ...row, cantidad: row.cantidad - 1 } : row,
       ),
     );
+    setTimeout(() => {
+      this.formaPagoForm.patchValue({ montoAbonado: Number(this.totalFinal().toFixed(2)) });
+    });
   }
 
   getProductName(idProducto: string): string {
@@ -147,28 +154,15 @@ export class AdminSalePage {
     return this.products().find((p) => p.idProducto === idProducto)?.codigoBarras ?? '';
   }
 
-  getEmployeeLabel(employee: EmpleadoInventario): string {
-    const fullName = employee.nombreCompleto?.trim();
-    if (fullName) {
-      return fullName;
-    }
-
-    const shortName = `${employee.nombre ?? ''} ${employee.apellido ?? ''}`.trim();
-    if (shortName) {
-      return shortName;
-    }
-
-    if (employee.email) {
-      return employee.email;
-    }
-
-    return employee.idEmpleado;
+  getEmployeeLabel(employee: any): string {
+    if (employee.nombreCompleto) return employee.nombreCompleto;
+    return `${employee.nombre ?? ''} ${employee.apellido ?? ''}`.trim() || employee.idEmpleado;
   }
 
   getClienteLabel(cliente: Usuario): string {
     const fullName = `${cliente.nombre ?? ''} ${cliente.apellido ?? ''}`.trim();
     if (fullName) {
-      return `${fullName} · ${cliente.email}`;
+      return `${fullName} (${cliente.email})`;
     }
     return cliente.email;
   }
@@ -176,7 +170,7 @@ export class AdminSalePage {
   procesarPago(): void {
     if (this.saleForm.invalid) {
       this.saleForm.markAllAsTouched();
-      this.notification.show('Selecciona un empleado.', 'info');
+      this.notification.show('Selecciona el empleado que registra la venta.', 'info');
       return;
     }
 
@@ -187,7 +181,7 @@ export class AdminSalePage {
     }
 
     if (this.items().length === 0) {
-      this.notification.show('Agrega al menos un producto.', 'info');
+      this.notification.show('Agrega al menos un producto al carrito.', 'info');
       return;
     }
 
@@ -202,9 +196,11 @@ export class AdminSalePage {
     const saleRaw = this.saleForm.getRawValue();
     const pagoRaw = this.formaPagoForm.getRawValue();
 
+    // Crear DTO alineado con el Backend
     const payload: CheckoutRequest = {
       origenVenta: 'LOCAL',
       idEmpleado: String(saleRaw.idEmpleado),
+      idCliente: saleRaw.idCliente ? String(saleRaw.idCliente) : undefined,
       items: itemsValidos,
       pagos: [
         {
@@ -212,8 +208,9 @@ export class AdminSalePage {
           montoAbonado: Number(pagoRaw.montoAbonado),
         },
       ],
-      generarEnvio: true,
-      tipoEnvio: this.selectedShippingType() as any,
+      generarEnvio: this.generarEnvio(),
+      tipoEnvio: this.generarEnvio() ? (this.selectedShippingType() as any) : undefined,
+      observacionesEnvio: this.generarEnvio() ? (saleRaw.observacionesEnvio || undefined) : undefined,
     };
 
     this.submitting.set(true);
@@ -222,31 +219,44 @@ export class AdminSalePage {
         this.submitting.set(false);
         this.lastVenta.set(venta);
         this.notification.show(
-          `Venta ${venta.idVenta.slice(0, 8)} registrada con éxito.`,
+          `Venta ${venta.idVenta.slice(0, 8).toUpperCase()} registrada con éxito.`,
           'success',
         );
         this.resetForm();
       },
-      error: () => {
+      error: (err) => {
         this.submitting.set(false);
-        this.notification.show('No se pudo registrar la venta.', 'error');
+        const message = err?.error?.message || 'No se pudo registrar la venta.';
+        this.notification.show(message, 'error');
       },
     });
   }
 
   private resetForm(): void {
     this.items.set([]);
-    this.saleForm.reset();
-    this.formaPagoForm.reset({ idFormaPago: 1, montoAbonado: null });
+    this.saleForm.reset({
+      idEmpleado: this.saleForm.value.idEmpleado, // Conservamos el empleado
+      idCliente: '',
+      nombreCliente: '',
+      documentoCliente: '',
+      emailCliente: '',
+      observacionesEnvio: '',
+    });
+    this.formaPagoForm.reset({ 
+      idFormaPago: this.paymentOptions()[0]?.idFormaPago || 1, 
+      montoAbonado: null 
+    });
+    this.generarEnvio.set(false);
     this.selectedShippingType.set('DOMICILIO');
   }
 
   private loadInitialData(): void {
     this.loading.set(true);
 
+    // Cargar productos
     this.productService.getProducts().subscribe({
       next: (products) => {
-        this.products.set(products.filter((product) => !!product.idProducto));
+        this.products.set(products.filter((product) => !!product.idProducto && product.activo));
       },
       error: () => {
         this.products.set([]);
@@ -254,6 +264,7 @@ export class AdminSalePage {
       },
     });
 
+    // Cargar usuarios / clientes
     this.usuarioService.getUsuarios().subscribe({
       next: (users) => {
         this.users.set(users.filter((user) => !!user.idUsuario));
@@ -264,15 +275,37 @@ export class AdminSalePage {
       },
     });
 
-    this.inventarioService.getEmpleados().subscribe({
+    // Cargar formas de pago reales
+    this.checkoutService.getFormasPago().subscribe({
+      next: (formas) => {
+        this.paymentOptions.set(formas);
+        if (formas.length > 0) {
+          this.formaPagoForm.patchValue({ idFormaPago: formas[0].idFormaPago });
+        }
+      },
+      error: () => {
+        this.paymentOptions.set([
+          { idFormaPago: 1, nombrePago: 'Efectivo' },
+          { idFormaPago: 2, nombrePago: 'Tarjeta débito' },
+          { idFormaPago: 3, nombrePago: 'Tarjeta crédito' },
+          { idFormaPago: 4, nombrePago: 'Transferencia' },
+        ]);
+      }
+    });
+
+    // Cargar empleados elegibles para la venta (endpoint específico de ventas)
+    this.checkoutService.getEmpleadosVenta().subscribe({
       next: (employees) => {
         this.employees.set(employees);
+        if (employees.length > 0) {
+          this.saleForm.patchValue({ idEmpleado: employees[0].idEmpleado });
+        }
         this.loading.set(false);
       },
       error: () => {
         this.employees.set([]);
         this.loading.set(false);
-        this.notification.show('No se pudieron cargar los empleados.', 'error');
+        this.notification.show('No se pudieron cargar los empleados de venta.', 'error');
       },
     });
   }

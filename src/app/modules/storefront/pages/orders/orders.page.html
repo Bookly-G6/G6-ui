@@ -6,42 +6,109 @@
   } @else if (normalizedOrders().length > 0) {
   @for (order of normalizedOrders(); track order.idVenta) {
   <article class="bookly-panel order-card section-enter">
-    <header>
+    <header class="flex justify-between items-start border-b border-slate-100 pb-3 mb-3">
       <div>
-        <h2>ORD-{{ (order.idVenta || '').slice(0, 8) }}</h2>
-        <p>{{ order.fecha | date: 'short' }}</p>
+        <h2 class="text-lg font-bold text-slate-800">ORD-{{ (order.idVenta || '').slice(0, 8).toUpperCase() }}</h2>
+        <p class="text-xs text-slate-500">{{ order.fecha | date: 'short' }}</p>
       </div>
-      <strong>{{ order.totalFinal | currency: 'USD':'symbol':'1.2-2' }}</strong>
+      <strong class="text-lg text-emerald-700">{{ order.totalFinal | currency: 'ARS':'symbol':'1.2-2' }}</strong>
     </header>
 
-    <div class="order-status">
-      <p>Estado: <span class="status-badge" [class]="'status-' + order.estadoVenta?.toLowerCase()">{{ order.estadoVenta
-          }}</span>
-      </p>
+    <div class="grid grid-cols-2 gap-4 text-sm mb-4">
+      <div>
+        <p class="text-slate-600 mb-1">Estado de Pago: 
+          <span class="status-badge bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full text-xs font-semibold">
+            {{ order.estadoVenta }}
+          </span>
+        </p>
+        <p class="text-slate-600">Origen: <strong class="text-slate-800">{{ order.origenVenta }}</strong></p>
+      </div>
+      <div class="text-right">
+        <p class="text-slate-600">Total Abonado: <strong class="text-slate-800">{{ order.totalPagado | currency: 'ARS':'symbol':'1.2-2' }}</strong></p>
+      </div>
     </div>
 
-    <div class="order-status">
-      <p>Origen: <strong>{{ order.origenVenta }}</strong></p>
-      <p>Pagado: <strong>{{ order.totalPagado | currency: 'USD':'symbol':'1.2-2' }}</strong></p>
-    </div>
-
-    <div class="order-items">
-      <h3>Productos</h3>
+    <div class="order-items bg-slate-50/50 rounded-lg p-3 border border-slate-100 mb-4">
+      <h3 class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-2">Productos</h3>
       @for (item of order.detalles; track item.idProducto) {
-      <div class="item-row">
-        <span>{{ item.nombreProducto }} x{{ item.cantidad }}</span>
-        <span>{{ item.subtotalRenglon | currency: 'USD':'symbol':'1.2-2' }}</span>
+      <div class="item-row flex justify-between text-sm py-1">
+        <span class="text-slate-700">{{ item.nombreProducto }} <span class="text-slate-400 font-medium">x{{ item.cantidad }}</span></span>
+        <span class="font-semibold text-slate-900">{{ item.subtotalRenglon | currency: 'ARS':'symbol':'1.2-2' }}</span>
       </div>
       }
     </div>
 
-    @if (order.idEnvio || order.tipoEnvio) {
-    <div class="shipping-info">
-      <h3>Envío</h3>
-      <p>Tipo: {{ order.tipoEnvio || 'N/A' }}</p>
-      @if (order.idEnvio) {
-      <p>ID envío: {{ order.idEnvio }}</p>
-      }
+    <!-- SECCIÓN ENRIQUECIDA DE LOGÍSTICA / ENVÍO -->
+    @if (order.idEnvio || order.tipoEnvio || shippingsMap()[order.idVenta]) {
+    <div class="shipping-info border-t border-slate-100 pt-3 mt-3">
+      <h3 class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-3">📦 Estado de Envío</h3>
+      
+      <div class="flex flex-col sm:flex-row sm:justify-between text-sm text-slate-700 gap-2 mb-4 bg-amber-50/40 border border-amber-100/60 rounded-lg p-3">
+        <div>
+          <p class="mb-1">Servicio: <strong>{{ (order.tipoEnvio || shippingsMap()[order.idVenta]?.tipoEnvio || 'N/A') === 'DOMICILIO' ? 'A Domicilio' : 'Retiro en Local' }}</strong></p>
+          @if (shippingsMap()[order.idVenta]?.empresaCorreo) {
+          <p class="mb-1">Transportista: <strong>{{ shippingsMap()[order.idVenta]?.empresaCorreo }}</strong></p>
+          }
+          @if (shippingsMap()[order.idVenta]?.numeroTracking) {
+          <p>N° Seguimiento: <strong class="font-mono bg-white border border-slate-200 px-1.5 py-0.5 rounded text-xs">{{ shippingsMap()[order.idVenta]?.numeroTracking }}</strong></p>
+          }
+          @if (shippingsMap()[order.idVenta]?.codigoRetiro) {
+          <p class="mt-1">Código de Retiro: <strong class="text-amber-700 bg-amber-100/50 px-2 py-0.5 rounded font-mono font-bold text-xs">{{ shippingsMap()[order.idVenta]?.codigoRetiro }}</strong></p>
+          }
+        </div>
+        <div class="sm:text-right">
+          <p class="mb-1">Estado de Envío: <strong class="text-blue-700">{{ shippingsMap()[order.idVenta]?.estadoLogistica || shippingsMap()[order.idVenta]?.estado || 'Preparando paquete' }}</strong></p>
+          @if (shippingsMap()[order.idVenta]?.fechaActualizacion) {
+          <small class="text-slate-400">Actualizado: {{ shippingsMap()[order.idVenta]?.fechaActualizacion | date: 'short' }}</small>
+          }
+        </div>
+      </div>
+
+      <!-- Barra de Progreso Visual -->
+      <div class="flex items-center justify-between mt-6 px-4 mb-2 relative">
+        <div class="absolute left-10 right-10 top-1/2 -translate-y-1/2 h-0.5 bg-slate-200 -z-10"></div>
+        
+        <!-- Paso 1: Preparación -->
+        <div class="flex flex-col items-center">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-300 shadow-sm"
+               [ngClass]="{
+                 'bg-blue-600 text-white ring-4 ring-blue-100': getStepClass(order, 'EN_PREPARACION') === 'current',
+                 'bg-emerald-600 text-white': getStepClass(order, 'EN_PREPARACION') === 'done',
+                 'bg-slate-200 text-slate-500': getStepClass(order, 'EN_PREPARACION') === 'pending'
+               }">
+            @if (getStepClass(order, 'EN_PREPARACION') === 'done') { ✓ } @else { 1 }
+          </div>
+          <span class="text-xs mt-1 font-semibold text-slate-600">Embalaje</span>
+        </div>
+
+        <!-- Paso 2: Tránsito o Listo para Retiro -->
+        <div class="flex flex-col items-center">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-300 shadow-sm"
+               [ngClass]="{
+                 'bg-blue-600 text-white ring-4 ring-blue-100': getStepClass(order, 'EN_CAMINO') === 'current' || getStepClass(order, 'LISTO_PARA_RETIRO') === 'current',
+                 'bg-emerald-600 text-white': getStepClass(order, 'EN_CAMINO') === 'done' || getStepClass(order, 'LISTO_PARA_RETIRO') === 'done',
+                 'bg-slate-200 text-slate-500': getStepClass(order, 'EN_CAMINO') === 'pending' && getStepClass(order, 'LISTO_PARA_RETIRO') === 'pending'
+               }">
+            @if (getStepClass(order, 'EN_CAMINO') === 'done') { ✓ } @else { 2 }
+          </div>
+          <span class="text-xs mt-1 font-semibold text-slate-600">
+            {{ (order.tipoEnvio || shippingsMap()[order.idVenta]?.tipoEnvio) === 'RETIRO_LOCAL' ? 'Listo para retiro' : 'En camino' }}
+          </span>
+        </div>
+
+        <!-- Paso 3: Entregado -->
+        <div class="flex flex-col items-center">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-300 shadow-sm"
+               [ngClass]="{
+                 'bg-blue-600 text-white ring-4 ring-blue-100': getStepClass(order, 'ENTREGADO') === 'current',
+                 'bg-emerald-600 text-white': getStepClass(order, 'ENTREGADO') === 'done',
+                 'bg-slate-200 text-slate-500': getStepClass(order, 'ENTREGADO') === 'pending'
+               }">
+            @if (getStepClass(order, 'ENTREGADO') === 'done') { ✓ } @else { 3 }
+          </div>
+          <span class="text-xs mt-1 font-semibold text-slate-600">Entregado</span>
+        </div>
+      </div>
     </div>
     }
   </article>

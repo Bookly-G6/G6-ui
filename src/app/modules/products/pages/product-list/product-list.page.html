@@ -85,6 +85,7 @@
             }
           </td>
           <td class="px-6 py-4 text-right text-xs" (click)="$event.stopPropagation()">
+            <button (click)="openPriceHistory(product)" class="text-amber-600 hover:underline font-medium mr-3">Historial Precios</button>
             <button (click)="openModal(product)" class="text-[#1E3A8A] hover:underline font-medium mr-3">Editar</button>
             <button (click)="requestDeleteProduct(product.idProducto)"
               class="text-rose-600 hover:underline font-medium">Dar de baja</button>
@@ -145,4 +146,8 @@
   message="¿Seguro que deseas dar de baja este producto? Esta acción no se puede deshacer." confirmText="Dar de baja"
   cancelText="Cancelar" confirmButtonClass="bg-rose-600 hover:bg-rose-700" (confirmed)="confirmDelete()"
   (cancelled)="cancelDelete()"></app-confirm-dialog>
+}
+
+@if (isPriceHistoryOpen) {
+<app-price-history-dialog [productId]="priceHistoryProductId" [productName]="priceHistoryProductName" (close)="closePriceHistory()"></app-price-history-dialog>
 }

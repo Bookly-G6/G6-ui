@@ -1,4 +1,4 @@
-<section class="checkout-container">
+<section class="checkout-container text-slate-800">
   <div class="checkout-content">
     <h1>Confirmar Compra</h1>
 
@@ -11,16 +11,16 @@
           @for (item of cartItems(); track item.idItem) {
           <li class="summary-item">
             <div class="item-info">
-              <p class="item-name">{{ item.nombreProducto }}</p>
+              <p class="item-name text-slate-900 font-semibold">{{ item.nombreProducto }}</p>
               <div class="item-qty-controls">
                 <button type="button" (click)="decreaseItem(item.idItem, item.cantidad)">−</button>
-                <small class="item-qty">{{ item.cantidad }}</small>
+                <small class="item-qty font-bold px-1 text-slate-700">{{ item.cantidad }}</small>
                 <button type="button" (click)="increaseItem(item.idItem, item.cantidad)">+</button>
-                <button type="button" class="item-remove" (click)="removeItem(item.idItem)">Eliminar</button>
+                <button type="button" class="item-remove hover:bg-rose-50" (click)="removeItem(item.idItem)">Eliminar</button>
               </div>
             </div>
-            <div class="item-price">
-              {{ item.subtotal | currency: 'USD':'symbol':'1.2-2' }}
+            <div class="item-price font-bold">
+              {{ item.subtotal | currency: 'ARS':'symbol':'1.2-2' }}
             </div>
           </li>
           }
@@ -28,7 +28,7 @@
 
         <div class="summary-total">
           <h3>Total</h3>
-          <p class="total-amount">{{ cartTotal() | currency: 'USD':'symbol':'1.2-2' }}</p>
+          <p class="total-amount font-bold text-slate-900">{{ cartTotal() | currency: 'ARS':'symbol':'1.2-2' }}</p>
         </div>
         } @else {
         <p class="empty-cart">Tu carrito está vacío. Regresa al catálogo para agregar productos.</p>
@@ -36,42 +36,43 @@
       </div>
 
       <div class="shipping-form">
-        <h2>Datos de Checkout</h2>
+        <h2>Datos de Facturación y Envío</h2>
         <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()">
-          <div class="form-group">
-            <label for="idSucursal">Sucursal *</label>
-            <input id="idSucursal" type="number" min="1" formControlName="idSucursal" class="form-input" />
-            @if (checkoutForm.get('idSucursal')?.invalid && checkoutForm.get('idSucursal')?.touched) {
-            <span class="error">Debes indicar una sucursal válida.</span>
-            }
-          </div>
+          <!-- Sucursal invisible ya que tiene default = 1 en ts -->
+          <input type="hidden" formControlName="idSucursal" />
 
           <div class="form-group">
-            <label for="idFormaPago">Forma de pago *</label>
-            <input id="idFormaPago" type="number" min="1" formControlName="idFormaPago" class="form-input" />
+            <label for="idFormaPago">Forma de Pago *</label>
+            <select id="idFormaPago" formControlName="idFormaPago" class="form-input">
+              @for (pago of formasPago(); track pago.idFormaPago) {
+              <option [value]="pago.idFormaPago">{{ pago.nombrePago }}</option>
+              }
+            </select>
             @if (checkoutForm.get('idFormaPago')?.invalid && checkoutForm.get('idFormaPago')?.touched) {
-            <span class="error">Debes indicar una forma de pago válida.</span>
+            <span class="error">Debes seleccionar una forma de pago válida.</span>
             }
           </div>
 
           <div class="form-group">
-            <label for="tipoEnvio">Tipo de envío *</label>
+            <label for="tipoEnvio">Tipo de Envío *</label>
             <select id="tipoEnvio" formControlName="tipoEnvio" class="form-input">
               @for (tipoEnvio of tipoEnvioOptions; track tipoEnvio) {
-              <option [value]="tipoEnvio">{{ tipoEnvio }}</option>
+              <option [value]="tipoEnvio">
+                {{ tipoEnvio === 'DOMICILIO' ? 'Envío a Domicilio' : 'Retiro en Sucursal / Local' }}
+              </option>
               }
             </select>
           </div>
 
           <div class="form-group">
-            <label>Monto abonado</label>
-            <input type="text" class="form-input" [value]="(cartTotal() | currency: 'USD':'symbol':'1.2-2')" readonly />
+            <label>Monto a Abonar</label>
+            <input type="text" class="form-input bg-slate-50 font-bold" [value]="(cartTotal() | currency: 'ARS':'symbol':'1.2-2')" readonly />
           </div>
 
           <div class="form-group">
-            <label for="observacionesEnvio">Observaciones de envío</label>
+            <label for="observacionesEnvio">Observaciones para el Envío</label>
             <textarea id="observacionesEnvio" formControlName="observacionesEnvio"
-              placeholder="Ej: Entregar por la tarde" class="form-input form-textarea" rows="4"></textarea>
+              placeholder="Ej: Tocar timbre 2B, entregar por la tarde" class="form-input form-textarea" rows="4"></textarea>
           </div>
 
           <div class="form-actions">

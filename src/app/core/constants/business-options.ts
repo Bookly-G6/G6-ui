@@ -92,7 +92,7 @@ export const LOGISTICA_ESTADO_OPTIONS = [
 
 export type LogisticaEstadoOption = (typeof LOGISTICA_ESTADO_OPTIONS)[number];
 
-export const TIPO_ENVIO_OPTIONS = ['DOMICILIO', 'RETIRO_SUCURSAL'] as const;
+export const TIPO_ENVIO_OPTIONS = ['DOMICILIO', 'RETIRO_LOCAL'] as const;
 export type TipoEnvioOption = (typeof TIPO_ENVIO_OPTIONS)[number];
 
 export const ADMIN_TIPO_ENVIO_OPTIONS = [...TIPO_ENVIO_OPTIONS, 'DIGITAL'] as const;

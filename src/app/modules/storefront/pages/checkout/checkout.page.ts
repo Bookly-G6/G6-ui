@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CartService } from '../../../../core/services/cart.service';
@@ -16,7 +16,7 @@ import { TIPO_ENVIO_OPTIONS, TipoEnvioOption } from '../../../../core/constants/
   templateUrl: './checkout.page.html',
   styleUrl: './checkout.page.css',
 })
-export class CheckoutPage {
+export class CheckoutPage implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly cart = inject(CartService);
@@ -27,6 +27,7 @@ export class CheckoutPage {
   readonly loading = signal(false);
   readonly checkoutForm!: FormGroup;
   readonly tipoEnvioOptions = TIPO_ENVIO_OPTIONS;
+  readonly formasPago = signal<any[]>([]);
 
   readonly cartTotal = computed(() =>
     this.cart.items().reduce((sum, item) => sum + item.precioUnitario * item.cantidad, 0),
@@ -39,13 +40,35 @@ export class CheckoutPage {
       this.router.navigateByUrl('/ingresar');
       return;
     }
-    // falta enviar el estado del envio
 
     this.checkoutForm = this.fb.group({
       idSucursal: [1, [Validators.required, Validators.min(1)]],
       idFormaPago: [1, [Validators.required, Validators.min(1)]],
       tipoEnvio: [this.tipoEnvioOptions[0], Validators.required],
       observacionesEnvio: [''],
+    });
+  }
+
+  ngOnInit(): void {
+    this.loadFormasPago();
+  }
+
+  private loadFormasPago(): void {
+    this.checkout.getFormasPago().subscribe({
+      next: (data) => {
+        this.formasPago.set(data);
+        if (data.length > 0) {
+          this.checkoutForm.patchValue({ idFormaPago: data[0].idFormaPago });
+        }
+      },
+      error: () => {
+        this.formasPago.set([
+          { idFormaPago: 1, nombrePago: 'Efectivo' },
+          { idFormaPago: 2, nombrePago: 'Tarjeta débito' },
+          { idFormaPago: 3, nombrePago: 'Tarjeta crédito' },
+          { idFormaPago: 4, nombrePago: 'Transferencia' },
+        ]);
+      },
     });
   }
 
@@ -74,7 +97,7 @@ export class CheckoutPage {
     this.checkout.checkout(payload).subscribe({
       next: (response) => {
         this.loading.set(false);
-        this.notification.show('Compra confirmada. ');
+        this.notification.show('Compra confirmada con éxito.', 'success');
         this.cart.clear();
         this.router.navigateByUrl('/mis-ordenes');
       },

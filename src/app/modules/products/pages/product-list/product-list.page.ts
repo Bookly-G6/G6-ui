@@ -7,6 +7,7 @@ import { ProductFormComponent } from '../../components/product-form/product-form
 import { ProductDetailComponent } from '../../components/product-detail/product-detail.component';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { NotificationService } from '../../../../services/notification';
+import { PriceHistoryDialogComponent } from '../../components/price-history-dialog/price-history-dialog.component';
 
 // librerias de exportación
 import jsPDF from 'jspdf';
@@ -22,6 +23,7 @@ import * as XLSX from 'xlsx';
     ProductFormComponent,
     ProductDetailComponent,
     ConfirmDialogComponent,
+    PriceHistoryDialogComponent,
   ],
   templateUrl: './product-list.page.html',
   styleUrl: './product-list.page.css',
@@ -34,6 +36,10 @@ export class ProductListPage implements OnInit {
   selectedProductId: string | null = null;
   isDeleteConfirmOpen = false;
   productToDeleteId: string | null = null;
+
+  isPriceHistoryOpen = false;
+  priceHistoryProductId = '';
+  priceHistoryProductName = '';
 
   // busqueda y paginación
   searchTerm = '';
@@ -218,5 +224,19 @@ export class ProductListPage implements OnInit {
   cancelDelete(): void {
     this.isDeleteConfirmOpen = false;
     this.productToDeleteId = null;
+  }
+
+  openPriceHistory(product: Product): void {
+    if (!product.idProducto) return;
+    this.priceHistoryProductId = product.idProducto;
+    this.priceHistoryProductName = product.nombreProducto;
+    this.isPriceHistoryOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  closePriceHistory(): void {
+    this.isPriceHistoryOpen = false;
+    this.priceHistoryProductId = '';
+    this.priceHistoryProductName = '';
   }
 }

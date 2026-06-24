@@ -4,7 +4,7 @@ import { inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { map } from 'rxjs/operators';
-import { Product } from '../models/product.model';
+import { Product, HistorialPrecio } from '../models/product.model';
 import { environment } from '../../environments/environment';
 import { AuthSessionService } from '../core/services/auth-session.service';
 
@@ -87,6 +87,10 @@ export class ProductService {
 
   deleteProduct(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  getProductPriceHistory(id: string): Observable<HistorialPrecio[]> {
+    return this.http.get<HistorialPrecio[]>(`${this.apiUrl}/${id}/historial-precios`);
   }
 
   private normalizeSingleResponse<T>(response: unknown): T {

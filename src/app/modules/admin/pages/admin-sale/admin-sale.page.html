@@ -1,89 +1,134 @@
-<section class="pos-wrap">
-  <header>
-    <h1>Punto de Venta</h1>
-    <p>Gestione ventas de clientes ocasionales y transacciones en tienda física.</p>
+<section class="pos-wrap text-slate-800">
+  <header class="mb-6">
+    <h1 class="text-2xl font-bold text-slate-900">Punto de Venta (POS)</h1>
+    <p class="text-slate-500">Gestione ventas presenciales, facturación y envíos asociados desde la administración.</p>
   </header>
 
   <div class="pos-grid">
     <article class="pos-main">
-      <!-- Cliente sin cita previa -->
-      <div class="section-card register-client">
-        <h2>📋 Registra Cliente sin cita previa</h2>
-        <form [formGroup]="saleForm" class="client-form">
-          <div class="form-row">
-            <input type="text" class="bookly-input" formControlName="nombreCliente" placeholder="Nombre completo" />
-            <input type="text" class="bookly-input" formControlName="documentoCliente" placeholder="Documento" />
-            <input type="email" class="bookly-input" formControlName="emailCliente" placeholder="Correo" />
+      <!-- Datos del Cliente -->
+      <div class="section-card register-client bg-white border border-slate-200 rounded-xl p-5 shadow-sm mb-4">
+        <h2 class="text-lg font-bold text-slate-800 border-b border-slate-100 pb-2 mb-3">📋 Datos del Cliente</h2>
+        <form [formGroup]="saleForm" class="client-form flex flex-col gap-3">
+          <div class="form-group">
+            <label class="text-xs font-semibold text-slate-500 block mb-1">Seleccionar Cliente Registrado (Opcional)</label>
+            <select class="bookly-input" formControlName="idCliente">
+              <option value="">-- Consumidor Final / Cliente Ocasional --</option>
+              @for (cliente of clientes(); track cliente.idUsuario) {
+              <option [value]="cliente.idUsuario">{{ getClienteLabel(cliente) }}</option>
+              }
+            </select>
           </div>
+
+          <!-- Campos para cliente ocasional, se ocultan si se seleccionó uno registrado -->
+          @if (!saleForm.get('idCliente')?.value) {
+          <div class="form-row grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+            <div>
+              <label class="text-xs font-semibold text-slate-500 block mb-1">Nombre y Apellido</label>
+              <input type="text" class="bookly-input" formControlName="nombreCliente" placeholder="Nombre completo" />
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-500 block mb-1">DNI / CUIT</label>
+              <input type="text" class="bookly-input" formControlName="documentoCliente" placeholder="Documento" />
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-500 block mb-1">Email / Contacto</label>
+              <input type="email" class="bookly-input" formControlName="emailCliente" placeholder="Correo electrónico" />
+            </div>
+          </div>
+          }
         </form>
       </div>
 
       <!-- Nueva venta -->
-      <div class="section-card">
-        <div class="section-header">
-          <h2>🛒 Nueva Venta</h2>
-          <button type="button" class="bookly-btn bookly-btn-ghost" (click)="addProductToCart('')">+ Escanear
-            Producto</button>
+      <div class="section-card bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+        <div class="section-header flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+          <h2 class="text-lg font-bold text-slate-800">🛒 Carrito de Venta</h2>
+          <div class="flex items-center gap-2">
+            <select #prodSelect class="bookly-input py-1.5 px-3 text-sm rounded-lg" style="width: auto;" (change)="addProductToCart(prodSelect.value); prodSelect.value = ''">
+              <option value="">+ Seleccionar Producto</option>
+              @for (product of products(); track product.idProducto) {
+              <option [value]="product.idProducto">{{ product.nombreProducto }} ({{ product.codigoBarras }})</option>
+              }
+            </select>
+          </div>
         </div>
 
-        <form [formGroup]="saleForm" class="sale-form">
+        <form [formGroup]="saleForm" class="sale-form mb-4">
           <!-- Empleado -->
           <div class="form-group">
-            <label>Empleado que registra</label>
+            <label class="text-xs font-semibold text-slate-500 block mb-1">Empleado que registra la venta *</label>
             <select class="bookly-input" formControlName="idEmpleado">
               <option value="">Seleccionar empleado</option>
               @for (employee of employees(); track employee.idEmpleado) {
               <option [value]="employee.idEmpleado">{{ getEmployeeLabel(employee) }}</option>
               }
             </select>
+            @if (saleForm.get('idEmpleado')?.invalid && saleForm.get('idEmpleado')?.touched) {
+            <span class="text-xs text-rose-600 mt-1 block">El empleado es obligatorio para la auditoría de stock.</span>
+            }
           </div>
         </form>
 
-        <!-- Métodos de entrega -->
-        <div class="delivery-methods">
-          <label>Método de entrega</label>
-          <div class="method-cards">
-            <button type="button" class="method-card" [class.active]="selectedShippingType() === 'RETIRO_SUCURSAL'"
-              (click)="selectShippingType('RETIRO_SUCURSAL')">
-              <div class="icon">🏪</div>
-              <div class="label">Retiro en Sucursal</div>
-              <small>Retire en mostrador</small>
-            </button>
-            <button type="button" class="method-card" [class.active]="selectedShippingType() === 'DOMICILIO'"
-              (click)="selectShippingType('DOMICILIO')">
-              <div class="icon">📦</div>
-              <div class="label">A Domicilio</div>
-              <small>Envío a casa</small>
-            </button>
-            <button type="button" class="method-card" [class.active]="selectedShippingType() === 'DIGITAL'"
-              (click)="selectShippingType('DIGITAL')">
-              <div class="icon">💾</div>
-              <div class="label">Digital</div>
-              <small>Envío por correo</small>
-            </button>
-          </div>
+        <!-- Condicionar envío / logística -->
+        <div class="flex items-center gap-2.5 mb-4 p-3 bg-amber-50/40 rounded-xl border border-amber-200/50">
+          <input type="checkbox" id="checkEnvio" [checked]="generarEnvio()" (change)="toggleGenerarEnvio()" class="w-4.5 h-4.5 text-blue-600 border-slate-300 rounded cursor-pointer" />
+          <label for="checkEnvio" class="text-sm font-semibold text-slate-700 cursor-pointer select-none">¿Generar despacho y orden de envío logístico para esta venta?</label>
         </div>
 
+        <!-- Métodos de entrega (solo visibles si se marcó generarEnvio) -->
+        @if (generarEnvio()) {
+        <div class="delivery-methods bg-slate-50/50 rounded-xl p-4 border border-slate-100 mb-4 transition-all duration-300">
+          <label class="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">Método de envío seleccionado</label>
+          <div class="method-cards grid grid-cols-3 gap-3">
+            <button type="button" class="method-card border border-slate-200 rounded-lg p-3 text-center transition-all bg-white" [class.active]="selectedShippingType() === 'RETIRO_LOCAL'"
+              (click)="selectShippingType('RETIRO_LOCAL')">
+              <div class="text-lg">🏪</div>
+              <div class="font-bold text-xs mt-1">Retiro en Local</div>
+            </button>
+            <button type="button" class="method-card border border-slate-200 rounded-lg p-3 text-center transition-all bg-white" [class.active]="selectedShippingType() === 'DOMICILIO'"
+              (click)="selectShippingType('DOMICILIO')">
+              <div class="text-lg">📦</div>
+              <div class="font-bold text-xs mt-1">A Domicilio</div>
+            </button>
+            <button type="button" class="method-card border border-slate-200 rounded-lg p-3 text-center transition-all bg-white" [class.active]="selectedShippingType() === 'DIGITAL'"
+              (click)="selectShippingType('DIGITAL')">
+              <div class="text-lg">💾</div>
+              <div class="font-bold text-xs mt-1">Digital</div>
+            </button>
+          </div>
+
+          <div class="form-group mt-3" [formGroup]="saleForm">
+            <label class="text-xs font-semibold text-slate-500 block mb-1">Dirección y Observaciones de Envío</label>
+            <input type="text" class="bookly-input" formControlName="observacionesEnvio" placeholder="Ej: Entregar en Av. Santa Fe 1234, 4° Piso" />
+          </div>
+        </div>
+        }
+
         <!-- Productos en carrito -->
-        <div class="cart-section">
-          <h3>Productos en carrito</h3>
+        <div class="cart-section mt-6">
+          <h3 class="text-sm font-bold text-slate-600 border-b border-slate-100 pb-2 mb-3">Productos en el Carrito</h3>
           @if (items().length === 0) {
-          <p class="empty-cart">Selecciona productos para agregar</p>
+          <p class="empty-cart text-center py-8 text-slate-400 border border-dashed border-slate-300 rounded-lg bg-slate-50/50">
+            No hay productos seleccionados. Utilice el desplegable superior para agregar artículos.
+          </p>
           } @else {
-          <div class="cart-items">
+          <div class="cart-items flex flex-col gap-2">
             @for (item of items(); track $index) {
-            <div class="cart-item">
-              <div class="item-info">
-                <div class="item-name">{{ getProductName(item.idProducto) }}</div>
-                <div class="item-sku">{{ getProductCode(item.idProducto) }}</div>
+            <div class="cart-item flex items-center justify-between p-3 border border-slate-100 rounded-lg bg-slate-50 hover:bg-slate-100/70 transition-colors">
+              <div class="item-info flex-1">
+                <div class="item-name font-bold text-slate-900 text-sm">{{ getProductName(item.idProducto) }}</div>
+                <div class="item-sku text-xs text-slate-500 font-mono">{{ getProductCode(item.idProducto) }}</div>
               </div>
-              <div class="item-price">{{ getProductPrice(item.idProducto) | currency:'ARS':'symbol':'1.2-2' }}</div>
-              <div class="item-qty">
-                <button type="button" class="qty-btn" (click)="decreaseItemQty($index)">−</button>
-                <span>{{ item.cantidad }}</span>
-                <button type="button" class="qty-btn" (click)="increaseItemQty($index)">+</button>
+              <div class="item-price font-bold text-sm px-4 text-slate-800">
+                {{ getProductPrice(item.idProducto) | currency:'ARS':'symbol':'1.2-2' }}
               </div>
-              <button type="button" class="remove-btn" (click)="removeItemRow($index)">✕</button>
+              <div class="item-qty flex items-center gap-2 border border-slate-300 rounded-lg bg-white overflow-hidden">
+                <button type="button" class="qty-btn px-2 py-1 hover:bg-slate-100 text-slate-700 font-bold" (click)="decreaseItemQty($index)">−</button>
+                <span class="text-sm font-bold w-6 text-center">{{ item.cantidad }}</span>
+                <button type="button" class="qty-btn px-2 py-1 hover:bg-slate-100 text-slate-700 font-bold" (click)="increaseItemQty($index)">+</button>
+              </div>
+              <button type="button" class="remove-btn ml-4 text-slate-400 hover:text-rose-600 font-bold p-1 text-sm" (click)="removeItemRow($index)">✕</button>
             </div>
             }
           </div>
@@ -92,60 +137,59 @@
       </div>
     </article>
 
-    <aside class="pos-summary">
-      <h2>Resumen del Pedido</h2>
+    <!-- Resumen del Pedido -->
+    <aside class="pos-summary bg-white border border-slate-200 rounded-xl p-5 shadow-sm h-fit sticky top-4">
+      <h2 class="text-lg font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4">Resumen del Pedido</h2>
 
-      <div class="summary-row">
+      <div class="summary-row flex justify-between py-1.5 text-sm text-slate-600">
         <span>Subtotal</span>
-        <strong>{{ subtotal() | currency:'ARS':'symbol':'1.2-2' }}</strong>
+        <strong class="text-slate-800">{{ subtotal() | currency:'ARS':'symbol':'1.2-2' }}</strong>
       </div>
 
-      <div class="summary-row">
-        <span>Impuesto (8%)</span>
-        <strong>{{ taxAmount() | currency:'ARS':'symbol':'1.2-2' }}</strong>
+      <div class="summary-row flex justify-between py-1.5 text-sm text-slate-600">
+        <span>Recargo Fiscal (8%)</span>
+        <strong class="text-slate-800">{{ taxAmount() | currency:'ARS':'symbol':'1.2-2' }}</strong>
       </div>
 
-      <div class="summary-divider"></div>
+      <div class="summary-divider border-t border-slate-100 my-3"></div>
 
-      <div class="summary-row total">
-        <span>Total</span>
-        <strong>{{ totalFinal() | currency:'ARS':'symbol':'1.2-2' }}</strong>
+      <div class="summary-row total flex justify-between items-center py-2 text-slate-900 mb-6">
+        <span class="font-bold">Total Final</span>
+        <strong class="text-xl font-black text-emerald-800">{{ totalFinal() | currency:'ARS':'symbol':'1.2-2' }}</strong>
       </div>
 
       <!-- Forma de pago -->
-      <form [formGroup]="formaPagoForm" class="payment-form">
+      <form [formGroup]="formaPagoForm" class="payment-form border-t border-slate-100 pt-4 flex flex-col gap-4">
         <div class="form-group">
-          <label>Forma de pago</label>
+          <label class="text-xs font-semibold text-slate-500 block mb-1">Forma de Pago *</label>
           <select class="bookly-input" formControlName="idFormaPago">
-            @for (option of paymentOptions; track option.idFormaPago) {
-            <option [value]="option.idFormaPago">{{ option.label }}</option>
+            @for (option of paymentOptions(); track option.idFormaPago) {
+            <option [value]="option.idFormaPago">{{ option.nombrePago || option.label }}</option>
             }
           </select>
         </div>
 
         <div class="form-group">
-          <label>Monto abonado</label>
-          <input type="number" class="bookly-input" formControlName="montoAbonado" min="0.01" step="0.01"
+          <label class="text-xs font-semibold text-slate-500 block mb-1">Monto Abonado por el Cliente *</label>
+          <input type="number" class="bookly-input font-bold" formControlName="montoAbonado" min="0.01" step="0.01"
             [value]="formaPagoForm.get('montoAbonado')?.value ?? ''" />
+          @if (formaPagoForm.get('montoAbonado')?.touched && formaPagoForm.get('montoAbonado')?.invalid) {
+          <span class="text-xs text-rose-600 mt-1 block">El monto debe ser mayor o igual al total a pagar.</span>
+          }
         </div>
 
-        <button type="button" class="bookly-btn bookly-btn-primary full" (click)="procesarPago()"
-          [disabled]="submitting() || loading()">
-          {{ submitting() ? 'Procesando...' : '💳 Procesar Pago' }}
+        <button type="button" class="bookly-btn bookly-btn-primary w-full mt-2" (click)="procesarPago()"
+          [disabled]="submitting() || loading() || items().length === 0">
+          {{ submitting() ? 'Procesando Venta...' : '💳 Confirmar y Registrar Venta' }}
         </button>
       </form>
 
-      <div class="footer-actions">
-        <button type="button" class="link-btn">📝 Guardar Borrador</button>
-        <button type="button" class="link-btn">🖨️ Imprimir Recibo</button>
-      </div>
-
       @if (lastVenta(); as venta) {
-      <div class="last-sale">
-        <h3>✓ Última venta</h3>
-        <p>ID: {{ venta.idVenta.slice(0, 8) }}</p>
-        <p>Estado: {{ venta.estadoVenta }}</p>
-        <p class="total">{{ venta.totalFinal | currency:'ARS':'symbol':'1.2-2' }}</p>
+      <div class="last-sale border border-emerald-100 bg-emerald-50/50 rounded-xl p-4 mt-6">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-800 mb-2">✓ Última Venta Registrada</h3>
+        <p class="text-xs text-slate-600 mb-1">Código: <strong class="font-mono">{{ venta.idVenta.slice(0, 8).toUpperCase() }}</strong></p>
+        <p class="text-xs text-slate-600 mb-1">Estado: <span class="text-emerald-700 font-bold">{{ venta.estadoVenta }}</span></p>
+        <p class="text-sm font-bold text-slate-800 mt-2">Total: {{ venta.totalFinal | currency:'ARS':'symbol':'1.2-2' }}</p>
       </div>
       }
     </aside>

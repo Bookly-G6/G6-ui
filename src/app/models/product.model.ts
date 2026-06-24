@@ -19,3 +19,13 @@ export interface Product {
   autores?: string[];
   atributosEspecificos?: Record<string, unknown>;
 }
+
+export interface HistorialPrecio {
+  idHistorial: string;
+  precioCostoAnterior: number;
+  precioVentaAnterior: number;
+  precioCostoNuevo: number;
+  precioVentaNuevo: number;
+  fechaCambio: string;
+  empleadoNombre: string;
+}
