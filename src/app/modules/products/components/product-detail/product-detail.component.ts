@@ -34,20 +34,15 @@ export class ProductDetailComponent implements OnChanges, OnInit {
   ) {}
 
   ngOnInit(): void {
-    if (this.productId) {
-      this.loadProduct();
-    }
+    if (this.productId) this.loadProduct();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['productId'] && this.productId) {
-      this.loadProduct();
-    }
+    if (changes['productId'] && this.productId) this.loadProduct();
   }
 
   private loadProduct(): void {
     if (!this.productId) return;
-
     this.isLoading = true;
     this.productService.getProductById(this.productId).subscribe({
       next: (response) => {
@@ -63,6 +58,15 @@ export class ProductDetailComponent implements OnChanges, OnInit {
         this.notification.show('No se pudo cargar la información del producto.', 'error');
       },
     });
+  }
+
+  // atributosEspecificos puede venir vacío {} o con datos variables
+  get atributos(): { key: string; value: string }[] {
+    const attrs = this.product?.atributosEspecificos ?? {};
+    return Object.entries(attrs).map(([key, value]) => ({
+      key: key.replace(/_/g, ' '),
+      value: typeof value === 'boolean' ? (value ? 'Sí' : 'No') : String(value),
+    }));
   }
 
   onClose(): void {

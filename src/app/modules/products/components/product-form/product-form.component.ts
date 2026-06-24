@@ -1,10 +1,11 @@
 import {
+  ChangeDetectorRef,
   Component,
   EventEmitter,
-  Output,
-  OnInit,
   Input,
   OnChanges,
+  OnInit,
+  Output,
   SimpleChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -60,13 +61,36 @@ export class ProductFormComponent implements OnInit, OnChanges {
     private productService: ProductService,
     private catalogSettings: CatalogSettingsService,
     private notification: NotificationService,
+    private cdr: ChangeDetectorRef,
   ) {}
+
+  private loadFullProduct(id: string): void {
+    this.loadingCatalogs = true;
+    this.cdr.detectChanges();
+
+    this.productService.getProductById(id).subscribe({
+      next: (response) => {
+        const payload = (response as Product & { data?: Product }).data ?? response;
+        this.applyProductToForm(payload as Product);
+        this.loadingCatalogs = false;
+        this.cdr.detectChanges(); // <-- clave: repinta sin tener que tocar nada
+      },
+      error: () => {
+        // si falla, al menos uso lo que vino de la tabla
+        if (this.productToEdit) {
+          this.applyProductToForm(this.productToEdit);
+        }
+        this.loadingCatalogs = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
 
   ngOnInit(): void {
     this.initForm();
     this.loadCatalogs();
-    if (this.productToEdit) {
-      this.applyProductToForm(this.productToEdit);
+    if (this.productToEdit?.idProducto) {
+      this.loadFullProduct(this.productToEdit.idProducto); // <-- trae datos completos
     }
   }
 
@@ -76,8 +100,8 @@ export class ProductFormComponent implements OnInit, OnChanges {
     }
 
     const current = changes['productToEdit'].currentValue as Product | null;
-    if (current) {
-      this.applyProductToForm(current);
+    if (current?.idProducto) {
+      this.loadFullProduct(current.idProducto); // <-- trae datos completos
       return;
     }
 
@@ -99,6 +123,7 @@ export class ProductFormComponent implements OnInit, OnChanges {
     });
     this.initialConfiguredAttributeKeys.clear();
     this.attributeRows = [{ key: '', value: '' }];
+    this.cdr.detectChanges();
   }
 
   private applyProductToForm(product: Product): void {
@@ -119,6 +144,7 @@ export class ProductFormComponent implements OnInit, OnChanges {
       { emitEvent: false },
     );
     this.initAttributeRowsFromProduct(product.atributosEspecificos);
+    this.cdr.detectChanges();
   }
 
   private initForm(): void {
@@ -188,6 +214,7 @@ export class ProductFormComponent implements OnInit, OnChanges {
         this.rangosEtarios = rangosEtarios;
         this.categorias = categorias;
         this.autores = autores;
+        this.cdr.detectChanges();
 
         if (!this.productToEdit) {
           if (tiposProducto.length > 0) {

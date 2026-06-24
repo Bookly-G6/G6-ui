@@ -9,17 +9,22 @@
     <div class="detail-cover" [style.background]="'linear-gradient(150deg, #1e3a8a 0%, #274aa7 56%, #3b82f6 100%)'">
       <div class="cover-top">
         <span class="label">{{ (product()?.tipoProducto ?? 'Producto').toUpperCase() }}</span>
-        <span class="status-pill" [class.inactive]="!product()?.activo">
-          {{ product()?.activo ? 'Disponible' : 'Sin Stock' }}
+        <span class="status-pill" [class.inactive]="!canBuy()">
+          {{ canBuy() ? 'Disponible' : 'Sin stock' }}
         </span>
       </div>
 
       <div class="cover-buy-box">
         <span class="price-label">Precio</span>
         <strong class="price-tag">{{ product()?.precioActual | currency: 'USD':'symbol':'1.2-2' }}</strong>
+        <p class="stock-info">
+          {{ stockMessage() }}
+        </p>
 
-        <button class="bookly-btn bookly-btn-gold btn-block" type="button" (click)="addToCart()">
-          Agregar al carrito
+        <button class="bookly-btn bookly-btn-gold btn-block" type="button" [disabled]="!canBuy()" (click)="addToCart()">
+
+          {{ canBuy() ? 'Agregar al carrito' : 'Sin stock' }}
+
         </button>
       </div>
     </div>
@@ -37,22 +42,46 @@
         <p class="description-text">{{ product()?.descripcion || 'Sin descripción disponible para este producto.' }}</p>
       </section>
 
-      <div class="meta-grid">
-        <article class="meta-card">
-          <p class="meta-label">Editorial / Sello</p>
-          <strong>{{ product()?.editorialSello || 'Sin editorial' }}</strong>
-        </article>
-        <article class="meta-card">
-          <p class="meta-label">Rango etario</p>
-          <strong>{{ product()?.rangoEtario || 'General' }}</strong>
-        </article>
-        <article class="meta-card">
-          <p class="meta-label">Categorías</p>
-          <strong>{{ productCategories().join(' · ') }}</strong>
-        </article>
-      </div>
+      <section class="info-block">
+        <h2>Información general</h2>
 
-      @if (detailAttributes().length > 0) {
+        <div class="attribute-list">
+
+          <div class="attribute-row">
+            <span class="attribute-key">Editorial</span>
+            <strong class="attribute-value">
+              {{ product()?.editorialSello || 'Sin editorial' }}
+            </strong>
+          </div>
+
+          <div class="attribute-row">
+            <span class="attribute-key">Categorías</span>
+            <strong class="attribute-value">
+              {{ productCategories().join(' · ') }}
+            </strong>
+          </div>
+
+          <div class="attribute-row">
+            <span class="attribute-key">Rango etario</span>
+            <strong class="attribute-value">
+              {{ product()?.rangoEtario || 'General' }}
+            </strong>
+          </div>
+
+          @if (product()?.codigoBarras) {
+          <div class="attribute-row">
+            <span class="attribute-key">
+              {{ product()?.tipoProducto === 'Libro Físico' ? 'ISBN' : 'Código' }}
+            </span>
+            <strong class="attribute-value">
+              {{ product()?.codigoBarras }}
+            </strong>
+          </div>
+          }
+
+        </div>
+      </section>
+
       @if (detailAttributes().length > 0) {
       <section class="attributes-block">
         <h2>Especificaciones</h2>
@@ -66,7 +95,6 @@
           }
         </div>
       </section>
-      }
       }
     </div>
   </article>

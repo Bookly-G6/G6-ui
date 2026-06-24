@@ -21,13 +21,13 @@ export const PRODUCT_ATTRIBUTES_CONFIG: ProductAttributeConfig[] = [
     key: 'tapa',
     label: 'Tapa',
     type: 'select',
-    options: ['blanda', 'dura'],
+    options: ['Blanda', 'Dura'],
   },
   {
     key: 'idioma',
     label: 'Idioma',
     type: 'select',
-    options: ['español', 'inglés', 'francés', 'português', 'otro'],
+    options: ['Español', 'Inglés', 'Francés', 'Português', 'Otros'],
   },
   {
     key: 'paginas',
@@ -73,7 +73,7 @@ export const PRODUCT_ATTRIBUTES_CONFIG: ProductAttributeConfig[] = [
     key: 'formato',
     label: 'Formato',
     type: 'select',
-    options: ['físico', 'EPUB', 'PDF', 'MOBI'],
+    options: ['Físico', 'EPUB', 'PDF', 'MOBI'],
   },
 ];
 

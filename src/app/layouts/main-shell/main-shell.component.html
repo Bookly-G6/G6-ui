@@ -2,13 +2,15 @@
   <header class="topbar" [class.admin-topbar]="isAdmin()">
     <a class="brand" routerLink="/">Bookly<span>.</span></a>
 
-    @if (!isAdmin()) {
+    @if (showCatalogSearch()) {
     <div class="search-wrap">
       <input class="bookly-input" type="search" [value]="catalogState.searchTerm()"
         (input)="onSearchInput($any($event.target).value)" placeholder="Buscar por título"
         aria-label="Buscar en catálogo" />
     </div>
+    }
 
+    @if (!isAdmin()) {
     <div class="topbar-actions">
       @if (isCliente()) {
       <a class="bookly-btn bookly-btn-ghost btn-with-icon" routerLink="/mis-ordenes" routerLinkActive="active-link">

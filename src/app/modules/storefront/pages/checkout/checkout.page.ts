@@ -74,10 +74,7 @@ export class CheckoutPage {
     this.checkout.checkout(payload).subscribe({
       next: (response) => {
         this.loading.set(false);
-        this.notification.show(
-          `Compra confirmada. Venta ${response.idVenta.slice(0, 8)}${response.idEnvio ? ` · Envío ${response.idEnvio.slice(0, 8)}` : ''}`,
-          'success',
-        );
+        this.notification.show('Compra confirmada. ');
         this.cart.clear();
         this.router.navigateByUrl('/mis-ordenes');
       },

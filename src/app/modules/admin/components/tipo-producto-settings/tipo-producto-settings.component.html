@@ -1,6 +1,10 @@
 <section class="settings-grid section-enter">
   <article class="bookly-panel setting-col">
-    <h3>Tipos de producto</h3>
+    <!-- <h3>Tipos de producto</h3> -->
+    <div class="add-row">
+      <input class="bookly-input" [(ngModel)]="nuevoTipo" placeholder="Nuevo tipo de producto" />
+      <button class="bookly-btn bookly-btn-secondary" (click)="addTipoProducto()">+</button>
+    </div>
     <ul>
       @for (tipo of tiposProducto(); track tipo.idTipoProducto) {
       <li>
@@ -9,10 +13,5 @@
       </li>
       }
     </ul>
-
-    <div class="add-row">
-      <input class="bookly-input" [(ngModel)]="nuevoTipo" placeholder="Nuevo tipo de producto" />
-      <button class="bookly-btn bookly-btn-secondary" (click)="addTipoProducto()">+</button>
-    </div>
   </article>
 </section>

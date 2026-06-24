@@ -44,13 +44,105 @@ export class AuthPageComponent {
   });
 
   readonly registerForm = this.fb.nonNullable.group({
-    nombre: ['', [Validators.required, Validators.minLength(2)]],
-    apellido: ['', [Validators.required, Validators.minLength(2)]],
+    nombre: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
+    apellido: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]],
-    dni: [''],
-    telefono: [''],
+    dni: ['', [Validators.pattern(/^\d{7,8}$/)]],
+
+    telefono: ['', [Validators.pattern(/^\d{8,15}$/)]],
   });
+
+  hasLoginError(field: 'email' | 'password'): boolean {
+    const control = this.loginForm.controls[field];
+    return control.invalid && control.touched;
+  }
+
+  hasRegisterError(
+    field: 'nombre' | 'apellido' | 'email' | 'password' | 'dni' | 'telefono',
+  ): boolean {
+    const control = this.registerForm.controls[field];
+    return control.invalid && control.touched;
+  }
+
+  shouldDisableLoginSubmit(): boolean {
+    if (this.loading()) return true;
+
+    const hasTouchedField = Object.values(this.loginForm.controls).some(
+      (control) => control.touched,
+    );
+    return hasTouchedField && this.loginForm.invalid;
+  }
+
+  shouldDisableRegisterSubmit(): boolean {
+    if (this.loading()) return true;
+
+    const hasTouchedField = Object.values(this.registerForm.controls).some(
+      (control) => control.touched,
+    );
+    return hasTouchedField && this.registerForm.invalid;
+  }
+
+  getLoginErrorMessage(field: 'email' | 'password'): string {
+    const control = this.loginForm.controls[field];
+    if (!control.errors) return '';
+
+    if (control.errors['required']) {
+      return field === 'email' ? 'Correo obligatorio.' : 'Contraseña obligatoria.';
+    }
+
+    if (control.errors['email']) {
+      return 'Correo inválido.';
+    }
+
+    if (control.errors['minlength']) {
+      return 'Mínimo 6 caracteres.';
+    }
+
+    return 'Valor inválido.';
+  }
+
+  getRegisterErrorMessage(
+    field: 'nombre' | 'apellido' | 'email' | 'password' | 'dni' | 'telefono',
+  ): string {
+    const control = this.registerForm.controls[field];
+    if (!control.errors) return '';
+
+    if (control.errors['required']) {
+      switch (field) {
+        case 'nombre':
+          return 'Nombre obligatorio.';
+        case 'apellido':
+          return 'Apellido obligatorio.';
+        case 'email':
+          return 'Correo obligatorio.';
+        case 'password':
+          return 'Contraseña obligatoria.';
+      }
+    }
+
+    if (control.errors['email']) {
+      return 'Correo inválido.';
+    }
+
+    if (control.errors['minlength']) {
+      if (field === 'password') return 'Mínimo 6 caracteres.';
+      if (field === 'nombre' || field === 'apellido') {
+        return 'Mínimo 2 caracteres.';
+      }
+    }
+
+    if (control.errors['maxlength']) {
+      return 'Máximo 50 caracteres.';
+    }
+
+    if (control.errors['pattern']) {
+      if (field === 'dni') return 'DNI inválido (7-8 dígitos).';
+      if (field === 'telefono') return 'Teléfono inválido (8-15 dígitos).';
+    }
+
+    return 'Valor inválido.';
+  }
 
   toggleMode(): void {
     this.isRegister.update((value) => !value);

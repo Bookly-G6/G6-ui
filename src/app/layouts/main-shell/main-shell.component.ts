@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, inject } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Component, computed, effect, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet, NavigationEnd } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
+import { filter } from 'rxjs/operators';
 import { AuthSessionService } from '../../core/services/auth-session.service';
 import { CatalogStateService } from '../../core/services/catalog-state.service';
 import { CartService } from '../../core/services/cart.service';
@@ -33,8 +35,18 @@ export class MainShellComponent {
 
   readonly isAdmin = computed(() => this.authSession.role() === 'admin');
   readonly isCliente = computed(() => this.authSession.role() === 'cliente');
+  readonly currentPath = signal(this.normalizePath(this.router.url));
+  readonly showCatalogSearch = computed(() => !this.isAdmin() && this.currentPath() === '/');
 
   constructor() {
+    this.router.events
+      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+      .pipe(takeUntilDestroyed())
+      .subscribe((event) => {
+        this.currentPath.set(this.normalizePath(event.urlAfterRedirects));
+        this.catalogState.setSearchTerm('');
+      });
+
     effect(() => {
       if (this.authSession.isAuthenticated() && this.authSession.role() === 'cliente') {
         this.cart.getCart().subscribe({
@@ -48,6 +60,11 @@ export class MainShellComponent {
 
   onSearchInput(value: string): void {
     this.catalogState.setSearchTerm(value);
+  }
+
+  private normalizePath(url: string): string {
+    const withoutQuery = url.split('?')[0]?.split('#')[0] ?? '/';
+    return withoutQuery === '' ? '/' : withoutQuery;
   }
 
   navigate(path: string): void {
@@ -104,6 +121,7 @@ export class MainShellComponent {
 
   logout(): void {
     this.authSession.logout();
+    this.catalogState.setSearchTerm('');
     this.cart.clear();
     this.router.navigateByUrl('/');
   }
