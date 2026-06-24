@@ -15,6 +15,7 @@ export interface ProductUpsertPayload {
   precioCosto?: number;
   precioActual: number;
   activo: boolean;
+  stock?: number;
   idTipoProducto: number;
   idEditorialSello: number;
   idRangoEtario: number;

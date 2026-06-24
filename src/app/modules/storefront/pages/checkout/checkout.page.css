@@ -259,3 +259,106 @@
     flex-direction: column;
   }
 }
+
+/* Métodos de Envío en Tarjetas Visuales */
+.method-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.method-card {
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  background: white;
+  padding: 1rem;
+  text-align: center;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+  outline: none;
+}
+
+.method-card svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-bottom: 0.25rem;
+  color: #64748b;
+  transition: color 0.2s ease;
+}
+
+.method-card:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.method-card.active {
+  border-color: var(--bookly-blue, #1e3a8a);
+  background: #eff6ff;
+  color: var(--bookly-blue, #1e3a8a);
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.05);
+}
+
+.method-card.active svg {
+  color: var(--bookly-blue, #1e3a8a);
+}
+
+/* Subformulario de registro de pago */
+.payment-addition-form {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 1.25rem;
+  border-radius: 12px;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.payment-addition-form h3 {
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+}
+
+.payment-addition-form select {
+  background-color: white;
+}
+
+/* Pagos Registrados */
+.payments-added-section label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+}
+
+/* Animaciones */
+.animate-in {
+  animation: enter 0.25s ease-out;
+}
+
+.fade-in {
+  --tw-enter-opacity: 0;
+  animation-name: fadeIn;
+  animation-duration: 0.25s;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

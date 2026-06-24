@@ -88,6 +88,16 @@
             <option [ngValue]="false">Inactivo (Oculto / Sin Stock)</option>
           </select>
         </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Stock / Cantidad Disponible</label>
+          <input type="number" formControlName="stock" min="0" step="1" required
+            class="w-full border border-slate-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-[#1E3A8A]"
+            placeholder="Ej: 10">
+          <small *ngIf="isControlInvalid('stock')" class="text-rose-600 text-xs">
+            El stock es obligatorio y no puede ser menor a 0.
+          </small>
+        </div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 p-3 rounded-lg border border-slate-100">

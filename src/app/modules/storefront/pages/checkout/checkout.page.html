@@ -16,7 +16,8 @@
                 <button type="button" (click)="decreaseItem(item.idItem, item.cantidad)">−</button>
                 <small class="item-qty font-bold px-1 text-slate-700">{{ item.cantidad }}</small>
                 <button type="button" (click)="increaseItem(item.idItem, item.cantidad)">+</button>
-                <button type="button" class="item-remove hover:bg-rose-50" (click)="removeItem(item.idItem)">Eliminar</button>
+                <button type="button" class="item-remove hover:bg-rose-50"
+                  (click)="removeItem(item.idItem)">Eliminar</button>
               </div>
             </div>
             <div class="item-price font-bold">
@@ -41,50 +42,133 @@
           <!-- Sucursal invisible ya que tiene default = 1 en ts -->
           <input type="hidden" formControlName="idSucursal" />
 
+          <!-- Métodos de Envío Visuales -->
           <div class="form-group">
-            <label for="idFormaPago">Forma de Pago *</label>
-            <select id="idFormaPago" formControlName="idFormaPago" class="form-input">
-              @for (pago of formasPago(); track pago.idFormaPago) {
-              <option [value]="pago.idFormaPago">{{ pago.nombrePago }}</option>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Método de Envío
+              *</label>
+            <div class="method-cards grid grid-cols-2 gap-3 mb-4">
+              <button type="button"
+                class="method-card border border-slate-200 rounded-lg p-3 text-center transition-all bg-white flex flex-col items-center justify-center cursor-pointer"
+                [class.active]="selectedShippingType() === 'RETIRO_LOCAL'" (click)="selectShippingType('RETIRO_LOCAL')">
+                <svg class="w-6 h-6 text-slate-600 mb-1" fill="none" stroke="currentColor" stroke-width="2"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                <span class="font-bold text-xs">Retiro en Local</span>
+              </button>
+              <button type="button"
+                class="method-card border border-slate-200 rounded-lg p-3 text-center transition-all bg-white flex flex-col items-center justify-center cursor-pointer"
+                [class.active]="selectedShippingType() === 'DOMICILIO'" (click)="selectShippingType('DOMICILIO')">
+                <svg class="w-6 h-6 text-slate-600 mb-1" fill="none" stroke="currentColor" stroke-width="2"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+                <span class="font-bold text-xs">Envío a Domicilio</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Dirección y Observaciones de Envío (Solo para Domicilio) -->
+          @if (selectedShippingType() === 'DOMICILIO') {
+          <div class="form-group">
+            <label for="observacionesEnvio">Dirección y Observaciones de Envío *</label>
+            <textarea id="observacionesEnvio" formControlName="observacionesEnvio"
+              placeholder="Ej: Entregar en Av. Santa Fe 1234, 4° Piso. Tocar timbre 2B."
+              class="form-input form-textarea animate-in fade-in duration-200" rows="3"></textarea>
+          </div>
+          }
+
+          <!-- Pagos Registrados -->
+          <div class="payments-added-section mb-4">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Pagos
+              Registrados</label>
+            @if (pagosAgregados().length === 0) {
+            <p class="text-xs text-slate-400 italic bg-slate-50 p-3 rounded-lg border border-slate-200">No se han
+              registrado pagos aún.</p>
+            } @else {
+            <div class="flex flex-col gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200 mb-3">
+              @for (pago of pagosAgregados(); track $index) {
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-slate-700 font-semibold">{{ pago.nombrePago }}</span>
+                <div class="flex items-center gap-2">
+                  <strong class="text-slate-800">{{ pago.montoAbonado | currency:'ARS':'symbol':'1.2-2' }}</strong>
+                  <button type="button" class="text-rose-600 hover:text-rose-800 font-bold px-1"
+                    (click)="eliminarPago($index)">✕</button>
+                </div>
+              </div>
               }
-            </select>
-            @if (checkoutForm.get('idFormaPago')?.invalid && checkoutForm.get('idFormaPago')?.touched) {
-            <span class="error">Debes seleccionar una forma de pago válida.</span>
+              <div class="border-t border-slate-200 mt-2 pt-2 flex justify-between items-center text-xs font-bold">
+                <span>Total Abonado:</span>
+                <span class="text-emerald-700">{{ totalAbonado() | currency:'ARS':'symbol':'1.2-2' }}</span>
+              </div>
+            </div>
             }
           </div>
 
-          <div class="form-group">
-            <label for="tipoEnvio">Tipo de Envío *</label>
-            <select id="tipoEnvio" formControlName="tipoEnvio" class="form-input">
-              @for (tipoEnvio of tipoEnvioOptions; track tipoEnvio) {
-              <option [value]="tipoEnvio">
-                {{ tipoEnvio === 'DOMICILIO' ? 'Envío a Domicilio' : 'Retiro en Sucursal / Local' }}
-              </option>
-              }
-            </select>
+          <!-- Subformulario para agregar formas de pago -->
+          <div [formGroup]="formaPagoForm"
+            class="payment-addition-form bg-slate-50/50 p-4 rounded-lg border border-slate-100 mb-4">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Registrar Formas de Pago</h3>
+
+            <div class="grid grid-cols-2 gap-3 mb-3">
+              <div>
+                <label for="idFormaPago" class="block text-[10px] font-bold text-slate-500 mb-1">Método de Pago</label>
+                <select id="idFormaPago" formControlName="idFormaPago" class="form-input text-xs py-2 bg-white">
+                  @for (pago of formasPago(); track pago.idFormaPago) {
+                  <option [value]="pago.idFormaPago">{{ pago.nombrePago || pago.label }}</option>
+                  }
+                </select>
+              </div>
+              <div>
+                <label for="montoAbonado" class="block text-[10px] font-bold text-slate-500 mb-1">Monto a Abonar</label>
+                <div class="flex gap-2">
+                  <input type="number" id="montoAbonado" formControlName="montoAbonado" step="0.01" min="0.01"
+                    class="form-input text-xs py-2 font-bold flex-1" placeholder="Monto" />
+                  <button type="button" class="bookly-btn bookly-btn-ghost text-[10px] px-3 font-bold cursor-pointer"
+                    (click)="agregarPago()">+</button>
+                </div>
+              </div>
+            </div>
+            @if (formaPagoForm.get('montoAbonado')?.touched && formaPagoForm.get('montoAbonado')?.invalid) {
+            <span class="error text-xs">Ingresa un monto válido mayor a 0.</span>
+            }
           </div>
 
-          <div class="form-group">
-            <label>Monto a Abonar</label>
-            <input type="text" class="form-input bg-slate-50 font-bold" [value]="(cartTotal() | currency: 'ARS':'symbol':'1.2-2')" readonly />
-          </div>
-
-          <div class="form-group">
-            <label for="observacionesEnvio">Observaciones para el Envío</label>
-            <textarea id="observacionesEnvio" formControlName="observacionesEnvio"
-              placeholder="Ej: Tocar timbre 2B, entregar por la tarde" class="form-input form-textarea" rows="4"></textarea>
-          </div>
-
-          <div class="form-actions">
-            <button type="submit" class="bookly-btn bookly-btn-primary" [disabled]="loading()">
-              {{ loading() ? 'Procesando...' : 'Confirmar Compra' }}
-            </button>
-            <button type="button" class="bookly-btn bookly-btn-ghost" (click)="onCancel()" [disabled]="loading()">
-              Cancelar
-            </button>
-          </div>
-        </form>
+          <!-- Alertas de Estado de Pago -->
+          @if (cartTotal() > 0 && totalAbonado() < cartTotal()) { <div
+            class="p-3 bg-rose-50 border border-rose-100 rounded-lg text-rose-800 text-xs font-semibold mb-4 animate-in fade-in duration-200">
+            Faltan abonar {{ (cartTotal() - totalAbonado()) | currency:'ARS':'symbol':'1.2-2' }} para completar el saldo
+            de tu compra.
       </div>
+      }
+
+      @if (cartTotal() > 0 && totalAbonado() >= cartTotal()) {
+      <div
+        class="p-3 bg-emerald-50 border border-emerald-100 rounded-lg text-emerald-800 text-xs font-semibold mb-4 animate-in fade-in duration-200">
+        Saldo cubierto. Vuelto del cliente: {{ (totalAbonado() - cartTotal()) | currency:'ARS':'symbol':'1.2-2' }}
+      </div>
+      }
+
+      <!-- Acciones de Formulario -->
+      <div class="form-actions">
+        <button type="submit"
+          class="bookly-btn bookly-btn-primary cursor-pointer flex justify-center items-center gap-2"
+          [disabled]="loading() || cartItems().length === 0 || totalAbonado() < cartTotal()">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+          </svg>
+          {{ loading() ? 'Procesando Compra...' : 'Confirmar Compra' }}
+        </button>
+        <button type="button" class="bookly-btn bookly-btn-ghost cursor-pointer" (click)="onCancel()"
+          [disabled]="loading()">
+          Cancelar
+        </button>
+      </div>
+      </form>
     </div>
+  </div>
   </div>
 </section>

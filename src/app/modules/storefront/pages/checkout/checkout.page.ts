@@ -29,6 +29,20 @@ export class CheckoutPage implements OnInit {
   readonly tipoEnvioOptions = TIPO_ENVIO_OPTIONS;
   readonly formasPago = signal<any[]>([]);
 
+  // Múltiples formas de pago
+  readonly pagosAgregados = signal<Array<{ idFormaPago: number; nombrePago: string; montoAbonado: number }>>([]);
+
+  readonly totalAbonado = computed(() =>
+    this.pagosAgregados().reduce((sum, p) => sum + p.montoAbonado, 0)
+  );
+
+  readonly selectedShippingType = signal<string>('DOMICILIO');
+
+  readonly formaPagoForm = this.fb.group({
+    idFormaPago: [1, [Validators.required, Validators.min(1)]],
+    montoAbonado: [null as number | null, [Validators.required, Validators.min(0.01)]],
+  });
+
   readonly cartTotal = computed(() =>
     this.cart.items().reduce((sum, item) => sum + item.precioUnitario * item.cantidad, 0),
   );
@@ -43,8 +57,7 @@ export class CheckoutPage implements OnInit {
 
     this.checkoutForm = this.fb.group({
       idSucursal: [1, [Validators.required, Validators.min(1)]],
-      idFormaPago: [1, [Validators.required, Validators.min(1)]],
-      tipoEnvio: [this.tipoEnvioOptions[0], Validators.required],
+      tipoEnvio: ['DOMICILIO', Validators.required],
       observacionesEnvio: [''],
     });
   }
@@ -58,16 +71,20 @@ export class CheckoutPage implements OnInit {
       next: (data) => {
         this.formasPago.set(data);
         if (data.length > 0) {
-          this.checkoutForm.patchValue({ idFormaPago: data[0].idFormaPago });
+          this.formaPagoForm.patchValue({ idFormaPago: data[0].idFormaPago });
         }
+        this.updateRemainingPaymentInput();
       },
       error: () => {
-        this.formasPago.set([
+        const fallback = [
           { idFormaPago: 1, nombrePago: 'Efectivo' },
           { idFormaPago: 2, nombrePago: 'Tarjeta débito' },
           { idFormaPago: 3, nombrePago: 'Tarjeta crédito' },
           { idFormaPago: 4, nombrePago: 'Transferencia' },
-        ]);
+        ];
+        this.formasPago.set(fallback);
+        this.formaPagoForm.patchValue({ idFormaPago: fallback[0].idFormaPago });
+        this.updateRemainingPaymentInput();
       },
     });
   }
@@ -83,6 +100,16 @@ export class CheckoutPage implements OnInit {
         'Tu carrito está vacío. Agrega productos antes de continuar.',
         'error',
       );
+      return;
+    }
+
+    if (this.pagosAgregados().length === 0) {
+      this.notification.show('Agrega al menos una forma de pago.', 'error');
+      return;
+    }
+
+    if (this.totalAbonado() < this.cartTotal()) {
+      this.notification.show('El monto total abonado no cubre el total de la compra.', 'error');
       return;
     }
 
@@ -108,6 +135,50 @@ export class CheckoutPage implements OnInit {
         this.notification.show(message, 'error');
       },
     });
+  }
+
+  selectShippingType(tipo: string): void {
+    this.selectedShippingType.set(tipo);
+    this.checkoutForm.patchValue({ tipoEnvio: tipo });
+  }
+
+  agregarPago(): void {
+    if (this.formaPagoForm.invalid) {
+      this.formaPagoForm.markAllAsTouched();
+      return;
+    }
+
+    const raw = this.formaPagoForm.getRawValue();
+    const idFormaPago = Number(raw.idFormaPago);
+    const monto = Number(raw.montoAbonado);
+
+    if (monto <= 0) {
+      this.notification.show('El monto debe ser mayor a 0.', 'error');
+      return;
+    }
+
+    const forma = this.formasPago().find((o) => o.idFormaPago === idFormaPago);
+    const nombrePago = forma ? (forma.nombrePago || forma.label || forma.nombreRol) : `Método ${idFormaPago}`;
+
+    this.pagosAgregados.update((prev) => [...prev, { idFormaPago, nombrePago, montoAbonado: monto }]);
+    
+    this.formaPagoForm.get('montoAbonado')?.reset();
+    this.formaPagoForm.get('montoAbonado')?.markAsUntouched();
+    setTimeout(() => {
+      this.updateRemainingPaymentInput();
+    });
+  }
+
+  eliminarPago(index: number): void {
+    this.pagosAgregados.update((prev) => prev.filter((_, idx) => idx !== index));
+    setTimeout(() => {
+      this.updateRemainingPaymentInput();
+    });
+  }
+
+  updateRemainingPaymentInput(): void {
+    const remaining = Math.max(0, this.cartTotal() - this.totalAbonado());
+    this.formaPagoForm.patchValue({ montoAbonado: remaining > 0 ? Number(remaining.toFixed(2)) : null });
   }
 
   onCancel(): void {
@@ -158,23 +229,19 @@ export class CheckoutPage implements OnInit {
     }
 
     const idSucursal = Number(this.checkoutForm.value.idSucursal ?? 1);
-    const idFormaPago = Number(this.checkoutForm.value.idFormaPago ?? 1);
-    const tipoEnvioRaw = String(this.checkoutForm.value.tipoEnvio ?? '').trim();
-    const tipoEnvio = this.tipoEnvioOptions.includes(tipoEnvioRaw as TipoEnvioOption)
-      ? (tipoEnvioRaw as TipoEnvioOption)
-      : this.tipoEnvioOptions[0];
-    const observacionesEnvio = String(this.checkoutForm.value.observacionesEnvio ?? '').trim();
+    const tipoEnvio = this.selectedShippingType() as any;
+    const observacionesEnvio = this.selectedShippingType() === 'DOMICILIO'
+      ? String(this.checkoutForm.value.observacionesEnvio ?? '').trim()
+      : undefined;
 
     return {
       origenVenta: 'WEB',
       idSucursal,
       items,
-      pagos: [
-        {
-          idFormaPago,
-          montoAbonado: this.cartTotal(),
-        },
-      ],
+      pagos: this.pagosAgregados().map((p) => ({
+        idFormaPago: p.idFormaPago,
+        montoAbonado: p.montoAbonado,
+      })),
       generarEnvio: true,
       tipoEnvio,
       observacionesEnvio: observacionesEnvio || undefined,
