@@ -3,7 +3,7 @@
     <h2>Explorar por categoría</h2>
     <p></p>
 
-    <nav>
+    <nav class="mb-4">
       @for (category of categories(); track category) {
       <button type="button" class="category-item" [class.active]="catalogState.selectedCategory() === category"
         (click)="setCategory(category)">
@@ -14,10 +14,51 @@
   </aside>
 
   <div class="catalog-content">
-    <header class="catalog-heading">
+    <header class="catalog-heading flex justify-between items-center flex-wrap gap-4 mb-4">
       <div>
         <h1>La colección</h1>
         <p>Mostrando {{ filteredProducts().length }} títulos</p>
+      </div>
+
+      <!-- Filtros Avanzados (Superior Derecha - Minimalistas) -->
+      <div class="catalog-filters-top flex items-center gap-2.5">
+        <!-- Tipo de Producto -->
+        <div class="filter-select-wrapper">
+          <select class="minimal-filter-select" [value]="selectedTipoProducto()" (change)="selectedTipoProducto.set($any($event.target).value)">
+            <option value="Todos">Todos los formatos</option>
+            @for (tipo of availableTipos(); track tipo) {
+              @if (tipo !== 'Todos') {
+                <option [value]="tipo">{{ tipo }}</option>
+              }
+            }
+          </select>
+        </div>
+
+        <!-- Autor -->
+        <div class="filter-select-wrapper">
+          <select class="minimal-filter-select" [value]="selectedAutor()" (change)="selectedAutor.set($any($event.target).value)">
+            <option value="Todos">Todos los autores</option>
+            @for (autor of availableAutores(); track autor) {
+              @if (autor !== 'Todos') {
+                <option [value]="autor">{{ autor }}</option>
+              }
+            }
+          </select>
+        </div>
+
+        <!-- Rango de precio -->
+        <div class="minimal-price-range flex items-center gap-1 bg-white">
+          <input type="number" min="0" class="minimal-price-input" placeholder="Mín $" [value]="minPrice() !== null ? minPrice() : ''" (keydown)="preventInvalidKeys($event)" (paste)="preventInvalidPaste($event)" (input)="setMinPrice($any($event.target).value)" />
+          <span class="text-slate-300 text-[10px] select-none">-</span>
+          <input type="number" min="0" class="minimal-price-input" placeholder="Máx $" [value]="maxPrice() !== null ? maxPrice() : ''" (keydown)="preventInvalidKeys($event)" (paste)="preventInvalidPaste($event)" (input)="setMaxPrice($any($event.target).value)" />
+        </div>
+
+        <!-- Botón de Limpieza (Solo visible si hay algún filtro activo) -->
+        @if (selectedTipoProducto() !== 'Todos' || selectedAutor() !== 'Todos' || minPrice() !== null || maxPrice() !== null || catalogState.selectedCategory() !== 'Todos') {
+        <button type="button" class="minimal-clear-btn cursor-pointer" (click)="clearFilters()" title="Limpiar Filtros">
+          ✕
+        </button>
+        }
       </div>
     </header>
 
@@ -25,7 +66,7 @@
     <div class="bookly-panel empty-state">Cargando catálogo...</div>
     } @else {
     <div class="catalog-grid">
-      @for (product of filteredProducts(); track product.idProducto ?? product.codigoBarras) {
+      @for (product of paginatedProducts(); track product.idProducto ?? product.codigoBarras) {
       <article class="book-card" @cardIn role="button" tabindex="0" (click)="goToProductDetail(product)"
         (keydown.enter)="goToProductDetail(product)"
         (keydown.space)="$event.preventDefault(); goToProductDetail(product)">
@@ -38,7 +79,7 @@
           <p class="description">{{ product.descripcion || 'Sin descripción disponible.' }}</p>
 
           <div class="book-card-footer">
-            <strong>{{ product.precioActual | currency: 'USD':'symbol':'1.2-2' }}</strong>
+            <strong>{{ product.precioActual | currency: 'ARS':'symbol':'1.2-2' }}</strong>
             <button class="bookly-btn bookly-btn-gold" [disabled]="!canBuy(product)"
               (click)="$event.stopPropagation(); addToCart(product)">
               {{ canBuy(product) ? 'Agregar' : 'Sin stock' }}
@@ -47,9 +88,28 @@
         </div>
       </article>
       } @empty {
-      <div class="bookly-panel empty-state">No hay resultados para la búsqueda actual.</div>
+      <div class="bookly-panel empty-state">No hay resultados para los filtros seleccionados.</div>
       }
     </div>
+
+    <!-- Paginación -->
+    @if (totalPages() > 1) {
+    <div class="pagination-wrap">
+      <button type="button" class="pagination-btn cursor-pointer" [disabled]="currentPage() === 1" (click)="prevPage()">
+        &laquo;
+      </button>
+      
+      @for (page of pageNumbers(); track page) {
+      <button type="button" class="pagination-btn cursor-pointer" [class.active]="currentPage() === page" (click)="goToPage(page)">
+        {{ page }}
+      </button>
+      }
+      
+      <button type="button" class="pagination-btn cursor-pointer" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
+        &raquo;
+      </button>
+    </div>
+    }
     }
   </div>
 </section>
