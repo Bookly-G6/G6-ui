@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, effect } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { ProductService } from '../../../../services/product.services';
@@ -12,7 +13,8 @@ import { AuthSessionService } from '../../../../core/services/auth-session.servi
 
 @Component({
   selector: 'app-catalog-page',
-  imports: [CommonModule],
+  standalone: true,
+  imports: [CommonModule, FormsModule],
   templateUrl: './catalog.page.html',
   styleUrl: './catalog.page.css',
   animations: [
@@ -37,9 +39,34 @@ export class CatalogPage {
   readonly categories = signal<string[]>(['Todos']);
   readonly loading = signal(true);
 
+  // Filtros Avanzados
+  readonly selectedTipoProducto = signal<string>('Todos');
+  readonly selectedAutor = signal<string>('Todos');
+  readonly minPrice = signal<number | null>(null);
+  readonly maxPrice = signal<number | null>(null);
+
+  // Listados de filtros compilados dinámicamente de los productos cargados
+  readonly availableTipos = computed(() => {
+    const types = this.products()
+      .map((p) => p.tipoProducto)
+      .filter(Boolean) as string[];
+    return ['Todos', ...Array.from(new Set(types))];
+  });
+
+  readonly availableAutores = computed(() => {
+    const authors = this.products()
+      .flatMap((p) => p.autores ?? [])
+      .filter(Boolean) as string[];
+    return ['Todos', ...Array.from(new Set(authors))];
+  });
+
   readonly filteredProducts = computed(() => {
     const term = this.catalogState.searchTerm().toLowerCase().trim();
     const category = this.catalogState.selectedCategory();
+    const tipo = this.selectedTipoProducto();
+    const autor = this.selectedAutor();
+    const minP = this.minPrice();
+    const maxP = this.maxPrice();
 
     return this.products().filter((product) => {
       const haystack = [
@@ -52,14 +79,41 @@ export class CatalogPage {
         .join(' ')
         .toLowerCase();
 
+      const textMatch = !term || haystack.includes(term);
+
       const categories = product.categorias?.length
         ? product.categorias
         : [product.tipoProducto ?? 'General'];
       const categoryMatch = category === 'Todos' || categories.some((item) => item === category);
-      const textMatch = !term || haystack.includes(term);
 
-      return textMatch && categoryMatch;
+      const tipoMatch = tipo === 'Todos' || product.tipoProducto === tipo;
+
+      const autorMatch = autor === 'Todos' || (product.autores ?? []).includes(autor);
+
+      const price = Number(product.precioActual ?? 0);
+      const minMatch = minP === null || price >= minP;
+      const maxMatch = maxP === null || price <= maxP;
+
+      return textMatch && categoryMatch && tipoMatch && autorMatch && minMatch && maxMatch;
     });
+  });
+
+  // Paginación
+  readonly currentPage = signal<number>(1);
+  readonly pageSize = signal<number>(8); // 8 es perfecto para una grilla de 4 columnas
+
+  readonly paginatedProducts = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize();
+    return this.filteredProducts().slice(start, start + this.pageSize());
+  });
+
+  readonly totalPages = computed(() => {
+    return Math.max(1, Math.ceil(this.filteredProducts().length / this.pageSize()));
+  });
+
+  readonly pageNumbers = computed(() => {
+    const total = this.totalPages();
+    return Array.from({ length: total }, (_, i) => i + 1);
   });
 
   canBuy(product: Product): boolean {
@@ -68,6 +122,12 @@ export class CatalogPage {
 
   constructor() {
     this.loadCatalog();
+    
+    // Restablecer a la página 1 cuando cambien los filtros o la búsqueda
+    effect(() => {
+      this.filteredProducts();
+      this.currentPage.set(1);
+    }, { allowSignalWrites: true });
   }
 
   setCategory(category: string): void {
@@ -108,6 +168,28 @@ export class CatalogPage {
     }
 
     this.router.navigate(['/producto', product.idProducto]);
+  }
+
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages()) return;
+    this.currentPage.set(page);
+  }
+
+  prevPage(): void {
+    this.goToPage(this.currentPage() - 1);
+  }
+
+  nextPage(): void {
+    this.goToPage(this.currentPage() + 1);
+  }
+
+  clearFilters(): void {
+    this.selectedTipoProducto.set('Todos');
+    this.selectedAutor.set('Todos');
+    this.minPrice.set(null);
+    this.maxPrice.set(null);
+    this.catalogState.setCategory('Todos');
+    this.catalogState.setSearchTerm('');
   }
 
   private loadCatalog(): void {
