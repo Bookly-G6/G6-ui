@@ -1,142 +1,466 @@
-<section class="fulfillment-board">
-  <header class="board-header">
+<section class="fulfillment-board text-slate-800">
+  <header class="board-header flex justify-between items-center mb-6">
     <div>
-      <h1>Flujos de trabajo logísticos</h1>
-      <p>Gestionar operaciones diarias y estados de envío.</p>
+      <h1 class="text-2xl font-bold text-slate-900">Bandeja de Operaciones Logísticas</h1>
+      <p class="text-slate-500">Gestione y audite despachos, prepare embalajes y controle envíos de compras en tiempo real.</p>
+    </div>
+
+    <!-- Navegación de Pestañas -->
+    <div class="flex gap-2 border border-slate-200 bg-white p-1 rounded-xl shadow-sm">
+      <button type="button" 
+              class="px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2"
+              [class.bg-[#1E3A8A]]="activeTab() === 'pendientes'"
+              [class.text-white]="activeTab() === 'pendientes'"
+              [class.text-slate-600]="activeTab() !== 'pendientes'"
+              [class.hover:bg-slate-50]="activeTab() !== 'pendientes'"
+              (click)="setTab('pendientes')">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+        </svg>
+        Pendientes de Despacho
+      </button>
+      <button type="button" 
+              class="px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2"
+              [class.bg-[#1E3A8A]]="activeTab() === 'historial'"
+              [class.text-white]="activeTab() === 'historial'"
+              [class.text-slate-600]="activeTab() !== 'historial'"
+              [class.hover:bg-slate-50]="activeTab() !== 'historial'"
+              (click)="setTab('historial')">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+        </svg>
+        Historial / Todos los Envíos
+      </button>
     </div>
   </header>
 
-  @if (loading()) {
-  <div class="board-loading">Cargando flujos de trabajo logísticos...</div>
-  } @else {
-  <div class="columns">
-
-    <article class="bookly-panel column">
-      <header class="column-title-box">
-        <h2>Órdenes pendientes</h2>
-        <span class="counter-badge">{{ pendientes().length }}</span>
-      </header>
-
-      <div class="tickets-list">
-        @for (order of pendientes(); track order.idEnvio ?? order.idVenta) {
-        <div class="ticket section-enter">
-          <div class="ticket-header">
-            <strong class="order-id">ORD-{{ (order.idVenta || '').slice(0, 8).toUpperCase() }}</strong>
-            <button class="btn-more" type="button">•••</button>
-          </div>
-
-          <div class="ticket-body">
-            <p class="observaciones">{{ order.observaciones || 'Sin observaciones de empaque.' }}</p>
-            <span class="type-pill">{{ order.tipoEnvio }}</span>
-          </div>
-
-          <div class="ticket-footer">
-            <span class="time-stamp">Pendiente</span>
-            <button class="action-btn label-btn" type="button" (click)="avanzarEstado(order)">
-              <span class="btn-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" focusable="false">
-                  <path d="M6 8V3h12v5" />
-                  <rect x="6" y="14" width="12" height="7" rx="1" ry="1" />
-                  <path d="M6 17H4a1 1 0 0 1-1-1v-5a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v5a1 1 0 0 1-1 1h-2" />
-                </svg>
-              </span>
-              <span>Imprimir etiqueta</span>
-            </button>
-          </div>
-        </div>
-        } @empty {
-        <div class="ticket empty">Sin pendientes</div>
-        }
+  <!-- PESTAÑA 1: BANDEJA DE PENDIENTES -->
+  @if (activeTab() === 'pendientes') {
+  <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden p-6 mb-6">
+    <!-- Barra de búsqueda -->
+    <div class="flex flex-col sm:flex-row gap-4 justify-between items-center mb-6">
+      <div class="relative w-full sm:max-w-md">
+        <input type="text" #searchBox 
+               (input)="searchTerm.set(searchBox.value); onSearchChange()" 
+               [value]="searchTerm()"
+               placeholder="Buscar por cliente, dirección, venta..." 
+               class="w-full border border-slate-300 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/30 focus:border-[#1E3A8A] bg-slate-50/30" />
+        <span class="absolute left-3.5 top-1/2 -translate-y-1/2">
+          <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </span>
       </div>
-    </article>
-
-    <article class="bookly-panel column">
-      <header class="column-title-box">
-        <h2>Embalaje y etiquetas</h2>
-        <span class="counter-badge">{{ embalaje().length }}</span>
-      </header>
-
-      <div class="tickets-list">
-        @for (order of embalaje(); track order.idEnvio ?? order.idVenta) {
-        <div class="ticket section-enter">
-          <div class="ticket-header">
-            <strong class="order-id text-gold">ORD-{{ (order.idVenta || '').slice(0, 8).toUpperCase() }}</strong>
-            <button class="btn-more" type="button">•••</button>
-          </div>
-
-          <div class="ticket-body">
-            <p class="tracking-code">
-              <span class="inline-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" focusable="false">
-                  <path d="M3 7.5 12 3l9 4.5-9 4.5L3 7.5Z" />
-                  <path d="M3 7.5V16.5L12 21l9-4.5V7.5" />
-                  <path d="M12 12v9" />
-                </svg>
-              </span>
-              {{ order.numeroTracking || 'Tracking pendiente' }}
-            </p>
-            <span class="status-inner-tag">{{ order.estadoLogistica || order.estado }}</span>
-          </div>
-
-          <div class="ticket-footer">
-            <span class="time-stamp">En proceso</span>
-            <button class="action-btn orange-btn" type="button" (click)="avanzarEstado(order)">
-              <span class="btn-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" focusable="false">
-                  <path d="M3 6h11v8H3z" />
-                  <path d="M14 10h3l3 3v1h-6z" />
-                  <circle cx="7" cy="17" r="2" />
-                  <circle cx="17" cy="17" r="2" />
-                  <path d="M5 17h-2v-2" />
-                </svg>
-              </span>
-              <span>Despacho</span>
-            </button>
-          </div>
-        </div>
-        } @empty {
-        <div class="ticket empty">Sin órdenes en proceso</div>
-        }
+      <div class="text-sm text-slate-500 font-semibold">
+        Total Encontrados: <span class="text-[#1E3A8A] font-bold">{{ totalElements() }}</span>
       </div>
-    </article>
+    </div>
 
-    <article class="bookly-panel column">
-      <header class="column-title-box">
-        <h2>Shipped</h2>
-        <span class="counter-badge">{{ shipped().length }}</span>
-      </header>
-
-      <div class="tickets-list">
-        @for (order of shipped(); track order.idEnvio ?? order.idVenta) {
-        <div class="ticket ticket-completed section-enter">
-          <div class="ticket-header">
-            <strong class="order-id text-muted">ORD-{{ (order.idVenta || '').slice(0, 8).toUpperCase() }}</strong>
-            <button class="btn-more" type="button">•••</button>
-          </div>
-
-          <div class="ticket-body">
-            <p class="courier-text">Compañía: <strong>{{ order.empresaCorreo || 'Correo asignado' }}</strong></p>
-            <p class="tracking-sub" *ngIf="order.numeroTracking">Tracking: {{ order.numeroTracking }}</p>
-          </div>
-
-          <div class="ticket-footer">
-            <span class="success-status">
-              <span class="inline-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" focusable="false">
-                  <circle cx="12" cy="12" r="9" />
-                  <path d="m8 12 2.5 2.5L16 9" />
-                </svg>
+    <!-- Tabla de Envíos Pendientes -->
+    @if (loading()) {
+    <div class="text-center py-12 text-slate-400 font-medium">Cargando bandeja de despachos pendientes...</div>
+    } @else {
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+            <th class="px-6 py-4">ID Envío / Venta</th>
+            <th class="px-6 py-4">Tipo Envío</th>
+            <th class="px-6 py-4">Estado Logística</th>
+            <th class="px-6 py-4">Código Retiro</th>
+            <th class="px-6 py-4">Fecha Actualización</th>
+            <th class="px-6 py-4 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-sm text-slate-700">
+          @for (order of pendingShipments(); track order.idEnvio ?? order.idVenta) {
+          <tr class="hover:bg-slate-50/80 transition-colors cursor-pointer" (click)="verDetalle(order.idEnvio)">
+            <td class="px-6 py-4">
+              <div class="font-bold text-slate-900">ENV-{{ (order.idEnvio || '').slice(0, 8).toUpperCase() }}</div>
+              <div class="text-xs text-slate-400 font-mono">Venta: {{ (order.idVenta || '').slice(0, 8).toUpperCase() }}</div>
+            </td>
+            <td class="px-6 py-4">
+              <span class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-md text-xs font-semibold bg-slate-100 text-slate-800">
+                {{ order.tipoEnvio === 'DOMICILIO' ? 'A Domicilio' : 'Retiro Local' }}
               </span>
-              Entregado
-            </span>
-          </div>
-        </div>
-        } @empty {
-        <div class="ticket empty">Sin entregadas</div>
-        }
-      </div>
-    </article>
+            </td>
+            <td class="px-6 py-4">
+              <span class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-md text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+                {{ order.estadoLogistica || order.estado || 'PREPARANDO' }}
+              </span>
+            </td>
+            <td class="px-6 py-4 font-mono font-bold text-slate-700">
+              {{ order.codigoRetiro || 'N/A' }}
+            </td>
+            <td class="px-6 py-4 text-xs text-slate-500">
+              {{ order.fechaActualizacion | date: 'dd/MM/yyyy HH:mm' }}
+            </td>
+            <td class="px-6 py-4 text-right text-xs font-semibold flex items-center justify-end gap-3" (click)="$event.stopPropagation()">
+              <button (click)="verDetalle(order.idEnvio)" class="text-[#1E3A8A] hover:underline flex items-center gap-1">
+                <svg class="w-4 h-4 text-[#1E3A8A]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
+                Armar Caja
+              </button>
+              <button (click)="abrirDespacho(order)" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg font-bold transition-all shadow-sm flex items-center gap-1">
+                <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                </svg>
+                Despachar
+              </button>
+            </td>
+          </tr>
+          } @empty {
+          <tr>
+            <td colspan="6" class="px-6 py-12 text-center text-slate-400">
+              <svg class="w-12 h-12 text-emerald-500 mx-auto mb-3" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <h3 class="text-slate-800 font-bold mb-1">¡Todo despachado!</h3>
+              <p class="text-xs text-slate-500">No hay paquetes pendientes de embalaje.</p>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
 
+    <!-- Controles de Paginación -->
+    @if (totalPages() > 1) {
+    <div class="flex items-center justify-between border-t border-slate-200 pt-4 mt-6 text-sm text-slate-600">
+      <span>Página {{ currentPage() + 1 }} de {{ totalPages() }}</span>
+      <div class="flex gap-2">
+        <button (click)="prevPage()" [disabled]="currentPage() === 0"
+                class="px-3.5 py-1.5 border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-semibold">
+          Anterior
+        </button>
+        <button (click)="nextPage()" [disabled]="currentPage() >= totalPages() - 1"
+                class="px-3.5 py-1.5 border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-semibold">
+          Siguiente
+        </button>
+      </div>
+    </div>
+    }
+    }
+  </div>
+  }
+
+  <!-- PESTAÑA 2: HISTORIAL COMPLETO DE ENVÍOS -->
+  @if (activeTab() === 'historial') {
+  <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden p-6 mb-6">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <div>
+        <h2 class="text-lg font-bold text-slate-900">Historial Completo de Envíos</h2>
+        <p class="text-xs text-slate-500 mt-0.5">Consulte todos los despachos y operaciones logísticas cerradas en el sistema.</p>
+      </div>
+
+      <!-- Botones de Exportación -->
+      <div class="flex gap-2">
+        <button (click)="exportHistoryPdf()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all">
+          <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+          </svg>
+          PDF
+        </button>
+        <button (click)="exportHistoryExcel()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all">
+          <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          Excel
+        </button>
+        <button (click)="exportHistoryCsv()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all">
+          <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          CSV
+        </button>
+      </div>
+    </div>
+
+    <!-- Barra de búsqueda local para Historial -->
+    <div class="flex flex-col sm:flex-row gap-4 justify-between items-center mb-4">
+      <div class="relative w-full sm:max-w-md">
+        <input type="text" #searchBoxHistory
+               (input)="searchTermHistory.set(searchBoxHistory.value); onSearchHistoryChange()" 
+               [value]="searchTermHistory()"
+               placeholder="Buscar envío por código, transportista, tracking..." 
+               class="w-full border border-slate-300 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/30 focus:border-[#1E3A8A] bg-slate-50/30" />
+        <span class="absolute left-3.5 top-1/2 -translate-y-1/2">
+          <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </span>
+      </div>
+      <div class="text-xs text-slate-500 font-semibold">
+        Total Encontrados: <span class="text-[#1E3A8A] font-bold">{{ filteredHistoryRows().length }}</span>
+      </div>
+    </div>
+
+    @if (loading()) {
+    <div class="text-center py-12 text-slate-400 font-medium">Cargando historial de operaciones...</div>
+    } @else {
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+            <th class="px-6 py-4">ID Envío / Venta</th>
+            <th class="px-6 py-4">Tipo Envío</th>
+            <th class="px-6 py-4">Estado</th>
+            <th class="px-6 py-4">Transportista / Tracking</th>
+            <th class="px-6 py-4">Código Retiro</th>
+            <th class="px-6 py-4 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-sm text-slate-700">
+          @for (order of paginatedHistoryRows(); track order.idEnvio ?? order.idVenta) {
+          <tr class="hover:bg-slate-50/80 transition-colors cursor-pointer" (click)="verDetalle(order.idEnvio)">
+            <td class="px-6 py-4">
+              <div class="font-bold text-slate-900">ENV-{{ (order.idEnvio || '').slice(0, 8).toUpperCase() }}</div>
+              <div class="text-xs text-slate-400 font-mono">Venta: {{ (order.idVenta || '').slice(0, 8).toUpperCase() }}</div>
+            </td>
+            <td class="px-6 py-4">
+              <span class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-md text-xs font-semibold"
+                    [class.bg-blue-50]="order.tipoEnvio === 'DOMICILIO'"
+                    [class.text-blue-800]="order.tipoEnvio === 'DOMICILIO'"
+                    [class.bg-purple-50]="order.tipoEnvio === 'RETIRO_LOCAL'"
+                    [class.text-purple-800]="order.tipoEnvio === 'RETIRO_LOCAL'">
+                {{ order.tipoEnvio === 'DOMICILIO' ? 'A Domicilio' : 'Retiro Local' }}
+              </span>
+            </td>
+            <td class="px-6 py-4">
+              <span class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-md text-xs font-semibold"
+                    [ngClass]="{
+                      'bg-emerald-50 text-emerald-800 border border-emerald-200': (order.estadoLogistica || order.estado) === 'ENTREGADO',
+                      'bg-rose-50 text-rose-800 border border-rose-200': (order.estadoLogistica || order.estado) === 'CANCELADO',
+                      'bg-blue-50 text-blue-800 border border-blue-200': (order.estadoLogistica || order.estado) === 'EN_CAMINO',
+                      'bg-amber-50 text-amber-800 border border-amber-200': (order.estadoLogistica || order.estado) === 'EN_PREPARACION' || (order.estadoLogistica || order.estado) === 'LISTO_PARA_RETIRO'
+                    }">
+                {{ order.estadoLogistica || order.estado }}
+              </span>
+            </td>
+            <td class="px-6 py-4">
+              @if (order.empresaCorreo) {
+              <div class="font-semibold text-slate-800">{{ order.empresaCorreo }}</div>
+              <div class="text-xs font-mono text-slate-500">{{ order.numeroTracking }}</div>
+              } @else {
+              <span class="text-slate-400">N/A</span>
+              }
+            </td>
+            <td class="px-6 py-4 font-mono font-bold text-slate-700">
+              {{ order.codigoRetiro || 'N/A' }}
+            </td>
+            <td class="px-6 py-4 text-right text-xs font-semibold flex items-center justify-end gap-3" (click)="$event.stopPropagation()">
+              <button (click)="verDetalle(order.idEnvio)" class="text-[#1E3A8A] hover:underline flex items-center gap-1">
+                <svg class="w-4 h-4 text-[#1E3A8A]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+                Ver Ficha
+              </button>
+              <button (click)="abrirDespacho(order)" class="text-amber-600 hover:underline flex items-center gap-1">
+                <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+                Cambiar Estado
+              </button>
+            </td>
+          </tr>
+          } @empty {
+          <tr>
+            <td colspan="6" class="px-6 py-12 text-center text-slate-400">
+              No hay envíos registrados en el sistema.
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Controles de Paginación Local Historial -->
+    @if (totalPagesHistory() > 1) {
+    <div class="flex items-center justify-between border-t border-slate-200 pt-4 mt-6 text-sm text-slate-600">
+      <span>Página <strong>{{ currentPageHistory() }}</strong> de {{ totalPagesHistory() }}</span>
+      <div class="flex gap-2">
+        <button (click)="prevPageHistory()" [disabled]="currentPageHistory() === 1"
+                class="px-3.5 py-1.5 border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-semibold">
+          Anterior
+        </button>
+        <button (click)="nextPageHistory()" [disabled]="currentPageHistory() >= totalPagesHistory()"
+                class="px-3.5 py-1.5 border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-semibold">
+          Siguiente
+        </button>
+      </div>
+    </div>
+    }
+    }
   </div>
   }
 </section>
+
+<!-- MODAL 1: DETALLE COMPLETO DE EMBALAJE (ARMADO DE CAJA) -->
+@if (showDetailModal()) {
+<div class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+    <!-- Header -->
+    <header class="bg-[#1E3A8A] text-white p-5 flex justify-between items-center">
+      <div>
+        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+          </svg>
+          Control de Embalaje y Ficha de Envío
+        </h2>
+        <p class="text-xs text-slate-300">Audite la mercadería antes de colocar la cinta y cerrar la caja.</p>
+      </div>
+      <button (click)="closeDetailModal()" class="text-white hover:text-slate-200 text-lg font-bold p-1">✕</button>
+    </header>
+
+    <!-- Contenido -->
+    <div class="p-6 max-h-[70vh] overflow-y-auto text-sm">
+      @if (loadingDetail()) {
+      <div class="text-center py-12 text-slate-400 font-medium">Consultando API de logística enriquecida...</div>
+      } @else if (selectedDetail(); as detail) {
+      <!-- Datos Cliente / Destinatario -->
+      <section class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-slate-50 border border-slate-200/60 p-4 rounded-xl">
+        <div>
+          <h3 class="text-xs uppercase tracking-wider text-slate-500 font-bold mb-2">Destinatario</h3>
+          <p class="font-bold text-slate-950 text-base mb-1">{{ detail.nombreCliente }} {{ detail.apellidoCliente }}</p>
+          <p class="text-slate-600">DNI: <strong class="text-slate-800">{{ detail.dniCliente || 'N/A' }}</strong></p>
+          <p class="text-slate-600">Teléfono: <strong class="text-slate-800">{{ detail.telefonoCliente || 'N/A' }}</strong></p>
+          <p class="text-slate-600">Email: <strong class="text-slate-800">{{ detail.emailCliente || 'N/A' }}</strong></p>
+        </div>
+        <div>
+          <h3 class="text-xs uppercase tracking-wider text-slate-500 font-bold mb-2">Destino / Despacho</h3>
+          <p class="mb-1">Tipo: <strong class="text-[#1E3A8A]">{{ detail.tipoEnvio === 'DOMICILIO' ? 'A Domicilio' : 'Retiro en Local' }}</strong></p>
+          @if (detail.tipoEnvio === 'DOMICILIO') {
+          <p class="font-semibold text-slate-900 mb-1">Dirección: {{ detail.direccionEntrega || 'No especificada' }}</p>
+          }
+          @if (detail.codigoRetiro) {
+          <p class="mb-1">Código Retiro: <strong class="font-mono text-amber-700 bg-amber-100 px-2 py-0.5 rounded text-xs">{{ detail.codigoRetiro }}</strong></p>
+          }
+          <p class="text-slate-600 mt-1">Venta Asociada: <span class="font-mono text-xs text-slate-700">{{ detail.idVenta }}</span></p>
+        </div>
+      </section>
+
+      <!-- Tabla de productos a empacar -->
+      <section class="mb-6">
+        <h3 class="text-xs uppercase tracking-wider text-slate-500 font-bold mb-3 flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+          </svg>
+          Artículos en el Paquete (Packing List)
+        </h3>
+        <div class="border border-slate-200 rounded-xl overflow-hidden">
+          <table class="w-full text-left border-collapse">
+            <thead class="bg-slate-50">
+              <tr class="text-xs font-semibold text-slate-600 border-b border-slate-200">
+                <th class="px-4 py-2.5">Código Producto</th>
+                <th class="px-4 py-2.5">Descripción Producto</th>
+                <th class="px-4 py-2.5 text-center">Cantidad a Empacar</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-xs text-slate-700">
+              @for (item of detail.productos; track item.idProducto) {
+              <tr>
+                <td class="px-4 py-2.5 font-mono text-slate-500">{{ item.codigoBarras || item.idProducto.slice(0,8) }}</td>
+                <td class="px-4 py-2.5 font-semibold text-slate-900">{{ item.nombreProducto }}</td>
+                <td class="px-4 py-2.5 text-center font-bold text-slate-900 text-sm bg-blue-50/20">x{{ item.cantidad }}</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Acciones de Impresión -->
+      <div class="flex justify-end gap-3 mt-6 border-t border-slate-100 pt-4">
+        <button (click)="imprimirEtiqueta(detail)" class="bg-[#1E3A8A] hover:bg-blue-800 text-white px-4 py-2 rounded-lg font-bold shadow-sm transition-all flex items-center gap-2">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+          </svg>
+          Imprimir Etiqueta de Correo
+        </button>
+        <button (click)="closeDetailModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-bold transition-all">
+          Entendido
+        </button>
+      </div>
+      }
+    </div>
+  </div>
+</div>
+}
+
+<!-- MODAL 2: ACTUALIZACIÓN DE ESTADO / DESPACHO -->
+@if (showDispatchModal()) {
+<div class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+    <header class="bg-[#1E3A8A] text-white p-5 flex justify-between items-center">
+      <div>
+        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+          Actualización del Estado Logístico
+        </h2>
+        <p class="text-xs text-slate-300">Modifique el estado del paquete en camino o retiro local.</p>
+      </div>
+      <button (click)="closeDispatchModal()" class="text-white hover:text-slate-200 text-lg font-bold p-1">✕</button>
+    </header>
+
+    <div class="p-6">
+      <form [formGroup]="dispatchForm" (ngSubmit)="submitDispatch()" class="flex flex-col gap-4">
+        <!-- Empleado Auditor -->
+        <div class="form-group">
+          <label class="text-xs font-semibold text-slate-500 block mb-1">Empleado que registra la operación *</label>
+          <select class="bookly-input" formControlName="idEmpleado">
+            <option value="">Seleccionar empleado</option>
+            @for (emp of employees(); track emp.idEmpleado) {
+            <option [value]="emp.idEmpleado">{{ getEmployeeLabel(emp) }}</option>
+            }
+          </select>
+          @if (dispatchForm.get('idEmpleado')?.invalid && dispatchForm.get('idEmpleado')?.touched) {
+          <span class="text-xs text-rose-600 mt-1 block">La firma del empleado es requerida para auditorías.</span>
+          }
+        </div>
+
+        <!-- Siguiente Estado -->
+        <div class="form-group">
+          <label class="text-xs font-semibold text-slate-500 block mb-1">Nuevo Estado *</label>
+          <select class="bookly-input font-bold text-blue-900" formControlName="nuevoEstado">
+            @for (estado of allEstados; track estado) {
+            <option [value]="estado">{{ estado }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Campos de Correo (sólo si es envío domicilio) -->
+        @if (shippingToDispatch()?.tipoEnvio === 'DOMICILIO') {
+        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200/60 flex flex-col gap-3">
+          <div class="form-group">
+            <label class="text-xs font-semibold text-slate-500 block mb-1">Empresa de Correo</label>
+            <input type="text" class="bookly-input" formControlName="empresaCorreo" placeholder="Ej: Correo Argentino, Andreani..." />
+          </div>
+          <div class="form-group">
+            <label class="text-xs font-semibold text-slate-500 block mb-1">Número de Seguimiento (Tracking)</label>
+            <input type="text" class="bookly-input font-mono" formControlName="numeroTracking" placeholder="Ej: AR987654321" />
+          </div>
+        </div>
+        }
+
+        <!-- Botones de Acción -->
+        <div class="flex justify-end gap-3 mt-4 border-t border-slate-100 pt-4">
+          <button type="button" (click)="closeDispatchModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-semibold transition-all">
+            Cancelar
+          </button>
+          <button type="submit" [disabled]="submittingDispatch() || dispatchForm.invalid" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-bold shadow-sm transition-all flex items-center gap-2">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+            </svg>
+            {{ submittingDispatch() ? 'Guardando...' : 'Guardar Cambios' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+}

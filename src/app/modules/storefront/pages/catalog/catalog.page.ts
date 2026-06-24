@@ -62,6 +62,10 @@ export class CatalogPage {
     });
   });
 
+  canBuy(product: Product): boolean {
+    return product.activo && (product.stock ?? 0) > 0;
+  }
+
   constructor() {
     this.loadCatalog();
   }
@@ -71,6 +75,10 @@ export class CatalogPage {
   }
 
   addToCart(product: Product): void {
+    if (!this.canBuy(product)) {
+      this.notification.show('Producto sin stock.');
+      return;
+    }
     if (!this.authSession.isAuthenticated()) {
       this.notification.show('Inicia sesión para agregar productos al carrito.', 'info');
       this.router.navigateByUrl('/ingresar');

@@ -81,6 +81,16 @@
   color: rgba(255, 255, 255, 0.88);
 }
 
+.field-error {
+  color: #b42318;
+  font-size: 0.77rem;
+  font-weight: 500;
+  line-height: 1.2;
+  margin-top: 0.15rem;
+  display: block;
+  min-height: 0.95rem;
+}
+
 .form-card {
   width: min(520px, 90%);
   max-height: calc(100vh - 4rem);
@@ -107,6 +117,7 @@
 .field-grid {
   display: grid;
   gap: 1rem;
+  align-items: start;
 }
 
 .field-grid-two {
@@ -126,6 +137,16 @@
   padding: 0.95rem 1rem;
   font-size: 1.05rem;
   background: #f8f9fd;
+}
+
+.form-card .bookly-input.input-error {
+  border: 1px solid #e78181;
+  background: #fffafa;
+}
+
+.form-card .bookly-input.input-error:focus {
+  outline: 2px solid rgba(183, 35, 24, 0.14);
+  outline-offset: 1px;
 }
 
 .password-field {
@@ -177,6 +198,16 @@
   border-radius: 0.55rem;
   font-size: 1.45rem;
   min-height: 3.6rem;
+}
+
+.submit-btn:disabled,
+.submit-btn.is-disabled {
+  background: #c4c8d1 !important;
+  border-color: #c4c8d1 !important;
+  color: #6b7280 !important;
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 1;
 }
 
 .link-btn {

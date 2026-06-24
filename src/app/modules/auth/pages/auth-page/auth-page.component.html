@@ -25,15 +25,18 @@
         <form [formGroup]="loginForm" (ngSubmit)="submitLogin()" @formSwap>
           <label>
             Dirección de correo electrónico
-            <input class="bookly-input" type="email" formControlName="email"
-              placeholder="Ingresa tu correo electrónico" />
+            <input class="bookly-input" [class.input-error]="hasLoginError('email')" type="email"
+              formControlName="email" placeholder="Ingresa tu correo electrónico" />
+            @if (hasLoginError('email')) {
+            <small class="field-error">{{ getLoginErrorMessage('email') }}</small>
+            }
           </label>
 
           <label>
             Contraseña
             <div class="password-field">
-              <input class="bookly-input" [type]="showLoginPassword() ? 'text' : 'password'" formControlName="password"
-                placeholder="••••••••" />
+              <input class="bookly-input" [class.input-error]="hasLoginError('password')"
+                [type]="showLoginPassword() ? 'text' : 'password'" formControlName="password" placeholder="••••••••" />
               <button class="password-toggle" type="button" (click)="togglePasswordVisibility('login')"
                 [attr.aria-label]="showLoginPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
                 @if (showLoginPassword()) {
@@ -51,11 +54,15 @@
                 }
               </button>
             </div>
+            @if (hasLoginError('password')) {
+            <small class="field-error">{{ getLoginErrorMessage('password') }}</small>
+            }
           </label>
 
           <!--  <button class="link-btn" type="button">¿Olvidaste tu contraseña?</button>  -->
 
-          <button class="bookly-btn bookly-btn-gold submit-btn" type="submit" [disabled]="loading()">
+          <button class="bookly-btn bookly-btn-gold submit-btn" [class.is-disabled]="shouldDisableLoginSubmit()"
+            type="submit" [disabled]="shouldDisableLoginSubmit()">
             {{ loading() ? 'Iniciando sesión...' : 'Iniciar sesión' }}
           </button>
         </form>
@@ -64,24 +71,37 @@
           <div class="field-grid field-grid-two">
             <label>
               Nombre
-              <input class="bookly-input" type="text" formControlName="nombre" placeholder="Ana" />
+              <input class="bookly-input" [class.input-error]="hasRegisterError('nombre')" type="text"
+                formControlName="nombre" placeholder="Ana" />
+              @if (hasRegisterError('nombre')) {
+              <small class="field-error">{{ getRegisterErrorMessage('nombre') }}</small>
+              }
             </label>
 
             <label>
               Apellido
-              <input class="bookly-input" type="text" formControlName="apellido" placeholder="Perez" />
+              <input class="bookly-input" [class.input-error]="hasRegisterError('apellido')" type="text"
+                formControlName="apellido" placeholder="Perez" />
+              @if (hasRegisterError('apellido')) {
+              <small class="field-error">{{ getRegisterErrorMessage('apellido') }}</small>
+              }
             </label>
           </div>
 
           <label>
             Dirección de correo electrónico
-            <input class="bookly-input" type="email" formControlName="email" placeholder="ana@mail.com" />
+            <input class="bookly-input" [class.input-error]="hasRegisterError('email')" type="email"
+              formControlName="email" placeholder="ana@mail.com" />
+            @if (hasRegisterError('email')) {
+            <small class="field-error">{{ getRegisterErrorMessage('email') }}</small>
+            }
           </label>
 
           <label>
             Contraseña
             <div class="password-field">
-              <input class="bookly-input" [type]="showRegisterPassword() ? 'text' : 'password'" formControlName="password"
+              <input class="bookly-input" [class.input-error]="hasRegisterError('password')"
+                [type]="showRegisterPassword() ? 'text' : 'password'" formControlName="password"
                 placeholder="Mínimo 6 caracteres" />
               <button class="password-toggle" type="button" (click)="togglePasswordVisibility('register')"
                 [attr.aria-label]="showRegisterPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
@@ -100,21 +120,33 @@
                 }
               </button>
             </div>
+            @if (hasRegisterError('password')) {
+            <small class="field-error">{{ getRegisterErrorMessage('password') }}</small>
+            }
           </label>
 
           <div class="field-grid field-grid-two">
             <label>
               DNI (opcional)
-              <input class="bookly-input" type="text" formControlName="dni" placeholder="30111222" />
+              <input class="bookly-input" [class.input-error]="hasRegisterError('dni')" type="text"
+                formControlName="dni" placeholder="30111222" />
+              @if (hasRegisterError('dni')) {
+              <small class="field-error">{{ getRegisterErrorMessage('dni') }}</small>
+              }
             </label>
 
             <label>
               Teléfono (opcional)
-              <input class="bookly-input" type="text" formControlName="telefono" placeholder="11223344" />
+              <input class="bookly-input" [class.input-error]="hasRegisterError('telefono')" type="text"
+                formControlName="telefono" placeholder="11223344" />
+              @if (hasRegisterError('telefono')) {
+              <small class="field-error">{{ getRegisterErrorMessage('telefono') }}</small>
+              }
             </label>
           </div>
 
-          <button class="bookly-btn bookly-btn-gold submit-btn" type="submit" [disabled]="loading()">
+          <button class="bookly-btn bookly-btn-gold submit-btn" [class.is-disabled]="shouldDisableRegisterSubmit()"
+            type="submit" [disabled]="shouldDisableRegisterSubmit()">
             {{ loading() ? 'Creando cuenta...' : 'Registrarse' }}
           </button>
         </form>

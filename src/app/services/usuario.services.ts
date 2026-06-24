@@ -48,12 +48,40 @@ export class UsuarioService {
     return this.http
       .get<unknown>(this.apiUrl)
       .pipe(
-        map((response) => this.normalizeListResponse<Usuario>(response).map((usuario) => this.normalizeUsuario(usuario))),
+        map((response) =>
+          this.normalizeListResponse<Usuario>(response).map((usuario) =>
+            this.normalizeUsuario(usuario),
+          ),
+        ),
+      );
+  }
+
+  getClientes(): Observable<Usuario[]> {
+    const url = `${environment.apiUrl}/clientes`;
+    return this.http
+      .get<unknown>(url)
+      .pipe(
+        map((response) =>
+          this.normalizeListResponse<any>(response).map((item) => {
+            const usuario: Usuario = {
+              idUsuario: item.idCliente || item.idUsuario,
+              nombre: item.nombre || '',
+              apellido: item.apellido || '',
+              email: item.email || '',
+              dni: item.dni || undefined,
+              telefono: item.telefono || undefined,
+              activo: true,
+            };
+            return this.normalizeUsuario(usuario);
+          }),
+        ),
       );
   }
 
   getUsuarioById(id: string): Observable<Usuario> {
-    return this.http.get<Usuario>(`${this.apiUrl}/${id}`).pipe(map((response) => this.normalizeUsuario(response)));
+    return this.http
+      .get<Usuario>(`${this.apiUrl}/${id}`)
+      .pipe(map((response) => this.normalizeUsuario(response)));
   }
 
   createUsuario(usuario: Usuario): Observable<UsuarioResponse> {
@@ -65,6 +93,6 @@ export class UsuarioService {
   }
 
   deleteUsuario(id: string): Observable<{ mensaje: string }> {
-    return this.http.delete<{ mensaje: string }>(`${this.apiUrl}/${id}`);
+    return this.http.put<{ mensaje: string }>(`${this.apiUrl}/${id}/inactivar`, {});
   }
 }

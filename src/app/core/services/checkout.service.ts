@@ -21,4 +21,20 @@ export class CheckoutService {
   getOrderDetail(idVenta: string): Observable<Venta> {
     return this.http.get<Venta>(`${this.apiUrl}/${idVenta}`);
   }
+
+  getFormasPago(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/formas-pago`);
+  }
+
+  getTiposVenta(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/tipos-venta`);
+  }
+
+  getEmpleadosVenta(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/empleados`);
+  }
+
+  getVentas(): Observable<Venta[]> {
+    return this.http.get<Venta[]>(this.apiUrl);
+  }
 }

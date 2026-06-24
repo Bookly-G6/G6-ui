@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Logistica } from '../models/logistica.model';
+import { Logistica, EnvioEnriquecido } from '../models/logistica.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -46,6 +46,30 @@ export class LogisticaService {
     return this.http.get<Logistica>(`${this.apiUrl}/${id}`);
   }
 
+  getEnviosPendientes(params?: {
+    idVenta?: string;
+    terminoBusqueda?: string;
+    page?: number;
+    size?: number;
+  }): Observable<any> {
+    let httpParams = new HttpParams();
+    if (params) {
+      if (params.idVenta) httpParams = httpParams.set('idVenta', params.idVenta);
+      if (params.terminoBusqueda) httpParams = httpParams.set('terminoBusqueda', params.terminoBusqueda);
+      if (params.page !== undefined) httpParams = httpParams.set('page', params.page.toString());
+      if (params.size !== undefined) httpParams = httpParams.set('size', params.size.toString());
+    }
+    return this.http.get<any>(`${this.apiUrl}/pendientes`, { params: httpParams });
+  }
+
+  getDetalleCompleto(id: string): Observable<EnvioEnriquecido> {
+    return this.http.get<EnvioEnriquecido>(`${this.apiUrl}/${id}/detalle-completo`);
+  }
+
+  getLogisticaByVenta(idVenta: string): Observable<Logistica> {
+    return this.http.get<Logistica>(`${this.apiUrl}/venta/${idVenta}`);
+  }
+
   createLogistica(logistica: Logistica): Observable<Logistica> {
     return this.http.post<Logistica>(this.apiUrl, logistica);
   }
@@ -57,11 +81,12 @@ export class LogisticaService {
   actualizarEstado(
     idEnvio: string,
     nuevoEstado: string,
+    idEmpleado: string,
     datos?: { numeroTracking?: string; empresaCorreo?: string },
   ): Observable<Logistica> {
     const body = {
       nuevoEstado,
-      idEmpleado: 'e2e2e2e2-e2e2-e2e2-e2e2-e2e2e2e2e2e2', // ID estático temporal según DTO
+      idEmpleado,
       ...datos,
     };
     return this.http.patch<Logistica>(`${this.apiUrl}/${idEnvio}/estado`, body);

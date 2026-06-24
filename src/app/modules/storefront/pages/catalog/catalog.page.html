@@ -31,18 +31,17 @@
         (keydown.space)="$event.preventDefault(); goToProductDetail(product)">
         <div class="cover" [style.background]="'linear-gradient(155deg, #1E3A8A 0%, #365ecf 85%)'">
           <span class="label">{{ (product.tipoProducto ?? 'Libro').toUpperCase() }}</span>
-          <strong>{{ product.nombreProducto }}</strong>
         </div>
 
         <div class="book-card-body">
-          <p class="category">{{ product.categorias?.[0] ?? product.tipoProducto ?? 'General' }}</p>
           <h3>{{ product.nombreProducto }}</h3>
           <p class="description">{{ product.descripcion || 'Sin descripción disponible.' }}</p>
 
           <div class="book-card-footer">
             <strong>{{ product.precioActual | currency: 'USD':'symbol':'1.2-2' }}</strong>
-            <button class="bookly-btn bookly-btn-gold" (click)="$event.stopPropagation(); addToCart(product)">
-              Agregar
+            <button class="bookly-btn bookly-btn-gold" [disabled]="!canBuy(product)"
+              (click)="$event.stopPropagation(); addToCart(product)">
+              {{ canBuy(product) ? 'Agregar' : 'Sin stock' }}
             </button>
           </div>
         </div>

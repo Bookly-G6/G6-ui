@@ -6,6 +6,7 @@ export interface Product {
   precioCosto?: number;
   precioActual: number;
   activo: boolean;
+  stock?: number;
   idTipoProducto: number;
   idEditorialSello: number;
   idRangoEtario: number;
@@ -17,4 +18,14 @@ export interface Product {
   categorias?: string[];
   autores?: string[];
   atributosEspecificos?: Record<string, unknown>;
+}
+
+export interface HistorialPrecio {
+  idHistorial: string;
+  precioCostoAnterior: number;
+  precioVentaAnterior: number;
+  precioCostoNuevo: number;
+  precioVentaNuevo: number;
+  fechaCambio: string;
+  empleadoNombre: string;
 }

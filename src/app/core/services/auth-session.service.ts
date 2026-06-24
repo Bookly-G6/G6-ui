@@ -68,6 +68,16 @@ export class AuthSessionService {
     );
   }
 
+  registerAdmin(payload: RegisterPayload): Observable<SessionUser> {
+    return this.http.post<AuthResponse>(`${this.authApiUrl}/register-admin`, payload).pipe(
+      tap((authResponse) => {
+        this.persistSession(this.mapAuthResponseToSessionUser(authResponse));
+        this.notification.show('Registro exitoso. Bienvenido a Bookly.', 'success');
+      }),
+      map((authResponse) => this.mapAuthResponseToSessionUser(authResponse)),
+    );
+  }
+
   syncCurrentUser(): Observable<SessionUser> {
     return this.http.get<MeResponse>(`${this.authApiUrl}/me`).pipe(
       tap((meResponse) => {

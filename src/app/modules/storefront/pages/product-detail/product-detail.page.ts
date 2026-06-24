@@ -25,6 +25,26 @@ export class ProductDetailPage {
   readonly loading = signal(true);
   readonly product = signal<Product | null>(null);
 
+  readonly canBuy = computed(() => {
+    const product = this.product();
+
+    if (!product) {
+      return false;
+    }
+
+    return product.activo && (product.stock ?? 0) > 0;
+  });
+
+  readonly stockMessage = computed(() => {
+    const product = this.product();
+
+    if (!product || !product.activo || (product.stock ?? 0) <= 0) {
+      return 'Sin stock';
+    }
+
+    return `${product.stock} unidades disponibles`;
+  });
+
   readonly productCategories = computed(() => {
     const product = this.product();
     if (!product) {
@@ -68,6 +88,10 @@ export class ProductDetailPage {
   }
 
   addToCart(): void {
+    if (!this.canBuy()) {
+      this.notification.show('Producto sin stock.');
+      return;
+    }
     const product = this.product();
     if (!product) {
       return;
