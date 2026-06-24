@@ -39,15 +39,11 @@
 
           <div class="book-card-footer">
             <strong>{{ product.precioActual | currency: 'USD':'symbol':'1.2-2' }}</strong>
-            <button class="bookly-btn bookly-btn-gold" (click)="$event.stopPropagation(); addToCart(product)">
-              Agregar
+            <button class="bookly-btn bookly-btn-gold" [disabled]="!canBuy(product)"
+              (click)="$event.stopPropagation(); addToCart(product)">
+              {{ canBuy(product) ? 'Agregar' : 'Sin stock' }}
             </button>
-          </div><button class="bookly-btn bookly-btn-gold" [disabled]="!canBuy(product)"
-            (click)="$event.stopPropagation(); addToCart(product)">
-
-            {{ canBuy(product) ? 'Agregar' : 'Sin stock' }}
-
-          </button>
+          </div>
         </div>
       </article>
       } @empty {

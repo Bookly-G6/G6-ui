@@ -1,6 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 import { LogisticaService } from '../../../../services/logistica.service';
 import { CheckoutService } from '../../../../core/services/checkout.service';
 import { NotificationService } from '../../../../services/notification';
@@ -31,12 +34,41 @@ export class AdminOrdersPage implements OnInit {
   readonly employees = signal<any[]>([]);
   readonly allEstados = ALL_ESTADOS;
 
-  // Paginación y Búsqueda
+  // Paginación y Búsqueda para Pendientes (Backend/Spring)
   readonly searchTerm = signal('');
   readonly currentPage = signal(0); // 0-indexed para Spring
   readonly totalPages = signal(1);
   readonly totalElements = signal(0);
   readonly pageSize = 10;
+
+  // Paginación y Búsqueda para Historial (Local)
+  readonly searchTermHistory = signal('');
+  readonly currentPageHistory = signal(1); // 1-indexed local
+  readonly pageSizeHistory = 10;
+
+  readonly filteredHistoryRows = computed(() => {
+    const term = this.searchTermHistory().toLowerCase().trim();
+    const rows = this.historyShipments();
+    if (!term) return rows;
+    return rows.filter(
+      (h) =>
+        (h.idEnvio ?? '').toLowerCase().includes(term) ||
+        (h.idVenta ?? '').toLowerCase().includes(term) ||
+        (h.estadoLogistica ?? h.estado ?? '').toLowerCase().includes(term) ||
+        (h.empresaCorreo ?? '').toLowerCase().includes(term) ||
+        (h.numeroTracking ?? '').toLowerCase().includes(term) ||
+        (h.codigoRetiro ?? '').toLowerCase().includes(term)
+    );
+  });
+
+  readonly totalPagesHistory = computed(() =>
+    Math.max(1, Math.ceil(this.filteredHistoryRows().length / this.pageSizeHistory))
+  );
+
+  readonly paginatedHistoryRows = computed(() => {
+    const start = (this.currentPageHistory() - 1) * this.pageSizeHistory;
+    return this.filteredHistoryRows().slice(start, start + this.pageSizeHistory);
+  });
 
   // Modales y Detalles seleccionados
   readonly selectedDetail = signal<EnvioEnriquecido | null>(null);
@@ -313,5 +345,91 @@ export class AdminOrdersPage implements OnInit {
   getEmployeeLabel(employee: any): string {
     if (employee.nombreCompleto) return employee.nombreCompleto;
     return `${employee.nombre ?? ''} ${employee.apellido ?? ''}`.trim() || employee.idEmpleado;
+  }
+
+  onSearchHistoryChange(): void {
+    this.currentPageHistory.set(1);
+  }
+
+  goToPageHistory(page: number): void {
+    if (page < 1 || page > this.totalPagesHistory()) return;
+    this.currentPageHistory.set(page);
+  }
+
+  prevPageHistory(): void {
+    this.goToPageHistory(this.currentPageHistory() - 1);
+  }
+
+  nextPageHistory(): void {
+    this.goToPageHistory(this.currentPageHistory() + 1);
+  }
+
+  private readonly historyExportHeaders = [
+    'ID Envío',
+    'ID Venta',
+    'Tipo Envío',
+    'Estado',
+    'Transportista',
+    'N° Tracking',
+    'Código Retiro',
+    'Fecha Actualización'
+  ];
+
+  private formatHistoryDate(value: string | undefined): string {
+    if (!value) return '--';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return new Intl.DateTimeFormat('es-AR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(date);
+  }
+
+  private getHistoryExportRows(): (string | number)[][] {
+    return this.filteredHistoryRows().map((h) => [
+      `ENV-${(h.idEnvio || '').slice(0, 8).toUpperCase()}`,
+      `VTA-${(h.idVenta || '').slice(0, 8).toUpperCase()}`,
+      h.tipoEnvio || '--',
+      h.estadoLogistica || h.estado || 'PREPARANDO',
+      h.empresaCorreo || '--',
+      h.numeroTracking || '--',
+      h.codigoRetiro || 'N/A',
+      this.formatHistoryDate(h.fechaActualizacion)
+    ]);
+  }
+
+  exportHistoryPdf(): void {
+    const doc = new jsPDF();
+    doc.text('Historial de Envíos y Despachos - Bookly', 14, 15);
+    autoTable(doc, {
+      head: [this.historyExportHeaders],
+      body: this.getHistoryExportRows(),
+      startY: 20,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [30, 58, 138] },
+    });
+    doc.save('historial-envios.pdf');
+  }
+
+  exportHistoryExcel(): void {
+    const worksheet = XLSX.utils.aoa_to_sheet([this.historyExportHeaders, ...this.getHistoryExportRows()]);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Envíos');
+    XLSX.writeFile(workbook, 'historial-envios.xlsx');
+  }
+
+  exportHistoryCsv(): void {
+    const worksheet = XLSX.utils.aoa_to_sheet([this.historyExportHeaders, ...this.getHistoryExportRows()]);
+    const csv = XLSX.utils.sheet_to_csv(worksheet);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'historial-envios.csv';
+    link.click();
+    URL.revokeObjectURL(url);
   }
 }

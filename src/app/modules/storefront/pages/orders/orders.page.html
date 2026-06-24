@@ -41,7 +41,12 @@
     <!-- SECCIÓN ENRIQUECIDA DE LOGÍSTICA / ENVÍO -->
     @if (order.idEnvio || order.tipoEnvio || shippingsMap()[order.idVenta]) {
     <div class="shipping-info border-t border-slate-100 pt-3 mt-3">
-      <h3 class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-3">📦 Estado de Envío</h3>
+      <h3 class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-3 flex items-center gap-1.5">
+        <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+        </svg>
+        Estado de Envío
+      </h3>
       
       <div class="flex flex-col sm:flex-row sm:justify-between text-sm text-slate-700 gap-2 mb-4 bg-amber-50/40 border border-amber-100/60 rounded-lg p-3">
         <div>

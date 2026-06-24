@@ -56,6 +56,28 @@ export class UsuarioService {
       );
   }
 
+  getClientes(): Observable<Usuario[]> {
+    const url = `${environment.apiUrl}/clientes`;
+    return this.http
+      .get<unknown>(url)
+      .pipe(
+        map((response) =>
+          this.normalizeListResponse<any>(response).map((item) => {
+            const usuario: Usuario = {
+              idUsuario: item.idCliente || item.idUsuario,
+              nombre: item.nombre || '',
+              apellido: item.apellido || '',
+              email: item.email || '',
+              dni: item.dni || undefined,
+              telefono: item.telefono || undefined,
+              activo: true,
+            };
+            return this.normalizeUsuario(usuario);
+          }),
+        ),
+      );
+  }
+
   getUsuarioById(id: string): Observable<Usuario> {
     return this.http
       .get<Usuario>(`${this.apiUrl}/${id}`)
